@@ -11,9 +11,9 @@ const navItems = [
   { label: 'Products & Services', to: '/products' },
   { label: 'Experience Centers', to: '/experience-centers' },
   { label: 'Finance', to: '/maywood-finance' },
-  { label: 'Manufacturing', to: '/maywood-manufacturing' },
-  { label: 'Partners', to: '/partner-program' },
-  { label: 'About', to: '/about-us' },
+  { label: 'Manufacturing', to: '/manufacturing' },
+  { label: 'Partners', to: '/partners' },
+  { label: 'About', to: '/about' },
 ]
 
 const linkClass = ({ isActive }) =>

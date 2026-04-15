@@ -9,10 +9,10 @@ const solutionsLinks = [
 ]
 
 const companyLinks = [
-  { label: 'Manufacturing', to: '/maywood-manufacturing' },
+  { label: 'Manufacturing', to: '/manufacturing' },
   { label: 'Maywood Plys', to: '/maywood-plys' },
   { label: 'Finance', to: '/maywood-finance' },
-  { label: 'Partner Program', to: '/partner-program' },
+  { label: 'Partner Program', to: '/partners' },
   { label: 'Experience Centers', to: '/experience-centers' },
 ]
 
