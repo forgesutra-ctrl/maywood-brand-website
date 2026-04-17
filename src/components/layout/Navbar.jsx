@@ -11,6 +11,7 @@ const MotionLink = motion(Link)
 const navItems = [
   { label: 'Products & Services', to: '/products' },
   { label: 'Experience Centers', to: '/experience-centers' },
+  { label: 'Portfolio', to: '/portfolio' },
   { label: 'Finance', to: '/maywood-finance' },
   { label: 'Manufacturing', to: '/manufacturing' },
   { label: 'Partners', to: '/partners' },
