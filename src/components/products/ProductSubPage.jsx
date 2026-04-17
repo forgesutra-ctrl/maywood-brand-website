@@ -3,20 +3,11 @@ import { Link } from 'react-router-dom'
 import ProcessSection from '../sections/ProcessSection'
 import SectionLabel from '../ui/SectionLabel'
 import AnimatedText from '../ui/AnimatedText'
-import ImagePlaceholder from '../ui/ImagePlaceholder'
 import { buttonClasses } from '../../lib/buttonStyles'
 
 const MotionLink = motion(Link)
 
 const tapTransition = { type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }
-
-const motionEase = [0.16, 1, 0.3, 1]
-
-const cardParent = { rest: {}, hover: {} }
-const bottomBar = {
-  rest: { scaleX: 0 },
-  hover: { scaleX: 1, transition: { duration: 0.35, ease: motionEase } },
-}
 
 export function ProductsBrassCta() {
   return (
@@ -49,18 +40,29 @@ export default function ProductSubPage({
   heroHeadline,
   heroItalicFromIndex,
   heroSubtext,
+  heroImageSrc,
+  heroImageAlt,
+  heroOverlayClassName = 'bg-[#1C1915]/70',
   overviewHeading,
   overviewBody,
   overviewFeatures,
-  overviewImageLabel = 'Project imagery',
+  overviewImageSrc,
+  overviewImageAlt,
   scopeAnimatedTitle,
   scopeCards,
   processSectionId = 'process-products',
 }) {
   return (
     <main className="flex-1">
-      <section className="flex min-h-[65vh] flex-col justify-center bg-brand-charcoal px-6 py-16 lg:px-24 lg:py-32">
-        <div className="mx-auto w-full max-w-[1400px]">
+      <section className="relative flex min-h-[65vh] flex-col justify-center overflow-hidden px-6 py-16 lg:px-24 lg:py-32">
+        <img
+          src={heroImageSrc}
+          alt={heroImageAlt}
+          loading="eager"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+        <div className={['absolute inset-0', heroOverlayClassName].filter(Boolean).join(' ')} aria-hidden />
+        <div className="relative z-[2] mx-auto w-full max-w-[1400px]">
           <nav className="font-body text-[11px] font-normal text-brand-mist-light" aria-label="Breadcrumb">
             <Link to="/products" className="transition-colors hover:text-brand-brass-light">
               Products & Services
@@ -103,8 +105,13 @@ export default function ProductSubPage({
       </section>
 
       <section className="grid grid-cols-1 bg-brand-ivory lg:grid-cols-2">
-        <div className="min-h-[360px] lg:min-h-[480px]">
-          <ImagePlaceholder label={overviewImageLabel} className="h-full min-h-[360px] lg:min-h-[480px]" />
+        <div className="relative min-h-[360px] max-w-full overflow-hidden lg:min-h-[480px]">
+          <img
+            src={overviewImageSrc}
+            alt={overviewImageAlt}
+            loading="lazy"
+            className="h-full min-h-[480px] w-full object-cover object-center"
+          />
         </div>
         <div className="flex flex-col justify-center px-6 py-16 lg:px-12 lg:py-20 xl:pr-24">
           <SectionLabel>What We Offer</SectionLabel>
@@ -137,14 +144,20 @@ export default function ProductSubPage({
             {scopeCards.map((card) => (
               <article
                 key={card.title}
-                className="rounded-[2px] border-[0.5px] border-brand-brass-pale bg-brand-ivory p-8"
+                className="overflow-hidden rounded-[2px] border-[0.5px] border-brand-brass-pale bg-brand-ivory"
               >
-                <div
-                  className="mb-4 h-7 w-7 rounded-md bg-brand-brass-pale/80 ring-1 ring-brand-brass/15"
-                  aria-hidden
-                />
-                <h3 className="font-display text-[20px] font-normal leading-snug text-brand-charcoal">{card.title}</h3>
-                <p className="mt-3 font-body text-[13px] font-normal leading-relaxed text-brand-mist">{card.body}</p>
+                <div className="relative h-[180px] w-full max-w-full overflow-hidden">
+                  <img
+                    src={card.imageSrc}
+                    alt={card.imageAlt}
+                    loading="lazy"
+                    className="h-full w-full object-cover object-center"
+                  />
+                </div>
+                <div className="p-8">
+                  <h3 className="font-display text-[20px] font-normal leading-snug text-brand-charcoal">{card.title}</h3>
+                  <p className="mt-3 font-body text-[13px] font-normal leading-relaxed text-brand-mist">{card.body}</p>
+                </div>
               </article>
             ))}
           </div>

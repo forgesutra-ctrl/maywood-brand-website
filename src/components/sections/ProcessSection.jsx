@@ -13,9 +13,9 @@ export default function ProcessSection({ sectionId = 'process' }) {
   return (
     <section
       id={sectionId}
-      className="scroll-mt-28 bg-brand-charcoal px-6 py-16 lg:px-24 lg:py-32"
+      className="relative scroll-mt-28 overflow-hidden bg-brand-charcoal px-6 py-16 lg:px-24 lg:py-32"
     >
-      <div className="mx-auto max-w-[1400px]">
+      <div className="relative z-[1] mx-auto max-w-[1400px]">
         <SectionLabel light>How It Works</SectionLabel>
 
         <AnimatedText
@@ -29,7 +29,7 @@ export default function ProcessSection({ sectionId = 'process' }) {
           Four structured stages. Complete transparency at every step.
         </p>
 
-        <div ref={ref} className="relative mt-20 lg:mt-24">
+        <div ref={ref} className="relative z-[1] mt-20 lg:mt-24">
           <div
             className="pointer-events-none absolute left-[10%] right-[10%] top-[26px] hidden h-px bg-[rgba(184,150,90,0.3)] lg:block"
             aria-hidden
@@ -39,7 +39,7 @@ export default function ProcessSection({ sectionId = 'process' }) {
             {PROCESS_STEPS.map(({ n, title, desc }, i) => (
               <motion.div
                 key={title}
-                className="relative flex flex-col items-center text-center"
+                className="relative z-[1] flex flex-col items-center text-center"
                 initial={{ y: 28, opacity: 0 }}
                 animate={inView ? { y: 0, opacity: 1 } : { y: 28, opacity: 0 }}
                 transition={{

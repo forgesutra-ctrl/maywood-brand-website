@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
-import { IconInstagram, IconLinkedin, IconYoutube } from '../ui/BrandSocialIcons'
+import { Facebook, Instagram, Linkedin, Youtube } from 'lucide-react'
+import BrandLogo from '../ui/BrandLogo'
+import { SOCIAL } from '../../config/social'
 
 const solutionsLinks = [
   { label: 'Home Interiors', to: '/products' },
@@ -22,8 +24,8 @@ const columnTitleClass =
 const footerLinkClass =
   'block font-body text-[13px] leading-relaxed text-brand-mist-light transition-colors duration-200 hover:text-brand-brass-light'
 
-const socialWrap =
-  'flex h-10 w-10 items-center justify-center rounded-full border border-brand-brass/35 text-brand-mist-light transition-colors duration-200 hover:border-brand-brass-light hover:text-brand-brass-light'
+const socialIconClass =
+  'text-[#B8965A] transition-opacity duration-200 hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass focus-visible:ring-offset-2 focus-visible:ring-offset-brand-charcoal'
 
 export default function Footer() {
   return (
@@ -31,14 +33,7 @@ export default function Footer() {
       <div className="mx-auto max-w-[1400px] px-5 py-16 md:px-8 lg:px-10 lg:py-20">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-10 lg:gap-14">
           <div className="md:col-span-5">
-            <Link to="/" className="group inline-block text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass focus-visible:ring-offset-2 focus-visible:ring-offset-brand-charcoal">
-              <span className="block font-display text-[20px] font-light uppercase leading-tight tracking-[0.2em] text-brand-ivory transition-opacity duration-300 group-hover:opacity-90">
-                MAYWOOD
-              </span>
-              <span className="mt-1 block font-body text-[9px] font-normal uppercase tracking-[0.3em] text-brand-mist-light">
-                INTERIORS
-              </span>
-            </Link>
+            <BrandLogo to="/" variant="footer" />
             <p className="mt-8 max-w-md font-body text-[14px] font-normal leading-[1.65] text-brand-mist">
               Bangalore&apos;s integrated interior company. Design, manufacturing, materials and finance — under one
               roof.
@@ -50,6 +45,44 @@ export default function Footer() {
               <span className="inline-flex items-center rounded-full border border-brand-brass/60 px-3.5 py-1.5 font-body text-[10px] font-medium uppercase tracking-[0.14em] text-brand-brass-light">
                 ISO 45001
               </span>
+            </div>
+            <div className="mt-6 flex gap-5">
+              <a
+                href={SOCIAL.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={socialIconClass}
+                aria-label="Maywood Interiors on Instagram"
+              >
+                <Instagram size={20} strokeWidth={1.5} />
+              </a>
+              <a
+                href={SOCIAL.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={socialIconClass}
+                aria-label="Maywood Interiors on Facebook"
+              >
+                <Facebook size={20} strokeWidth={1.5} />
+              </a>
+              <a
+                href={SOCIAL.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={socialIconClass}
+                aria-label="Maywood Interiors on LinkedIn"
+              >
+                <Linkedin size={20} strokeWidth={1.5} />
+              </a>
+              <a
+                href={SOCIAL.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={socialIconClass}
+                aria-label="Maywood Interiors on YouTube"
+              >
+                <Youtube size={20} strokeWidth={1.5} />
+              </a>
             </div>
           </div>
 
@@ -108,35 +141,6 @@ export default function Footer() {
           <p className="text-center font-body text-[12px] text-brand-mist md:text-left">
             © {new Date().getFullYear()} Maywood Interiors. All rights reserved.
           </p>
-          <div className="flex items-center gap-3">
-            <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={socialWrap}
-              aria-label="Maywood Interiors on Instagram"
-            >
-              <IconInstagram className="h-[18px] w-[18px]" />
-            </a>
-            <a
-              href="https://linkedin.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={socialWrap}
-              aria-label="Maywood Interiors on LinkedIn"
-            >
-              <IconLinkedin className="h-[18px] w-[18px]" />
-            </a>
-            <a
-              href="https://youtube.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={socialWrap}
-              aria-label="Maywood Interiors on YouTube"
-            >
-              <IconYoutube className="h-[18px] w-[18px]" />
-            </a>
-          </div>
         </div>
       </div>
     </footer>

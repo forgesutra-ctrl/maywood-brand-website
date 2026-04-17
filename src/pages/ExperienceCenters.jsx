@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Clock, Loader2 } from 'lucide-react'
+import { Clock, Instagram, Loader2 } from 'lucide-react'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
-import ImagePlaceholder from '../components/ui/ImagePlaceholder'
 import { buttonClasses } from '../lib/buttonStyles'
 import { supabase } from '../lib/supabase'
+import { IMAGES } from '../config/images'
+import { SOCIAL } from '../config/social'
 
 const MotionLink = motion(Link)
 const tapTransition = { type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }
@@ -32,7 +33,8 @@ const locations = [
     name: 'Koramangala Experience Center',
     address: '123, 5th Block, Koramangala, Bengaluru – 560095\n(Near Sony World Signal)',
     mapsQuery: '123 5th Block Koramangala Bengaluru 560095',
-    imageLabel: 'Koramangala showroom',
+    imageSrc: IMAGES.corporate.reception,
+    imageAlt: 'Corporate reception — Maywood Interiors Bangalore',
     bullets: [
       'Full kitchen and wardrobe live mockups',
       '300+ material and finish samples',
@@ -43,7 +45,8 @@ const locations = [
     name: 'Whitefield Experience Center',
     address: 'Plot 47, ITPL Main Road, Whitefield, Bengaluru – 560066\n(Opposite Phoenix Marketcity)',
     mapsQuery: 'Plot 47 ITPL Main Road Whitefield Bengaluru 560066',
-    imageLabel: 'Whitefield showroom',
+    imageSrc: IMAGES.spas.hero,
+    imageAlt: 'Spa reception — Maywood Interiors Bangalore',
     bullets: [
       'Commercial and hospitality display zone',
       'In-house plywood material library',
@@ -162,8 +165,15 @@ export default function ExperienceCenters() {
 
   return (
     <main className="flex-1">
-      <section className="flex min-h-[65vh] flex-col justify-center bg-brand-charcoal px-6 py-32 lg:px-24">
-        <div className="mx-auto w-full max-w-[1400px]">
+      <section className="relative flex min-h-[65vh] flex-col justify-center overflow-hidden px-6 py-32 lg:px-24">
+        <img
+          src={IMAGES.livingRooms.wide}
+          alt="Living and dining interior — Maywood Interiors Bangalore"
+          loading="eager"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-[#1C1915]/75" aria-hidden />
+        <div className="relative z-[2] mx-auto w-full max-w-[1400px]">
           <SectionLabel light>Experience Centers</SectionLabel>
 
           <AnimatedText
@@ -208,7 +218,12 @@ export default function ExperienceCenters() {
             {locations.map((loc) => (
               <article key={loc.name} className="overflow-hidden bg-brand-ivory shadow-[0_20px_50px_-24px_rgba(28,25,21,0.12)] ring-1 ring-brand-brass-pale/60">
                 <div className="h-[300px] overflow-hidden">
-                  <ImagePlaceholder label={loc.imageLabel} className="h-full min-h-[300px]" />
+                  <img
+                    src={loc.imageSrc}
+                    alt={loc.imageAlt}
+                    loading="lazy"
+                    className="h-full min-h-[300px] w-full object-cover object-center"
+                  />
                 </div>
                 <div className="p-10">
                   <span className="inline-block rounded-[2px] border-[0.5px] border-brand-brass bg-[rgba(184,150,90,0.1)] px-3.5 py-1 font-body text-[10px] font-medium uppercase tracking-[0.18em] text-brand-brass">
@@ -223,6 +238,18 @@ export default function ExperienceCenters() {
                     <p className="font-body text-[13px] font-normal leading-relaxed text-brand-mist">
                       Monday – Saturday, 10am – 7pm · Sunday 11am – 5pm
                     </p>
+                  </div>
+                  <div className="mt-4 flex items-center gap-2">
+                    <span className="font-body text-[12px] font-normal text-brand-mist">Follow our journey</span>
+                    <a
+                      href={SOCIAL.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#B8965A] transition-opacity duration-200 hover:opacity-70"
+                      aria-label="Maywood Interiors on Instagram"
+                    >
+                      <Instagram size={18} strokeWidth={1.5} />
+                    </a>
                   </div>
                   <div className="my-6 h-px bg-brand-brass-pale" aria-hidden />
                   <ul className="space-y-3">
@@ -253,8 +280,15 @@ export default function ExperienceCenters() {
         </div>
       </section>
 
-      <section className="bg-brand-ivory-deep px-6 py-28 lg:px-24">
-        <div className="mx-auto max-w-[1400px]">
+      <section className="relative overflow-hidden px-6 py-28 lg:px-24">
+        <img
+          src={IMAGES.spas.waiting}
+          alt="Hospitality lounge interior — Maywood Interiors Bangalore"
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-brand-ivory-deep/88" aria-hidden />
+        <div className="relative z-[1] mx-auto max-w-[1400px]">
           <SectionLabel>During Your Visit</SectionLabel>
           <AnimatedText
             text="A visit designed around your decision."

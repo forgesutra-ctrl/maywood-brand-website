@@ -5,6 +5,7 @@ import Footer from './Footer'
 import GrainOverlay from './GrainOverlay'
 import Navbar from './Navbar'
 import ScrollProgress from './ScrollProgress'
+import SocialSidebar from './SocialSidebar'
 
 const MotionDiv = motionPrim.div
 
@@ -30,6 +31,7 @@ export default function RootLayout() {
       <ScrollProgress />
       <CustomCursor />
       <Navbar />
+      <SocialSidebar />
       <AnimatePresence mode="wait">
         <MotionDiv
           key={location.pathname}

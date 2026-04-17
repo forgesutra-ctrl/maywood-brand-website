@@ -1,25 +1,14 @@
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Factory } from 'lucide-react'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
-import ImagePlaceholder from '../components/ui/ImagePlaceholder'
 import { buttonClasses } from '../lib/buttonStyles'
+import { IMAGES } from '../config/images'
 
 const MotionLink = motion(Link)
 const tapTransition = { type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }
 const motionEase = [0.16, 1, 0.3, 1]
-
-const stripeStyle = {
-  backgroundImage: `repeating-linear-gradient(
-    45deg,
-    #E8E2D8,
-    #E8E2D8 4px,
-    #DDD7CC 4px,
-    #DDD7CC 8px
-  )`,
-}
 
 const HERO_STATS = [
   { value: '40,000 sq ft', label: 'Factory Floor Area' },
@@ -107,6 +96,28 @@ function HeroStatStrip() {
   )
 }
 
+const processStepImageAlt = [
+  'Home office interior — Maywood Interiors Bangalore',
+  'Corporate workstations — Maywood Interiors Bangalore',
+  'Home office interior — Maywood Interiors Bangalore',
+  'Corporate workstations — Maywood Interiors Bangalore',
+  'Home office interior — Maywood Interiors Bangalore',
+  'Corporate workstations — Maywood Interiors Bangalore',
+]
+
+const PROCESS_STEP_IMAGE_SRC = [
+  '/assets/images/generated/mfg-step1-material-intake.png',
+  '/assets/images/generated/mfg-step2-cnc-cutting.png',
+  '/assets/images/generated/mfg-step3-edge-banding.png',
+  '/assets/images/generated/mfg-step4-sub-assembly.png',
+  '/assets/images/generated/mfg-step5-quality-inspection.png',
+]
+
+function processStepImageSrc(index) {
+  if (index < PROCESS_STEP_IMAGE_SRC.length) return PROCESS_STEP_IMAGE_SRC[index]
+  return index % 2 === 0 ? IMAGES.homeOffice.hero : IMAGES.corporate.workstations
+}
+
 function ProcessStepRow({ step, index }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-12% 0px', amount: 0.2 })
@@ -140,7 +151,12 @@ function ProcessStepRow({ step, index }) {
       </div>
 
       <div className={`relative h-[260px] overflow-hidden lg:h-[260px] ${isEven ? 'order-1' : 'order-2'}`}>
-        <ImagePlaceholder label={`${step.title} — factory floor`} className="h-full min-h-[260px]" />
+        <img
+          src={processStepImageSrc(index)}
+          alt={processStepImageAlt[index] ?? 'Maywood manufacturing — interior reference'}
+          loading="lazy"
+          className="h-full w-full object-cover object-center"
+        />
       </div>
     </motion.div>
   )
@@ -149,12 +165,19 @@ function ProcessStepRow({ step, index }) {
 export default function MaywoodManufacturing() {
   return (
     <main className="flex-1">
-      {/* —— Hero —— */}
-      <section className="relative flex min-h-[70vh] flex-col">
-        <div className="absolute inset-0" style={stripeStyle} aria-hidden />
-        <div className="absolute inset-0 bg-[rgba(28,25,21,0.75)]" aria-hidden />
-
-        <div className="relative z-[1] flex flex-1 flex-col justify-center px-6 py-32 lg:px-24">
+      <section className="relative flex min-h-[70vh] flex-col overflow-hidden">
+        <img
+          src={IMAGES.corporate.hero}
+          alt="Corporate office interior — Maywood Interiors Bangalore"
+          loading="eager"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+        <div
+          className="absolute inset-0"
+          style={{ backgroundColor: 'rgba(28, 25, 21, 0.75)' }}
+          aria-hidden
+        />
+        <div className="relative z-[2] flex flex-1 flex-col justify-center px-6 py-32 lg:px-24">
           <div className="mx-auto w-full max-w-[1400px]">
             <SectionLabel light>Maywood Manufacturing</SectionLabel>
 
@@ -172,23 +195,22 @@ export default function MaywoodManufacturing() {
           </div>
         </div>
 
-        <div className="relative z-[1] border-t border-white/[0.08] bg-brand-ivory-deep px-6 py-10 lg:px-24">
+        <div className="relative z-[2] border-t border-white/[0.08] bg-brand-ivory-deep px-6 py-10 lg:px-24">
           <div className="mx-auto max-w-[1400px]">
             <HeroStatStrip />
           </div>
         </div>
       </section>
 
-      {/* —— Factory overview —— */}
       <section className="bg-brand-ivory px-6 py-32 lg:px-24">
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16">
-          <div className="min-h-[520px]">
-            <div className="flex h-full min-h-[520px] flex-col items-center justify-center gap-4" style={stripeStyle}>
-              <Factory className="h-14 w-14 text-brand-mist-light opacity-80" strokeWidth={1.1} aria-hidden />
-              <p className="max-w-[200px] text-center font-body text-[11px] font-medium uppercase tracking-[0.14em] text-brand-mist-light">
-                Factory photography
-              </p>
-            </div>
+          <div className="min-h-[520px] overflow-hidden">
+            <img
+              src={IMAGES.homeOffice.hero}
+              alt="Home office interior — Maywood Interiors Bangalore"
+              loading="lazy"
+              className="h-full min-h-[520px] w-full object-cover object-center"
+            />
           </div>
 
           <div className="flex flex-col justify-center lg:pl-16">
@@ -217,7 +239,6 @@ export default function MaywoodManufacturing() {
         </div>
       </section>
 
-      {/* —— Manufacturing process timeline —— */}
       <section className="bg-brand-ivory-deep px-6 py-32 lg:px-24">
         <div className="mx-auto max-w-[1400px]">
           <SectionLabel>How We Build</SectionLabel>
@@ -240,7 +261,6 @@ export default function MaywoodManufacturing() {
         </div>
       </section>
 
-      {/* —— Quality control —— */}
       <section className="bg-brand-charcoal px-6 py-32 lg:px-24">
         <div className="mx-auto max-w-[1400px]">
           <SectionLabel light>Quality Control</SectionLabel>
@@ -274,7 +294,6 @@ export default function MaywoodManufacturing() {
         </div>
       </section>
 
-      {/* —— Client benefits —— */}
       <section className="bg-brand-ivory px-6 py-28 lg:px-24">
         <div className="mx-auto max-w-[1400px]">
           <SectionLabel>Client Benefits</SectionLabel>
@@ -298,7 +317,6 @@ export default function MaywoodManufacturing() {
         </div>
       </section>
 
-      {/* —— CTA —— */}
       <section className="bg-brand-brass px-6 py-20 text-center lg:px-24 lg:py-24">
         <div className="mx-auto max-w-[720px]">
           <AnimatedText

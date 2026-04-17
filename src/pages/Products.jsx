@@ -5,45 +5,12 @@ import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
 import { ProductsBrassCta } from '../components/products/ProductSubPage'
+import { IMAGES } from '../config/images'
 
 const MotionLink = motion(Link)
 
 const tapTransition = { type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }
 const motionEase = [0.16, 1, 0.3, 1]
-
-const stripeStyle = {
-  backgroundImage: `repeating-linear-gradient(
-    45deg,
-    #E8E2D8,
-    #E8E2D8 4px,
-    #DDD7CC 4px,
-    #DDD7CC 8px
-  )`,
-}
-
-function CardFrameIcon({ className = '' }) {
-  return (
-    <svg
-      className={className}
-      width="40"
-      height="40"
-      viewBox="0 0 40 40"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <rect x="6" y="8" width="28" height="24" rx="1" stroke="currentColor" strokeWidth="1.25" />
-      <path
-        d="M10 28 L16 20 L22 26 L28 18 L32 24"
-        stroke="currentColor"
-        strokeWidth="1.25"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="14" cy="14" r="2" fill="currentColor" />
-    </svg>
-  )
-}
 
 const categories = [
   {
@@ -51,30 +18,40 @@ const categories = [
     tag: 'Residential',
     title: 'Home Interiors',
     desc: 'Kitchens, wardrobes, living rooms, home offices — complete home transformations built to last.',
+    imageSrc: IMAGES.livingRooms.hero,
+    imageAlt: 'Premium Indian living room interior — Maywood Interiors Bangalore',
   },
   {
     to: '/products/corporate-spaces',
     tag: 'Commercial',
     title: 'Corporate & Office Spaces',
     desc: 'From startup studios to enterprise campuses — workspaces that reflect your culture and scale.',
+    imageSrc: IMAGES.corporate.hero,
+    imageAlt: 'Corporate office interior — Maywood Interiors Bangalore',
   },
   {
     to: '/products/spas-salons',
     tag: 'Wellness',
     title: 'Spas & Salons',
     desc: 'Sensory environments that build loyalty. Material choices that withstand daily professional use.',
+    imageSrc: IMAGES.spas.hero,
+    imageAlt: 'Spa reception — Maywood Interiors Bangalore',
   },
   {
     to: '/products/retail-spaces',
     tag: 'Retail',
     title: 'Retail Spaces',
     desc: 'Fit-outs designed to maximize footfall, dwell time, and brand recall across every touchpoint.',
+    imageSrc: IMAGES.spas.waiting,
+    imageAlt: 'Hospitality lounge interior — Maywood Interiors Bangalore',
   },
   {
     to: '/products/hotels-cafes',
     tag: 'Hospitality',
     title: 'Hotels, Cafes & Restaurants',
     desc: 'Atmosphere is revenue. We design and build immersive hospitality environments across Bangalore.',
+    imageSrc: IMAGES.corporate.breakout,
+    imageAlt: 'Office breakout lounge — Maywood Interiors Bangalore',
   },
 ]
 
@@ -143,14 +120,17 @@ export default function Products() {
                 variants={cardVariants}
               >
                 <Link to={c.to} className="group relative block h-full bg-brand-ivory text-left">
-                  <div className="relative h-[280px] overflow-hidden" style={stripeStyle}>
+                  <div className="relative h-[280px] max-w-full overflow-hidden">
+                    <img
+                      src={c.imageSrc}
+                      alt={c.imageAlt}
+                      loading="lazy"
+                      className="h-full w-full object-cover object-center"
+                    />
                     <div
                       className="absolute inset-0 bg-brand-brass opacity-0 transition-opacity duration-300 group-hover:opacity-[0.08]"
                       aria-hidden
                     />
-                    <div className="relative flex h-full flex-col items-center justify-center gap-3 text-brand-mist-light">
-                      <CardFrameIcon className="opacity-90" />
-                    </div>
                   </div>
                   <div className="p-8">
                     <p className="font-body text-[10px] font-medium uppercase tracking-[0.18em] text-brand-brass">

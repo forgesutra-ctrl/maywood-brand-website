@@ -1,11 +1,12 @@
 import { Fragment } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import HeroImageCarousel from '../components/home/HeroImageCarousel'
 import ProcessSection from '../components/sections/ProcessSection'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
-import ImagePlaceholder from '../components/ui/ImagePlaceholder'
 import { buttonBaseClass, buttonClasses } from '../lib/buttonStyles'
+import { IMAGES } from '../config/images'
 
 const MotionLink = motion(Link)
 
@@ -36,18 +37,24 @@ const SERVICE_CARDS = [
     title: 'Home Interiors',
     body: 'Kitchens, wardrobes, living rooms, home offices and more — designed for how Bangalore families actually live.',
     to: '/products',
+    imageSrc: IMAGES.livingRooms.hero,
+    imageAlt: 'Premium Indian living room interior — Maywood Interiors Bangalore',
   },
   {
     n: '02',
     title: 'Commercial Spaces',
     body: 'IT parks, corporate offices, co-working environments — functional interiors that perform at scale.',
     to: '/products',
+    imageSrc: IMAGES.corporate.hero,
+    imageAlt: 'Corporate office interior — Maywood Interiors Bangalore',
   },
   {
     n: '03',
     title: 'Retail & Hospitality',
     body: 'Cafes, restaurants, hotels, spas, salons — immersive brand environments that drive footfall.',
     to: '/products',
+    imageSrc: IMAGES.spas.hero,
+    imageAlt: 'Spa reception interior — Maywood Interiors Bangalore',
   },
 ]
 
@@ -91,26 +98,38 @@ const OFFERING_CARDS = [
   {
     title: 'Modular Kitchens',
     body: 'Precision-built for Indian cooking habits. Hettich hardware. Maywood Plys core.',
+    imageSrc: IMAGES.kitchens.hero,
+    imageAlt: 'Modular kitchen design — Maywood Interiors Bangalore',
   },
   {
     title: 'Wardrobes',
     body: 'Floor-to-ceiling, walk-in, sliding. Every configuration, engineered for your space.',
+    imageSrc: IMAGES.wardrobes.hero,
+    imageAlt: 'Wardrobe interior — Maywood Interiors Bangalore',
   },
   {
     title: 'Home Offices',
     body: 'Work-from-home spaces that inspire focus. Cable management built-in.',
+    imageSrc: IMAGES.homeOffice.hero,
+    imageAlt: 'Home office interior — Maywood Interiors Bangalore',
   },
   {
     title: 'Corporate Offices',
     body: 'From 500 to 50,000 sq ft — workspaces that reflect your brand.',
+    imageSrc: IMAGES.corporate.reception,
+    imageAlt: 'Corporate reception — Maywood Interiors Bangalore',
   },
   {
     title: 'Cafes & Restaurants',
     body: 'Atmosphere is revenue. We design for footfall and dwell time.',
+    imageSrc: IMAGES.spas.waiting,
+    imageAlt: 'Hospitality lounge interior — Maywood Interiors Bangalore',
   },
   {
     title: 'Spas & Salons',
     body: 'Sensory environments that build loyalty and command premium pricing.',
+    imageSrc: IMAGES.spas.treatmentRoom,
+    imageAlt: 'Spa treatment room — Maywood Interiors Bangalore',
   },
 ]
 
@@ -163,9 +182,7 @@ function MarqueeStrip() {
 export default function Home() {
   return (
     <main className="flex-1 overflow-x-hidden">
-      {/* —— Hero —— */}
       <section className="grid min-h-[min(100svh,1200px)] grid-cols-1 lg:grid-cols-[55fr_45fr] lg:min-h-[calc(100svh-1px)]">
-        {/* Left */}
         <div className="relative flex min-h-[520px] flex-col justify-between bg-brand-charcoal px-6 py-16 lg:min-h-0 lg:px-14 lg:py-16 xl:px-20 xl:py-20">
           <p
             className="pointer-events-none absolute left-6 top-28 hidden origin-left -rotate-90 whitespace-nowrap font-body text-[10px] font-medium uppercase tracking-[0.25em] text-brand-brass lg:left-8 lg:block xl:left-10"
@@ -214,15 +231,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right — hidden below lg per mobile spec */}
-        <div className="relative hidden min-h-[420px] flex-col lg:flex lg:min-h-0">
-          <div className="relative flex min-h-[320px] flex-1 flex-col lg:min-h-0">
-            <ImagePlaceholder
-              label="Hero interior photography"
-              className="min-h-[280px] flex-1 justify-center lg:min-h-0"
-            />
+        <div className="relative flex min-h-[360px] flex-col lg:min-h-0">
+          <div className="relative flex min-h-[320px] flex-1 flex-col overflow-hidden lg:min-h-0">
+            <HeroImageCarousel className="min-h-[320px] flex-1" />
 
-            <div className="absolute right-6 top-6 z-[2] w-[180px] bg-brand-brass-pale p-5 shadow-[0_20px_40px_-16px_rgba(28,25,21,0.35)]">
+            <div className="absolute right-6 top-6 z-[3] w-[180px] bg-brand-brass-pale p-5 shadow-[0_20px_40px_-16px_rgba(28,25,21,0.35)]">
               <p className="font-body text-[9px] font-semibold uppercase tracking-[0.18em] text-brand-brass">
                 ISO Certified
               </p>
@@ -244,7 +257,6 @@ export default function Home() {
 
       <div id="consultation" className="h-0 scroll-mt-28" aria-hidden />
 
-      {/* —— What We Do —— */}
       <section className="bg-brand-ivory px-6 py-16 lg:px-24 lg:py-32">
         <div className="mx-auto max-w-[1400px]">
           <SectionLabel>What We Do</SectionLabel>
@@ -261,7 +273,7 @@ export default function Home() {
           </p>
 
           <div className="mt-16 grid grid-cols-1 gap-px bg-[rgba(184,150,90,0.2)] md:grid-cols-3">
-            {SERVICE_CARDS.map(({ n, title, body, to }) => (
+            {SERVICE_CARDS.map(({ n, title, body, to, imageSrc, imageAlt }) => (
               <motion.article
                 key={n}
                 className="group relative flex flex-col bg-brand-ivory"
@@ -269,7 +281,14 @@ export default function Home() {
                 whileHover={{ backgroundColor: '#1C1915' }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
               >
-                <ImagePlaceholder label={`${title} imagery`} className="h-[240px] shrink-0" />
+                <div className="relative h-[240px] w-full max-w-full shrink-0 overflow-hidden">
+                  <img
+                    src={imageSrc}
+                    alt={imageAlt}
+                    loading="lazy"
+                    className="h-full w-full object-cover object-center"
+                  />
+                </div>
 
                 <div className="relative px-10 pb-10 pt-10">
                   <span className="pointer-events-none absolute right-8 top-8 font-display text-[56px] font-light leading-none text-[rgba(184,150,90,0.2)] transition-colors duration-300 group-hover:text-[rgba(255,255,255,0.06)]">
@@ -300,7 +319,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* —— Why Maywood —— */}
       <section className="bg-brand-ivory px-6 py-16 lg:px-24 lg:py-32">
         <div className="mx-auto grid max-w-[1400px] gap-14 lg:grid-cols-[40%_60%] lg:gap-20">
           <div className="lg:sticky lg:top-[120px] lg:self-start">
@@ -360,9 +378,6 @@ export default function Home() {
         </div>
       </section>
 
-      <ProcessSection />
-
-      {/* —— Key Offerings —— */}
       <section className="bg-brand-ivory-deep px-6 py-16 lg:px-24 lg:py-32">
         <div className="mx-auto max-w-[1400px]">
           <SectionLabel>What We Build</SectionLabel>
@@ -378,36 +393,77 @@ export default function Home() {
             {OFFERING_CARDS.map((card) => (
               <motion.article
                 key={card.title}
-                className="group relative overflow-hidden bg-brand-ivory p-8"
+                className="group relative overflow-hidden bg-brand-ivory"
                 variants={offeringCardVariants}
                 initial="rest"
                 whileHover="hover"
               >
                 <motion.div
-                  className="pointer-events-none absolute left-0 top-0 h-[2px] w-full origin-left bg-brand-brass"
+                  className="pointer-events-none absolute left-0 top-0 z-[2] h-[2px] w-full origin-left bg-brand-brass"
                   variants={offeringBarVariants}
                 />
-                <div
-                  className="mb-5 h-8 w-8 shrink-0 rounded-md bg-brand-brass-pale ring-1 ring-brand-brass/10"
-                  aria-hidden
-                />
-                <h3 className="font-display text-[20px] font-normal leading-snug text-brand-charcoal">{card.title}</h3>
-                <p className="mt-3 line-clamp-2 font-body text-[13px] font-normal leading-relaxed text-brand-mist">
-                  {card.body}
-                </p>
-                <Link
-                  to="/products"
-                  className="mt-6 inline-flex font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-brass opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                >
-                  View projects →
-                </Link>
+                <div className="relative h-[180px] w-full max-w-full shrink-0 overflow-hidden">
+                  <img
+                    src={card.imageSrc}
+                    alt={card.imageAlt}
+                    loading="lazy"
+                    className="h-[180px] w-full object-cover object-center"
+                  />
+                </div>
+                <div className="relative z-[1] p-8">
+                  <h3 className="font-display text-[20px] font-normal leading-snug text-brand-charcoal">{card.title}</h3>
+                  <p className="mt-3 line-clamp-2 font-body text-[13px] font-normal leading-relaxed text-brand-mist">
+                    {card.body}
+                  </p>
+                  <Link
+                    to="/products"
+                    className="mt-6 inline-flex font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-brass opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  >
+                    View projects →
+                  </Link>
+                </div>
               </motion.article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* —— Maywood Finance —— */}
+      <section className="bg-brand-ivory px-6 py-16 lg:px-24 lg:py-28">
+        <div className="mx-auto max-w-[1400px]">
+          <SectionLabel>Selected Work</SectionLabel>
+          <AnimatedText
+            text="Spaces we've delivered across Bangalore."
+            tag="h2"
+            getWordClassName={(_w, i, n) => (i >= n - 2 ? 'italic' : '')}
+            className="mt-6 max-w-[900px] font-display text-[clamp(28px,3.5vw,42px)] font-light leading-[1.08] text-brand-charcoal"
+          />
+          <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {IMAGES.portfolio.map((item) => (
+              <article
+                key={item.title}
+                className="group overflow-hidden border border-brand-brass-pale/60 bg-brand-ivory-deep/50"
+              >
+                <div className="relative w-full max-w-full overflow-hidden">
+                  <img
+                    src={item.src}
+                    alt={item.alt}
+                    loading="lazy"
+                    className="h-[220px] w-full object-cover object-center"
+                  />
+                </div>
+                <div className="px-4 py-4">
+                  <p className="font-body text-[10px] font-medium uppercase tracking-[0.14em] text-brand-brass">{item.tag}</p>
+                  <h3 className="mt-2 font-display text-[18px] font-normal text-brand-charcoal">{item.title}</h3>
+                  <p className="mt-2 font-body text-[12px] font-normal leading-relaxed text-brand-mist">{item.detail}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <ProcessSection />
+
       <section className="grid grid-cols-1 lg:grid-cols-2">
         <div className="bg-brand-charcoal-mid px-6 py-16 lg:px-24 lg:py-24">
           <span className="inline-flex rounded-sm border border-brand-brass px-3.5 py-1.5 font-body text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-brass">
@@ -482,10 +538,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* —— Trust Signals —— */}
-      <section className="bg-brand-ivory px-6 py-16 lg:px-24 lg:py-32">
-        <div className="mx-auto max-w-[1400px]">
-          <div className="grid grid-cols-1 gap-px bg-[rgba(184,150,90,0.2)] sm:grid-cols-2 lg:grid-cols-4">
+      <section className="relative overflow-hidden bg-[#1C1915] px-6 py-16 lg:px-24 lg:py-32">
+        <div className="relative z-[2] mx-auto max-w-[1400px]">
+          <div className="grid grid-cols-1 gap-px bg-[rgba(184,150,90,0.25)] sm:grid-cols-2 lg:grid-cols-4">
             {[
               { value: '500+', label: 'Projects Completed' },
               { value: '₹50 Cr+', label: 'Interior Value Delivered' },
@@ -494,10 +549,10 @@ export default function Home() {
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="flex flex-col items-center justify-center bg-brand-ivory px-8 py-12 text-center sm:px-10 sm:py-12"
+                className="flex flex-col items-center justify-center bg-[rgba(28,25,21,0.35)] px-8 py-12 text-center backdrop-blur-[2px] sm:px-10 sm:py-12"
               >
-                <p className="font-display text-[52px] leading-none text-brand-brass">{stat.value}</p>
-                <p className="mt-4 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-brand-mist">
+                <p className="font-display text-[52px] leading-none text-brand-brass-light">{stat.value}</p>
+                <p className="mt-4 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-brand-mist-light">
                   {stat.label}
                 </p>
               </div>
@@ -505,15 +560,15 @@ export default function Home() {
           </div>
 
           <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-            <div className="rounded-[2px] border-[0.5px] border-brand-brass-pale px-10 py-6">
-              <p className="font-display text-[20px] font-normal text-brand-charcoal">ISO 9001:2015</p>
-              <p className="mt-2 font-body text-[11px] font-medium uppercase tracking-[0.14em] text-brand-mist">
+            <div className="rounded-[2px] border-[0.5px] border-[rgba(184,150,90,0.35)] bg-[rgba(247,243,237,0.04)] px-10 py-6">
+              <p className="font-display text-[20px] font-normal text-brand-ivory">ISO 9001:2015</p>
+              <p className="mt-2 font-body text-[11px] font-medium uppercase tracking-[0.14em] text-brand-mist-light">
                 Quality Management System
               </p>
             </div>
-            <div className="rounded-[2px] border-[0.5px] border-brand-brass-pale px-10 py-6">
-              <p className="font-display text-[20px] font-normal text-brand-charcoal">ISO 45001:2018</p>
-              <p className="mt-2 font-body text-[11px] font-medium uppercase tracking-[0.14em] text-brand-mist">
+            <div className="rounded-[2px] border-[0.5px] border-[rgba(184,150,90,0.35)] bg-[rgba(247,243,237,0.04)] px-10 py-6">
+              <p className="font-display text-[20px] font-normal text-brand-ivory">ISO 45001:2018</p>
+              <p className="mt-2 font-body text-[11px] font-medium uppercase tracking-[0.14em] text-brand-mist-light">
                 Occupational Health & Safety
               </p>
             </div>
@@ -521,23 +576,22 @@ export default function Home() {
 
           <div className="relative mx-auto mt-20 max-w-[900px] px-4 text-center">
             <span
-              className="pointer-events-none absolute -left-2 top-0 font-display text-[120px] font-light leading-none text-brand-brass-pale opacity-50 sm:left-0"
+              className="pointer-events-none absolute -left-2 top-0 font-display text-[120px] font-light leading-none text-brand-brass/25 sm:left-0"
               aria-hidden
             >
               “
             </span>
-            <blockquote className="relative z-[1] mx-auto max-w-[700px] font-display text-[clamp(18px,4vw,26px)] font-light italic leading-[1.5] text-brand-charcoal">
+            <blockquote className="relative z-[1] mx-auto max-w-[700px] font-display text-[clamp(18px,4vw,26px)] font-light italic leading-[1.5] text-brand-ivory">
               Maywood transformed our 3BHK in Whitefield completely. The quality of their plywood, the speed of
               execution, and the finish — I&apos;ve recommended them to four neighbours already.
             </blockquote>
-            <p className="relative z-[1] mt-8 font-body text-[13px] text-brand-mist">
+            <p className="relative z-[1] mt-8 font-body text-[13px] text-brand-mist-light">
               — Priya Raghavan, Whitefield, Bangalore
             </p>
           </div>
         </div>
       </section>
 
-      {/* —— Final CTA —— */}
       <section className="bg-brand-brass px-6 py-16 lg:px-24 lg:py-28">
         <div className="mx-auto max-w-[900px] text-center">
           <AnimatedText

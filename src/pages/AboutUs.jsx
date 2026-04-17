@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Loader2, Mail, MapPin, Phone } from 'lucide-react'
+import { Facebook, Instagram, Linkedin, Loader2, Mail, MapPin, Phone, Youtube } from 'lucide-react'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
-import ImagePlaceholder from '../components/ui/ImagePlaceholder'
-import { IconInstagram, IconLinkedin, IconYoutube } from '../components/ui/BrandSocialIcons'
 import { buttonClasses } from '../lib/buttonStyles'
 import { supabase } from '../lib/supabase'
+import { IMAGES } from '../config/images'
+import { SOCIAL } from '../config/social'
 
 const STATS = [
   { value: '9 Years', label: 'In Business' },
@@ -19,22 +19,25 @@ const LEADERSHIP = [
     name: '[Founder Name]',
     role: 'Founder & Managing Director',
     bio: '20 years in construction and interiors. Built Maywood from a single studio to a 200-person operation.',
-    imageLabel: 'Founder portrait',
     linkedin: 'https://linkedin.com',
+    imageSrc: IMAGES.corporate.reception,
+    imageAlt: 'Maywood corporate workspace — Maywood Interiors Bangalore',
   },
   {
     name: '[Design Director Name]',
     role: 'Head of Design',
     bio: 'Former hospitality designer with projects across India, Singapore and Dubai. Leads the Maywood design studio.',
-    imageLabel: 'Design director portrait',
     linkedin: 'https://linkedin.com',
+    imageSrc: IMAGES.livingRooms.wide,
+    imageAlt: 'Residential interior design context — Maywood Interiors Bangalore',
   },
   {
     name: '[Operations Name]',
     role: 'Head of Manufacturing & Operations',
     bio: 'Mechanical engineer by training. Built and runs the Maywood manufacturing facility.',
-    imageLabel: 'Operations lead portrait',
     linkedin: 'https://linkedin.com',
+    imageSrc: IMAGES.livingRooms.secondary,
+    imageAlt: 'Residential interior — Maywood Interiors Bangalore',
   },
 ]
 
@@ -74,7 +77,6 @@ export default function AboutUs() {
     setSubmitError('')
     try {
       setIsSubmitting(true)
-      // Enable RLS + anon insert policy on this table in Supabase
       const { error } = await supabase.from('contact_messages').insert({
         full_name: contact.fullName.trim(),
         phone: contact.phone.trim(),
@@ -94,9 +96,9 @@ export default function AboutUs() {
 
   return (
     <main className="flex-1">
-      <section className="flex min-h-[65vh] flex-col justify-center bg-brand-charcoal px-6 py-32 lg:px-24">
+      <section className="relative flex min-h-[65vh] flex-col justify-center overflow-hidden bg-brand-charcoal px-6 py-32 lg:px-24">
         <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 items-center gap-12 lg:grid-cols-[3fr_2fr] lg:gap-16">
-          <div>
+          <div className="relative z-[1]">
             <SectionLabel light>About Maywood</SectionLabel>
             <AnimatedText
               text="We build spaces. We've been doing it since 2015."
@@ -110,10 +112,12 @@ export default function AboutUs() {
               quality hasn&apos;t changed.
             </p>
           </div>
-          <div className="min-h-[360px] lg:min-h-[460px]">
-            <ImagePlaceholder
-              label="Team / founder photography"
-              className="h-full min-h-[360px] justify-center lg:min-h-[460px]"
+          <div className="relative z-[1] min-h-[360px] overflow-hidden lg:min-h-[460px]">
+            <img
+              src={IMAGES.livingRooms.wide}
+              alt="Living and dining interior — Maywood Interiors Bangalore"
+              loading="eager"
+              className="h-full min-h-[360px] w-full object-cover object-center lg:min-h-[460px]"
             />
           </div>
         </div>
@@ -129,7 +133,7 @@ export default function AboutUs() {
             className="mt-6 max-w-[900px] font-display text-[clamp(30px,4vw,48px)] font-light leading-[1.08] text-brand-charcoal"
           />
 
-          <div className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-[3fr_2fr] lg:gap-16">
+          <div className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-[3fr_2fr] lg:gap-16 lg:items-start">
             <div>
               <p className="font-display text-[20px] font-normal leading-[1.75] text-brand-charcoal">
                 Maywood began in 2015 with a simple conviction: that Bangalore deserved an interior company that could be held
@@ -148,6 +152,15 @@ export default function AboutUs() {
                 the final coat of polish. That&apos;s the difference.
               </p>
             </div>
+          </div>
+
+          <div className="relative mt-14 aspect-[21/9] max-h-[420px] w-full min-h-[200px] overflow-hidden">
+            <img
+              src="/assets/images/generated/about-design-studio.png"
+              alt="Corporate reception — Maywood Interiors Bangalore"
+              loading="lazy"
+              className="h-full w-full object-cover object-center"
+            />
           </div>
         </div>
       </section>
@@ -180,7 +193,12 @@ export default function AboutUs() {
             {LEADERSHIP.map((person) => (
               <article key={person.name} className="border border-brand-brass-pale/50 bg-brand-ivory">
                 <div className="h-[260px] overflow-hidden">
-                  <ImagePlaceholder label={person.imageLabel} className="h-full min-h-[260px]" />
+                  <img
+                    src={person.imageSrc}
+                    alt={person.imageAlt}
+                    loading="lazy"
+                    className="h-full w-full rounded-sm object-cover object-center"
+                  />
                 </div>
                 <div className="p-6">
                   <h3 className="font-display text-[22px] font-normal leading-snug text-brand-charcoal">{person.name}</h3>
@@ -195,7 +213,7 @@ export default function AboutUs() {
                     className="mt-4 inline-flex text-brand-mist transition-colors hover:text-brand-brass"
                     aria-label={`${person.name} on LinkedIn`}
                   >
-                    <IconLinkedin className="h-4 w-4" />
+                    <Linkedin className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 </div>
               </article>
@@ -267,33 +285,45 @@ export default function AboutUs() {
               </li>
             </ul>
 
-            <div className="mt-8 flex items-center gap-5">
+            <p className="mt-10 font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-brass">
+              Follow Us
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-5">
               <a
-                href="https://instagram.com"
+                href={SOCIAL.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-brass transition-colors hover:text-brand-brass-light"
-                aria-label="Instagram"
+                className="text-[#B8965A] transition-opacity duration-200 hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass focus-visible:ring-offset-2 focus-visible:ring-offset-brand-charcoal"
+                aria-label="Maywood Interiors on Instagram"
               >
-                <IconInstagram className="h-5 w-5" />
+                <Instagram size={22} strokeWidth={1.5} />
               </a>
               <a
-                href="https://linkedin.com"
+                href={SOCIAL.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-brass transition-colors hover:text-brand-brass-light"
-                aria-label="LinkedIn"
+                className="text-[#B8965A] transition-opacity duration-200 hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass focus-visible:ring-offset-2 focus-visible:ring-offset-brand-charcoal"
+                aria-label="Maywood Interiors on Facebook"
               >
-                <IconLinkedin className="h-5 w-5" />
+                <Facebook size={22} strokeWidth={1.5} />
               </a>
               <a
-                href="https://youtube.com"
+                href={SOCIAL.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-brass transition-colors hover:text-brand-brass-light"
-                aria-label="YouTube"
+                className="text-[#B8965A] transition-opacity duration-200 hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass focus-visible:ring-offset-2 focus-visible:ring-offset-brand-charcoal"
+                aria-label="Maywood Interiors on LinkedIn"
               >
-                <IconYoutube className="h-5 w-5" />
+                <Linkedin size={22} strokeWidth={1.5} />
+              </a>
+              <a
+                href={SOCIAL.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#B8965A] transition-opacity duration-200 hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass focus-visible:ring-offset-2 focus-visible:ring-offset-brand-charcoal"
+                aria-label="Maywood Interiors on YouTube"
+              >
+                <Youtube size={22} strokeWidth={1.5} />
               </a>
             </div>
           </div>

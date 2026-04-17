@@ -2,6 +2,7 @@ import { CloseButton, Disclosure, DisclosureButton, DisclosurePanel } from '@hea
 import { motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
+import BrandLogo from '../ui/BrandLogo'
 import { useScrolled } from '../../hooks/useScrolled'
 import { buttonClasses } from '../../lib/buttonStyles'
 
@@ -35,17 +36,7 @@ export default function Navbar() {
       style={{ borderBottomWidth: scrolled ? 0.5 : 0 }}
     >
       <div className="mx-auto flex max-w-[1400px] items-center justify-between px-5 py-4 md:px-8 lg:px-10">
-        <Link
-          to="/"
-          className="group relative z-10 shrink-0 text-left transition-opacity duration-300 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-        >
-          <span className="block font-display text-[20px] font-light uppercase leading-tight tracking-[0.2em] text-brand-charcoal transition-colors duration-300">
-            MAYWOOD
-          </span>
-          <span className="mt-1 block font-body text-[9px] font-normal uppercase tracking-[0.3em] text-brand-charcoal transition-colors duration-300">
-            INTERIORS
-          </span>
-        </Link>
+        <BrandLogo to="/" variant="navbar" withNavWordmark />
 
         <nav
           className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block"
