@@ -1,8 +1,41 @@
+import { createElement } from 'react'
 import { Link } from 'react-router-dom'
+import { Droplet, Layers, Shield } from 'lucide-react'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
 import { IMAGES } from '../config/images'
+
+/** Home section uses `/images/maywood-premium-plywood-label.png`; sheet JPG may live under assets */
+const PLYWOOD_SHEET_SRC_PRIMARY = '/assets/images/maywood-plys-sheet.jpg'
+const PLYWOOD_SHEET_SRC_FALLBACK = '/images/maywood-premium-plywood-label.png'
+
+const TRUST_BADGES = [
+  {
+    Icon: Shield,
+    title: 'Termite Proof',
+    subtext: 'Factory-treated against termite infestation',
+  },
+  {
+    Icon: Droplet,
+    title: 'Moisture Resistant',
+    subtext: "BWR grade — built for Bangalore's climate",
+  },
+  {
+    Icon: Layers,
+    title: '11-Layer Core',
+    subtext: 'Semi-hardwood core for superior strength',
+  },
+]
+
+function onPlySheetImgError(e) {
+  const el = e.currentTarget
+  if (el.src.includes('maywood-plys-sheet.jpg')) {
+    el.src = PLYWOOD_SHEET_SRC_FALLBACK
+  } else {
+    el.src = '/assets/images/fallback.jpg'
+  }
+}
 
 const PLY_COMPARISON_ROWS = [
   {
@@ -113,19 +146,24 @@ export default function MaywoodPlys() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 bg-brand-ivory lg:grid-cols-2">
-        <div className="relative min-h-[360px] max-w-full overflow-hidden lg:min-h-[480px]">
-          <img
-            src={IMAGES.wardrobes.hero}
-            alt="Wardrobe interior — Maywood Interiors Bangalore"
-            loading="lazy"
-            className="w-full h-full min-h-[480px] object-cover object-[center_30%] block"
-            onError={(e) => {
-              e.currentTarget.src = '/assets/images/fallback.jpg'
-            }}
-          />
+      <section className="grid grid-cols-1 lg:grid-cols-[11fr_9fr]">
+        <div className="relative flex min-h-[420px] flex-col items-center justify-center bg-[#1a1612] px-8 py-16 lg:min-h-[520px] lg:px-12 lg:py-20">
+          <div className="relative w-full max-w-[min(100%,440px)] -rotate-3 shadow-2xl">
+            <div className="rounded-sm bg-[#f5f0eb]/95 p-6 sm:p-8 ring-1 ring-[rgba(184,150,90,0.35)]">
+              <img
+                src={PLYWOOD_SHEET_SRC_PRIMARY}
+                alt="Maywood Plys certified plywood sheet — IS:303, BWR grade"
+                loading="lazy"
+                className="mx-auto block h-auto w-full max-h-[min(65vh,480px)] object-contain object-center"
+                onError={onPlySheetImgError}
+              />
+            </div>
+          </div>
+          <p className="mx-auto mt-10 max-w-[400px] text-center font-body text-[11px] font-medium uppercase leading-relaxed tracking-[0.14em] text-brand-brass sm:text-[12px]">
+            IS:303 Certified · BWR Grade · CML No. CM/L-6400083602
+          </p>
         </div>
-        <div className="flex flex-col justify-center px-6 py-16 lg:px-12 lg:py-20 xl:pr-24">
+        <div className="flex flex-col justify-center bg-brand-ivory px-6 py-16 lg:px-12 lg:py-20 xl:pr-24">
           <SectionLabel>Why Maywood Plys</SectionLabel>
           <h2 className="mt-6 font-display text-[clamp(28px,3.5vw,36px)] font-normal leading-[1.12] text-brand-charcoal">
             Grade you can specify. Supply you can trust.
@@ -134,6 +172,24 @@ export default function MaywoodPlys() {
             We manufacture and season our own boards, so moisture content, bonding and dimensional stability stay within
             tight tolerances — the foundation for furniture that lasts in Bangalore&apos;s climate.
           </p>
+          <div className="mt-10 flex flex-col gap-4">
+            {TRUST_BADGES.map(({ Icon, title, subtext }) => (
+              <div
+                key={title}
+                className="flex gap-4 border-l border-brand-brass bg-[#1a1612] px-4 py-4 sm:px-5"
+              >
+                {createElement(Icon, {
+                  className: 'mt-0.5 h-5 w-5 shrink-0 text-brand-brass',
+                  strokeWidth: 1.5,
+                  'aria-hidden': true,
+                })}
+                <div className="min-w-0">
+                  <p className="font-body text-[15px] font-medium leading-snug text-white">{title}</p>
+                  <p className="mt-1 font-body text-[13px] font-normal leading-relaxed text-brand-mist-light">{subtext}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

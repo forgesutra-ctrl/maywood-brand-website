@@ -1,41 +1,51 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Loader2 } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Check, ChevronRight } from 'lucide-react'
 import ConsultationBookingModal from '../components/ConsultationBookingModal'
-import SectionLabel from '../components/ui/SectionLabel'
-import { supabase } from '../lib/supabase'
+import { buttonBaseClass, buttonClasses } from '../lib/buttonStyles'
 
-const PROPERTY_TYPES = ['Residential', 'Commercial', 'Retail']
+const STEP_LABELS = [
+  'Your Details',
+  'Property Type',
+  'Scope',
+  'Area',
+  'Budget',
+  'Location',
+  'Estimate',
+]
+
+const PROPERTY_CARDS = [
+  { type: 'Residential', emoji: '🏠', label: 'Residential' },
+  { type: 'Commercial', emoji: '🏢', label: 'Commercial' },
+  { type: 'Retail', emoji: '🛍', label: 'Retail' },
+]
 
 const SCOPE_BY_PROPERTY = {
   Residential: [
-    'Full interiors',
     'Modular Kitchen',
     'Wardrobes & Storage',
     'Living & Dining',
     'Bedrooms',
+    'Full Home Interiors',
     'Home Office',
-    'Pooja / Puja Room',
+    'Pooja Room',
     'Bathrooms',
   ],
   Commercial: [
-    'Full office fit-out',
+    'Full Office Fit-out',
     'Open Workstations',
-    'Cabin & Conference Rooms',
+    'Cabin & Conference',
     'Reception & Lobby',
-    'Breakout & Café Areas',
-    'IT & Server Rooms',
-    'Washrooms',
+    'Breakout Areas',
+    'IT & Server Room',
   ],
   Retail: [
-    'Full store fit-out',
+    'Full Store Fit-out',
     'Storefront & Façade',
     'Display Fixtures',
     'Trial Rooms',
-    'Checkout & POS Area',
+    'Checkout & POS',
     'Storage & Back Office',
-    'Signage Integration',
   ],
 }
 
@@ -64,47 +74,43 @@ const BUDGET_BY_PROPERTY = {
   ],
 }
 
-const AREA_PLACEHOLDER_BY_PROPERTY = {
-  Residential: 'e.g. 1200 sq ft',
-  Commercial: 'e.g. 5000 sq ft',
-  Retail: 'e.g. 800 sq ft',
+const AREA_PILLS = {
+  Residential: [500, 800, 1000, 1200, 1500, '2000+'],
+  Commercial: [500, 1000, 2000, 5000, '10000+'],
+  Retail: [200, 500, 800, '1500+'],
 }
 
-/** Indicative Bangalore market rates: per sq ft, lump sum, or per room */
-const SCOPE_RATES_BY_PROPERTY = {
+/** Rates keyed exactly to SCOPE_BY_PROPERTY labels */
+const SCOPE_RATES = {
   Residential: {
-    'Full interiors': { kind: 'sqft', min: 1200, max: 1800 },
+    'Full Home Interiors': { kind: 'sqft', min: 1200, max: 1800 },
     'Modular Kitchen': { kind: 'flat', min: 150_000, max: 350_000 },
     'Wardrobes & Storage': { kind: 'flat', min: 60_000, max: 150_000 },
     'Living & Dining': { kind: 'flat', min: 80_000, max: 180_000 },
     Bedrooms: { kind: 'perRoom', min: 70_000, max: 150_000, rooms: 1 },
     'Home Office': { kind: 'flat', min: 50_000, max: 120_000 },
-    'Pooja / Puja Room': { kind: 'flat', min: 40_000, max: 90_000 },
+    'Pooja Room': { kind: 'flat', min: 40_000, max: 90_000 },
+    Bathrooms: { kind: 'flat', min: 40_000, max: 80_000 },
   },
   Commercial: {
-    'Full office fit-out': { kind: 'sqft', min: 1500, max: 2200 },
+    'Full Office Fit-out': { kind: 'sqft', min: 1500, max: 2200 },
     'Open Workstations': { kind: 'sqft', min: 900, max: 1400 },
-    'Cabin & Conference Rooms': { kind: 'sqft', min: 1200, max: 2000 },
+    'Cabin & Conference': { kind: 'sqft', min: 1200, max: 2000 },
     'Reception & Lobby': { kind: 'sqft', min: 1000, max: 1800 },
+    'Breakout Areas': { kind: 'sqft', min: 800, max: 1200 },
+    'IT & Server Room': { kind: 'flat', min: 120_000, max: 200_000 },
   },
   Retail: {
-    'Full store fit-out': { kind: 'sqft', min: 1200, max: 2000 },
+    'Full Store Fit-out': { kind: 'sqft', min: 1200, max: 2000 },
     'Storefront & Façade': { kind: 'sqft', min: 800, max: 1500 },
     'Display Fixtures': { kind: 'sqft', min: 600, max: 1200 },
+    'Trial Rooms': { kind: 'flat', min: 80_000, max: 150_000 },
+    'Checkout & POS': { kind: 'flat', min: 60_000, max: 120_000 },
+    'Storage & Back Office': { kind: 'flat', min: 50_000, max: 100_000 },
   },
 }
 
-const ESTIMATE_DISCLAIMER =
-  'Estimates are indicative and based on mid-range Bangalore market rates for 2025-26. Final pricing shared after site visit and scope confirmation.'
-
-function parseAreaSqft(raw) {
-  const cleaned = String(raw ?? '')
-    .replace(/,/g, '')
-    .match(/[\d.]+/)
-  if (!cleaned) return null
-  const n = parseFloat(cleaned[0])
-  return Number.isFinite(n) && n > 0 ? n : null
-}
+const SQMT_TO_SQFT = 10.7639
 
 function formatInr(n) {
   return new Intl.NumberFormat('en-IN', {
@@ -114,17 +120,39 @@ function formatInr(n) {
   }).format(Math.round(n))
 }
 
-function computeLiveEstimate(propertyType, projectScope, areaSqft) {
-  const area = parseAreaSqft(areaSqft)
-  const table = SCOPE_RATES_BY_PROPERTY[propertyType] || {}
-  const unpriced = projectScope.filter((label) => !table[label])
+function formatInrRange(low, high) {
+  return `${formatInr(low)} – ${formatInr(high)}`
+}
+
+/** EMI (monthly) at 12% p.a. for n months */
+function emiMonthly(principal, annualRate, months) {
+  if (!principal || principal <= 0) return 0
+  const r = annualRate / 12
+  if (r === 0) return principal / months
+  const pow = (1 + r) ** months
+  return (principal * r * pow) / (pow - 1)
+}
+
+function parseAreaNumber(raw, unit) {
+  const cleaned = String(raw ?? '')
+    .replace(/,/g, '')
+    .match(/[\d.]+/)
+  if (!cleaned) return null
+  const n = parseFloat(cleaned[0])
+  if (!Number.isFinite(n) || n <= 0) return null
+  const sqft = unit === 'sqmt' ? n * SQMT_TO_SQFT : n
+  return sqft
+}
+
+function computeEstimate(propertyType, scopeKeys, areaSqft) {
+  const table = SCOPE_RATES[propertyType] || {}
   const breakdown = []
-  let sumSqftMin = 0
-  let sumSqftMax = 0
   let flatMin = 0
   let flatMax = 0
+  let sumSqftMin = 0
+  let sumSqftMax = 0
 
-  for (const label of projectScope) {
+  for (const label of scopeKeys) {
     const rate = table[label]
     if (!rate) continue
     if (rate.kind === 'flat') {
@@ -132,9 +160,9 @@ function computeLiveEstimate(propertyType, projectScope, areaSqft) {
       flatMax += rate.max
       breakdown.push({
         label,
-        detail: `${formatInr(rate.min)} – ${formatInr(rate.max)} (lump sum)`,
-        min: rate.min,
-        max: rate.max,
+        low: rate.min,
+        high: rate.max,
+        line: `${formatInr(rate.min)} – ${formatInr(rate.max)}`,
       })
     } else if (rate.kind === 'perRoom') {
       const rooms = rate.rooms ?? 1
@@ -144,444 +172,581 @@ function computeLiveEstimate(propertyType, projectScope, areaSqft) {
       flatMax += cMax
       breakdown.push({
         label,
-        detail: `${formatInr(rate.min)} – ${formatInr(rate.max)}/room × ${rooms} → ${formatInr(cMin)} – ${formatInr(cMax)}`,
-        min: cMin,
-        max: cMax,
+        low: cMin,
+        high: cMax,
+        line: `${formatInr(rate.min)} – ${formatInr(rate.max)} / room`,
       })
     } else {
       sumSqftMin += rate.min
       sumSqftMax += rate.max
-      if (area) {
-        const cMin = rate.min * area
-        const cMax = rate.max * area
-        breakdown.push({
-          label,
-          detail: `${formatInr(rate.min)} – ${formatInr(rate.max)}/sq ft → ${formatInr(cMin)} – ${formatInr(cMax)}`,
-          min: cMin,
-          max: cMax,
-        })
-      } else {
-        breakdown.push({
-          label,
-          detail: `${formatInr(rate.min)} – ${formatInr(rate.max)}/sq ft`,
-          min: null,
-          max: null,
-        })
-      }
+      const cMin = rate.min * areaSqft
+      const cMax = rate.max * areaSqft
+      breakdown.push({
+        label,
+        low: cMin,
+        high: cMax,
+        line: `${formatInr(rate.min)} – ${formatInr(rate.max)} / sq ft → ${formatInr(cMin)} – ${formatInr(cMax)}`,
+      })
     }
   }
 
-  if (!area) {
-    return {
-      area: null,
-      unpriced,
-      breakdown,
-      totalMin: null,
-      totalMax: null,
-      hasSqftScopes: sumSqftMin > 0,
-    }
-  }
+  const totalMin = flatMin + sumSqftMin * areaSqft
+  const totalMax = flatMax + sumSqftMax * areaSqft
+  return { breakdown, totalMin, totalMax }
+}
 
-  const totalMin = flatMin + sumSqftMin * area
-  const totalMax = flatMax + sumSqftMax * area
+function pillToSqft(pill) {
+  if (typeof pill === 'number') return pill
+  const s = String(pill).replace('+', '')
+  const n = parseInt(s, 10)
+  return Number.isFinite(n) ? n : 0
+}
 
-  return {
-    area,
-    unpriced,
-    breakdown,
-    totalMin,
-    totalMax,
-    hasSqftScopes: sumSqftMin > 0,
+function applyAreaPill(pill, areaUnit, setAreaInput) {
+  const sqft = pillToSqft(pill)
+  if (areaUnit === 'sqmt') {
+    setAreaInput(String(Math.max(1, Math.round(sqft / SQMT_TO_SQFT))))
+  } else {
+    setAreaInput(String(sqft))
   }
 }
 
-const initialForm = {
-  propertyType: 'Residential',
-  projectScope: [],
-  areaSqft: '',
-  budgetRange: '',
-  location: '',
-  fullName: '',
-  phone: '',
-  email: '',
+function isValidEmail(s) {
+  return /^\S+@\S+\.\S+$/.test(String(s).trim())
 }
+
+const inputClass =
+  'w-full border-0 border-b border-brand-charcoal-soft/30 bg-transparent py-3 font-body text-[16px] text-brand-charcoal outline-none transition-colors placeholder:text-brand-mist/55 focus:border-brand-brass'
+
+const labelClass =
+  'mb-2 block font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-brass'
 
 export default function InstantQuote() {
-  const [form, setForm] = useState(initialForm)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState('')
-  const [success, setSuccess] = useState(false)
+  const [step, setStep] = useState(1)
+  const [fullName, setFullName] = useState('')
+  const [phoneDigits, setPhoneDigits] = useState('')
+  const [email, setEmail] = useState('')
+  const [propertyType, setPropertyType] = useState(null)
+  const [scope, setScope] = useState([])
+  const [areaInput, setAreaInput] = useState('')
+  const [areaUnit, setAreaUnit] = useState('sqft')
+  const [budget, setBudget] = useState('')
+  const [location, setLocation] = useState('')
+  const [estimateLow, setEstimateLow] = useState(0)
+  const [estimateHigh, setEstimateHigh] = useState(0)
+  const [breakdown, setBreakdown] = useState([])
+
   const [consultationModalOpen, setConsultationModalOpen] = useState(false)
   const [consultationModalKey, setConsultationModalKey] = useState(0)
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [step])
 
   const openConsultationModal = () => {
     setConsultationModalKey((k) => k + 1)
     setConsultationModalOpen(true)
   }
 
-  const liveEstimate = useMemo(
-    () => computeLiveEstimate(form.propertyType, form.projectScope, form.areaSqft),
-    [form.propertyType, form.projectScope, form.areaSqft],
+  const phoneFull = phoneDigits.length === 10 ? `+91${phoneDigits}` : ''
+  const step1Valid =
+    fullName.trim().length > 0 && phoneDigits.length === 10 && isValidEmail(email)
+
+  const areaSqft = useMemo(
+    () => (propertyType ? parseAreaNumber(areaInput, areaUnit) : null),
+    [areaInput, areaUnit, propertyType],
   )
 
-  const showEstimatePanel = form.projectScope.length > 0
+  const emiApprox = useMemo(() => emiMonthly(estimateLow, 0.12, 36), [estimateLow])
 
-  const toggleScope = (label) => {
-    setForm((prev) => ({
-      ...prev,
-      projectScope: prev.projectScope.includes(label)
-        ? prev.projectScope.filter((s) => s !== label)
-        : [...prev.projectScope, label],
-    }))
+  const toggleScope = (key) => {
+    setScope((prev) => (prev.includes(key) ? prev.filter((s) => s !== key) : [...prev, key]))
   }
 
-  const handleSubmit = async (e) => {
+  const handleStep1Submit = (e) => {
     e.preventDefault()
-    setSubmitError('')
+    if (!step1Valid) return
+    setStep(2)
+  }
 
-    try {
-      setIsSubmitting(true)
+  const selectProperty = (type) => {
+    setPropertyType(type)
+    setScope([])
+    setBudget('')
+    setStep(3)
+  }
 
-      const { error } = await supabase.from('quote_requests').insert({
-        property_type: form.propertyType,
-        project_scope: form.projectScope.length ? form.projectScope : [],
-        area_sqft: form.areaSqft.trim(),
-        budget_range: form.budgetRange,
-        location: form.location.trim(),
-        full_name: form.fullName.trim(),
-        phone: form.phone.trim(),
-        email: form.email.trim(),
-      })
+  const handleStep6Submit = (e) => {
+    e.preventDefault()
+    if (!location.trim() || !propertyType || !areaSqft || scope.length === 0) return
 
-      if (error) throw error
+    const { breakdown: bd, totalMin, totalMax } = computeEstimate(propertyType, scope, areaSqft)
+    setBreakdown(bd)
+    setEstimateLow(totalMin)
+    setEstimateHigh(totalMax)
 
-      setSuccess(true)
-      setForm(initialForm)
-    } catch {
-      setSubmitError('Something went wrong. Please try again or call us directly.')
-    } finally {
-      setIsSubmitting(false)
+    const payload = {
+      name: fullName.trim(),
+      phone: phoneFull,
+      email: email.trim(),
+      propertyType,
+      scope: [...scope],
+      area: areaInput.trim(),
+      areaUnit,
+      budget,
+      location: location.trim(),
+      estimateLow: Math.round(totalMin),
+      estimateHigh: Math.round(totalMax),
+      timestamp: new Date().toISOString(),
     }
+    console.log(payload)
+
+    setStep(7)
   }
 
-  if (success) {
-    return (
-      <main className="flex-1 bg-brand-ivory px-6 py-16 lg:px-24 lg:py-24">
-        <div className="mx-auto max-w-lg rounded-sm border border-brand-brass-pale bg-brand-ivory-deep px-10 py-14 text-center shadow-[0_24px_48px_-24px_rgba(28,25,21,0.12)]">
-          <p className="font-display text-[36px] font-light leading-tight text-brand-charcoal">Thank you</p>
-          <p className="mt-4 font-body text-[15px] font-normal leading-relaxed text-brand-mist">
-            We&apos;ve received your request. A Maywood specialist will contact you within 24 hours with next steps.
-          </p>
-          <Link
-            to="/"
-            className="mt-10 inline-flex border-b border-brand-brass pb-0.5 font-body text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-brass transition-colors hover:text-brand-charcoal"
+  const goBack = () => {
+    if (step <= 1) return
+    if (step === 3) {
+      setStep(2)
+      setScope([])
+      return
+    }
+    if (step === 4) {
+      setStep(3)
+      return
+    }
+    if (step === 5) {
+      setStep(4)
+      return
+    }
+    if (step === 6) {
+      setStep(5)
+      return
+    }
+    if (step === 7) {
+      setStep(6)
+      return
+    }
+    setStep((s) => s - 1)
+  }
+
+  const progressPct = Math.min(100, (step / 7) * 100)
+
+  const stepContent = (() => {
+    switch (step) {
+      case 1:
+        return (
+          <motion.div
+            key="s1"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3 }}
+            className="mx-auto max-w-[480px]"
           >
-            Back to home
-          </Link>
-        </div>
-      </main>
-    )
-  }
-
-  return (
-    <main className="flex-1 bg-brand-ivory px-6 py-16 lg:px-24 lg:py-20">
-      <div className="mx-auto max-w-[720px]">
-        <SectionLabel>Instant Quote</SectionLabel>
-        <h1 className="mt-4 font-display text-[clamp(38px,5vw,52px)] font-light leading-[1.06] text-brand-charcoal">
-          Tell us about your project
-        </h1>
-        <p className="mt-4 max-w-xl font-body text-[15px] font-normal leading-relaxed text-brand-mist">
-          Share a few details — we&apos;ll prepare a tailored estimate. No obligation.
-        </p>
-
-        <form onSubmit={handleSubmit} className="mt-12 space-y-10">
-          <fieldset className="space-y-3">
-            <legend className="font-body text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-brass">
-              Property type
-            </legend>
-            <div className="flex flex-wrap gap-3">
-              {PROPERTY_TYPES.map((type) => (
-                <label
+            <h1 className="font-display text-[clamp(32px,5vw,44px)] font-light leading-[1.08] text-brand-charcoal">
+              Let&apos;s get started.
+            </h1>
+            <p className="mt-4 font-body text-[15px] font-normal leading-relaxed text-brand-mist">
+              Share your details and we&apos;ll prepare a personalised estimate for you.
+            </p>
+            <form onSubmit={handleStep1Submit} className="mt-10 space-y-8">
+              <div>
+                <label className={labelClass}>Full Name</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className={inputClass}
+                  required
+                  autoComplete="name"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Phone Number</label>
+                <div className="flex border-b border-brand-charcoal-soft/30 focus-within:border-brand-brass">
+                  <span className="shrink-0 py-3 pr-3 font-body text-[16px] text-brand-mist">+91</span>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel-national"
+                    maxLength={10}
+                    value={phoneDigits}
+                    onChange={(e) => setPhoneDigits(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    className="min-w-0 flex-1 border-0 bg-transparent py-3 font-body text-[16px] text-brand-charcoal outline-none placeholder:text-brand-mist/55"
+                    placeholder="98765 43210"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>Email Address</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={inputClass}
+                  required
+                  autoComplete="email"
+                />
+              </div>
+              <p className="font-body text-[12px] font-normal leading-relaxed text-brand-mist">
+                Your details are safe with us. No spam, ever.
+              </p>
+              <button
+                type="submit"
+                disabled={!step1Valid}
+                className={buttonClasses(
+                  'primary',
+                  'flex w-full items-center justify-center gap-2 py-4 text-[13px] tracking-[0.1em] disabled:pointer-events-none disabled:opacity-40',
+                )}
+              >
+                GET MY ESTIMATE
+                <ChevronRight className="h-4 w-4" strokeWidth={2} aria-hidden />
+              </button>
+            </form>
+          </motion.div>
+        )
+      case 2:
+        return (
+          <motion.div
+            key="s2"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3 }}
+            className="mx-auto max-w-[900px]"
+          >
+            <h2 className="text-center font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
+              What type of space are you designing?
+            </h2>
+            <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+              {PROPERTY_CARDS.map(({ type, emoji, label }) => (
+                <button
                   key={type}
-                  className={[
-                    'cursor-pointer rounded-sm border px-4 py-2.5 font-body text-[13px] transition-colors',
-                    form.propertyType === type
-                      ? 'border-brand-brass bg-brand-brass-pale/40 text-brand-charcoal'
-                      : 'border-brand-ivory-deep text-brand-mist hover:border-brand-brass/50',
-                  ].join(' ')}
+                  type="button"
+                  onClick={() => selectProperty(type)}
+                  className="flex min-h-[120px] flex-col items-center justify-center rounded-sm border border-brand-brass-pale bg-brand-ivory-deep/40 px-6 py-10 text-center transition-all hover:border-brand-brass hover:bg-brand-brass-pale/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass md:min-h-[160px]"
                 >
-                  <input
-                    type="radio"
-                    name="propertyType"
-                    value={type}
-                    checked={form.propertyType === type}
-                    onChange={() =>
-                      setForm((p) => ({
-                        ...p,
-                        propertyType: type,
-                        projectScope: [],
-                        budgetRange: '',
-                      }))
-                    }
-                    className="sr-only"
-                  />
-                  {type}
-                </label>
+                  <span className="text-4xl md:text-5xl" aria-hidden>
+                    {emoji}
+                  </span>
+                  <span className="mt-4 font-display text-[20px] font-normal text-brand-charcoal">{label}</span>
+                </button>
               ))}
             </div>
-          </fieldset>
-
-          <fieldset className="space-y-3">
-            <legend className="font-body text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-brass">
-              Project scope <span className="font-normal text-brand-mist">(select all that apply)</span>
-            </legend>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {SCOPE_BY_PROPERTY[form.propertyType].map((opt) => (
-                <label
-                  key={opt}
-                  className="flex cursor-pointer items-center gap-2 rounded-sm border border-brand-ivory-deep px-3 py-2 font-body text-[13px] text-brand-charcoal hover:border-brand-brass/40"
-                >
-                  <input
-                    type="checkbox"
-                    checked={form.projectScope.includes(opt)}
-                    onChange={() => toggleScope(opt)}
-                    className="h-3.5 w-3.5 rounded border-brand-mist text-brand-brass focus:ring-brand-brass"
-                  />
-                  {opt}
-                </label>
-              ))}
+          </motion.div>
+        )
+      case 3:
+        return (
+          <motion.div
+            key="s3"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3 }}
+            className="mx-auto max-w-[720px]"
+          >
+            <h2 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
+              What are you looking to do?
+            </h2>
+            <p className="mt-3 font-body text-[14px] font-normal text-brand-mist">Select all that apply</p>
+            <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {SCOPE_BY_PROPERTY[propertyType].map((item) => {
+                const selected = scope.includes(item)
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => toggleScope(item)}
+                    className={[
+                      'relative flex items-center gap-3 rounded-sm border px-4 py-4 text-left font-body text-[14px] transition-all',
+                      selected
+                        ? 'border-brand-brass bg-brand-brass-pale/50 text-brand-charcoal'
+                        : 'border-brand-ivory-deep text-brand-charcoal hover:border-brand-brass/45',
+                    ].join(' ')}
+                  >
+                    <span
+                      className={[
+                        'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border',
+                        selected ? 'border-brand-brass bg-brand-brass text-[#1C1915]' : 'border-brand-mist/40 bg-transparent',
+                      ].join(' ')}
+                      aria-hidden
+                    >
+                      {selected ? <Check className="h-3.5 w-3.5" strokeWidth={2.5} /> : null}
+                    </span>
+                    {item}
+                  </button>
+                )
+              })}
             </div>
-          </fieldset>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <label className="block">
-              <span className="mb-2 block font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-brass">
-                Approx. area (sq ft)
-              </span>
-              <input
-                type="text"
-                value={form.areaSqft}
-                onChange={(e) => setForm((p) => ({ ...p, areaSqft: e.target.value }))}
-                className="w-full border-b border-brand-charcoal-soft/30 bg-transparent py-2 font-body text-[15px] text-brand-charcoal outline-none transition-colors placeholder:text-brand-mist/60 focus:border-brand-brass"
-                placeholder={AREA_PLACEHOLDER_BY_PROPERTY[form.propertyType]}
-                autoComplete="off"
-              />
-            </label>
-            <label className="block">
-              <span className="mb-2 block font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-brass">
-                Budget range
-              </span>
-              <select
-                value={form.budgetRange}
-                onChange={(e) => setForm((p) => ({ ...p, budgetRange: e.target.value }))}
-                className="w-full cursor-pointer border-b border-brand-charcoal-soft/30 bg-transparent py-2 font-body text-[15px] text-brand-charcoal outline-none focus:border-brand-brass"
-                required
+            <button
+              type="button"
+              disabled={scope.length === 0}
+              onClick={() => setStep(4)}
+              className={buttonClasses(
+                'primary',
+                'mt-12 flex w-full max-w-md items-center justify-center gap-2 py-4 disabled:pointer-events-none disabled:opacity-40',
+              )}
+            >
+              Next
+              <ChevronRight className="h-4 w-4" strokeWidth={2} aria-hidden />
+            </button>
+          </motion.div>
+        )
+      case 4:
+        return (
+          <motion.div
+            key="s4"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3 }}
+            className="mx-auto max-w-[520px] text-center"
+          >
+            <h2 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
+              How large is your space?
+            </h2>
+            <p className="mt-3 font-body text-[14px] font-normal text-brand-mist">
+              An approximate size helps us give a better estimate
+            </p>
+            <div className="mt-2 flex justify-center gap-2 pt-8">
+              <button
+                type="button"
+                onClick={() => setAreaUnit('sqft')}
+                className={[
+                  'rounded-sm px-4 py-2 font-body text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors',
+                  areaUnit === 'sqft'
+                    ? 'bg-brand-charcoal text-brand-ivory'
+                    : 'border border-brand-ivory-deep text-brand-mist hover:border-brand-brass',
+                ].join(' ')}
               >
-                <option value="">Select range</option>
-                {BUDGET_BY_PROPERTY[form.propertyType].map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <AnimatePresence>
-            {showEstimatePanel ? (
-              <motion.div
-                key="live-estimate"
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                className="rounded-sm border border-brand-brass-pale bg-brand-ivory-deep/50 px-6 py-8 shadow-[0_20px_40px_-28px_rgba(28,25,21,0.18)]"
+                Sq Ft
+              </button>
+              <button
+                type="button"
+                onClick={() => setAreaUnit('sqmt')}
+                className={[
+                  'rounded-sm px-4 py-2 font-body text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors',
+                  areaUnit === 'sqmt'
+                    ? 'bg-brand-charcoal text-brand-ivory'
+                    : 'border border-brand-ivory-deep text-brand-mist hover:border-brand-brass',
+                ].join(' ')}
               >
-                <p className="font-body text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-brass">
-                  YOUR ESTIMATE
-                </p>
-
-                <AnimatePresence mode="wait">
-                  {!liveEstimate.area ? (
-                    <motion.p
-                      key="need-area"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="mt-5 font-body text-[15px] leading-relaxed text-brand-mist"
-                    >
-                      Enter your area above to see your estimate
-                    </motion.p>
-                  ) : liveEstimate.breakdown.length === 0 ? (
-                    <motion.div
-                      key="no-preset"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <p className="mt-5 font-display text-[clamp(22px,3.5vw,30px)] font-light leading-snug text-brand-charcoal">
-                        Indicative ranges aren&apos;t preset for these selections. We&apos;ll outline costs after a
-                        consultation.
-                      </p>
-                      <p className="mt-6 font-body text-[11px] leading-relaxed text-brand-mist">{ESTIMATE_DISCLAIMER}</p>
-                      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                        <button
-                          type="button"
-                          onClick={openConsultationModal}
-                          className="inline-flex flex-1 items-center justify-center rounded-[2px] bg-[#B8965A] px-6 py-[14px] text-center font-body text-[11px] font-medium uppercase tracking-[0.12em] text-[#1C1915] transition-opacity hover:opacity-90 sm:min-w-[200px]"
-                        >
-                          Book a consultation
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => window.print()}
-                          className="inline-flex flex-1 items-center justify-center rounded-[2px] border border-brand-charcoal/25 bg-transparent px-6 py-[14px] text-center font-body text-[11px] font-medium uppercase tracking-[0.12em] text-brand-charcoal transition-colors hover:border-brand-brass hover:text-brand-brass sm:min-w-[200px]"
-                        >
-                          Save my quote
-                        </button>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="totals"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.35 }}
-                    >
-                      <p className="mt-4 font-display text-[clamp(28px,4.2vw,40px)] font-light leading-[1.12] text-brand-charcoal">
-                        {formatInr(liveEstimate.totalMin)} – {formatInr(liveEstimate.totalMax)}
-                      </p>
-
-                      <ul className="mt-6 space-y-3 border-t border-brand-ivory-deep pt-5">
-                        {liveEstimate.breakdown.map((row) => (
-                          <li key={row.label} className="font-body text-[13px] leading-snug text-brand-charcoal">
-                            <span className="font-medium text-brand-charcoal">{row.label}</span>
-                            <span className="text-brand-mist"> — </span>
-                            <span className="text-brand-mist">{row.detail}</span>
-                          </li>
-                        ))}
-                        {liveEstimate.unpriced.map((label) => (
-                          <li key={label} className="font-body text-[13px] leading-snug text-brand-mist">
-                            <span className="text-brand-charcoal/80">{label}</span>
-                            <span> — scoped after site visit</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      <p className="mt-6 font-body text-[11px] leading-relaxed text-brand-mist">{ESTIMATE_DISCLAIMER}</p>
-
-                      <p className="mt-3 font-body text-[13px] font-medium text-brand-brass">
-                        As low as {formatInr(Math.round(liveEstimate.totalMin / 36))}/month on 36-month plan
-                      </p>
-
-                      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                        <button
-                          type="button"
-                          onClick={openConsultationModal}
-                          className="inline-flex flex-1 items-center justify-center rounded-[2px] bg-[#B8965A] px-6 py-[14px] text-center font-body text-[11px] font-medium uppercase tracking-[0.12em] text-[#1C1915] transition-opacity hover:opacity-90 sm:min-w-[200px]"
-                        >
-                          Book a consultation
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => window.print()}
-                          className="inline-flex flex-1 items-center justify-center rounded-[2px] border border-brand-charcoal/25 bg-transparent px-6 py-[14px] text-center font-body text-[11px] font-medium uppercase tracking-[0.12em] text-brand-charcoal transition-colors hover:border-brand-brass hover:text-brand-brass sm:min-w-[200px]"
-                        >
-                          Save my quote
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-
-          <label className="block">
-            <span className="mb-2 block font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-brass">
-              Location
-            </span>
+                Sq Mt
+              </button>
+            </div>
             <input
               type="text"
-              value={form.location}
-              onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
-              className="w-full border-b border-brand-charcoal-soft/30 bg-transparent py-2 font-body text-[15px] text-brand-charcoal outline-none placeholder:text-brand-mist/60 focus:border-brand-brass"
-              placeholder="Area or neighbourhood in Bangalore"
-              required
+              inputMode="decimal"
+              value={areaInput}
+              onChange={(e) => setAreaInput(e.target.value)}
+              className="mt-6 w-full max-w-[280px] border-0 border-b-2 border-brand-charcoal/25 bg-transparent py-2 text-center font-display text-[clamp(40px,8vw,64px)] font-light leading-none text-brand-charcoal outline-none transition-colors focus:border-brand-brass"
+              placeholder="0"
+              autoComplete="off"
             />
-          </label>
-
-          <div className="space-y-6 border-t border-brand-ivory-deep pt-10">
-            <p className="font-body text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-brass">
-              Your details
-            </p>
-            <label className="block">
-              <span className="mb-2 block font-body text-[12px] text-brand-mist">Full name</span>
-              <input
-                type="text"
-                value={form.fullName}
-                onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))}
-                className="w-full border-b border-brand-charcoal-soft/30 bg-transparent py-2 font-body text-[15px] text-brand-charcoal outline-none focus:border-brand-brass"
-                required
-                autoComplete="name"
-              />
-            </label>
-            <label className="block">
-              <span className="mb-2 block font-body text-[12px] text-brand-mist">Phone</span>
-              <input
-                type="tel"
-                value={form.phone}
-                onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-                className="w-full border-b border-brand-charcoal-soft/30 bg-transparent py-2 font-body text-[15px] text-brand-charcoal outline-none focus:border-brand-brass"
-                required
-                autoComplete="tel"
-              />
-            </label>
-            <label className="block">
-              <span className="mb-2 block font-body text-[12px] text-brand-mist">Email</span>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                className="w-full border-b border-brand-charcoal-soft/30 bg-transparent py-2 font-body text-[15px] text-brand-charcoal outline-none focus:border-brand-brass"
-                required
-                autoComplete="email"
-              />
-            </label>
-          </div>
-
-          <div className="pt-2">
+            <p className="mt-2 font-body text-[12px] text-brand-mist">{areaUnit === 'sqft' ? 'Square feet' : 'Square metres'}</p>
+            <div className="mt-10 flex flex-wrap justify-center gap-2">
+              {AREA_PILLS[propertyType].map((pill) => (
+                <button
+                  key={String(pill)}
+                  type="button"
+                  onClick={() => applyAreaPill(pill, areaUnit, setAreaInput)}
+                  className="rounded-full border border-brand-brass/50 bg-brand-ivory-deep/50 px-4 py-2 font-body text-[12px] font-medium text-brand-charcoal transition-colors hover:border-brand-brass hover:bg-brand-brass-pale/40"
+                >
+                  {pill}
+                  {typeof pill === 'number' ? (areaUnit === 'sqmt' ? ' m²' : ' sq ft') : ''}
+                </button>
+              ))}
+            </div>
             <button
-              type="submit"
-              disabled={isSubmitting}
-              className="inline-flex min-w-[200px] items-center justify-center gap-2 rounded-[2px] bg-[#B8965A] px-9 py-[14px] font-body text-[12px] font-medium uppercase tracking-[0.12em] text-[#1C1915] transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} aria-hidden />
-                  Sending…
-                </>
-              ) : (
-                'Submit request'
+              type="button"
+              disabled={!areaSqft}
+              onClick={() => setStep(5)}
+              className={buttonClasses(
+                'primary',
+                'mt-14 flex w-full items-center justify-center gap-2 py-4 disabled:pointer-events-none disabled:opacity-40',
               )}
+            >
+              Next
+              <ChevronRight className="h-4 w-4" strokeWidth={2} aria-hidden />
             </button>
-            {submitError ? (
-              <p className="mt-4 font-body text-[13px] text-red-600">{submitError}</p>
-            ) : null}
+          </motion.div>
+        )
+      case 5:
+        return (
+          <motion.div
+            key="s5"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3 }}
+            className="mx-auto max-w-[640px]"
+          >
+            <h2 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
+              What&apos;s your approximate budget?
+            </h2>
+            <p className="mt-3 font-body text-[14px] font-normal text-brand-mist">
+              We&apos;ll tailor our recommendation to your range
+            </p>
+            <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {BUDGET_BY_PROPERTY[propertyType].map((b) => (
+                <button
+                  key={b}
+                  type="button"
+                  onClick={() => {
+                    setBudget(b)
+                    setStep(6)
+                  }}
+                  className="rounded-sm border border-brand-brass-pale bg-brand-ivory-deep/30 px-5 py-4 text-left font-body text-[14px] text-brand-charcoal transition-all hover:border-brand-brass hover:bg-brand-brass-pale/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass"
+                >
+                  {b}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )
+      case 6:
+        return (
+          <motion.div
+            key="s6"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3 }}
+            className="mx-auto max-w-[480px]"
+          >
+            <h2 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
+              Which area in Bangalore?
+            </h2>
+            <form onSubmit={handleStep6Submit} className="mt-10 space-y-10">
+              <div>
+                <label className={labelClass}>Location</label>
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className={inputClass}
+                  placeholder="e.g. Whitefield, Koramangala, HSR Layout"
+                  required
+                  autoComplete="off"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={!location.trim()}
+                className={buttonClasses(
+                  'primary',
+                  'flex w-full items-center justify-center gap-2 py-4 disabled:pointer-events-none disabled:opacity-40',
+                )}
+              >
+                SHOW MY ESTIMATE
+                <ChevronRight className="h-4 w-4" strokeWidth={2} aria-hidden />
+              </button>
+            </form>
+          </motion.div>
+        )
+      case 7:
+        return (
+          <motion.div
+            key="s7"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.35 }}
+            className="mx-auto max-w-[640px]"
+          >
+            <p className="font-body text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-brass">
+              YOUR PERSONALISED ESTIMATE
+            </p>
+            <p className="mt-6 font-display text-[clamp(32px,5vw,48px)] font-light leading-[1.08] text-brand-charcoal">
+              {formatInrRange(estimateLow, estimateHigh)}
+            </p>
+            <p className="mt-4 font-body text-[14px] font-normal leading-relaxed text-brand-mist">
+              Based on your inputs — mid-range materials and finishes
+            </p>
+            <div className="mt-10 rounded-sm border border-brand-brass-pale bg-brand-ivory-deep/50 px-6 py-8">
+              <ul className="space-y-4 border-b border-brand-ivory-deep/80 pb-6">
+                {breakdown.map((row) => (
+                  <li key={row.label} className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
+                    <span className="font-body text-[14px] font-medium text-brand-charcoal">{row.label}</span>
+                    <span className="font-body text-[13px] text-brand-mist">{row.line}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 font-body text-[15px] font-medium text-brand-brass">
+                As low as {formatInr(Math.round(emiApprox))} / month on 36-month plan
+              </p>
+            </div>
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+              <button
+                type="button"
+                onClick={openConsultationModal}
+                className={buttonClasses('primary', 'w-full justify-center sm:flex-1')}
+              >
+                BOOK A FREE CONSULTATION
+              </button>
+              <a
+                href="https://wa.me/919606977677"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={[
+                  buttonBaseClass,
+                  'inline-flex w-full items-center justify-center rounded-[2px] border border-brand-charcoal/35 bg-transparent px-9 py-[14px] font-body text-[12px] font-medium uppercase tracking-[0.12em] text-brand-charcoal transition-colors hover:border-brand-brass hover:text-brand-brass sm:flex-1',
+                ].join(' ')}
+              >
+                SPEAK TO A DESIGNER
+              </a>
+            </div>
+            <p className="mt-10 font-body text-[12px] font-normal leading-relaxed text-brand-mist">
+              Estimates are indicative. Final pricing confirmed after site visit.
+            </p>
+          </motion.div>
+        )
+      default:
+        return null
+    }
+  })()
+
+  return (
+    <main className="flex-1 bg-brand-ivory px-5 py-10 sm:px-8 lg:px-12 lg:py-16">
+      <div className="mx-auto max-w-[900px]">
+        <div className="mb-10">
+          <div className="h-[2px] w-full rounded-full bg-[rgba(184,150,90,0.2)]">
+            <div
+              className="h-full rounded-full bg-brand-brass transition-[width] duration-500 ease-out"
+              style={{ width: `${progressPct}%` }}
+            />
           </div>
-        </form>
+          <p className="mt-3 font-body text-[11px] font-medium uppercase tracking-[0.16em] text-brand-mist">
+            Step {step} of 7
+            <span className="mx-2 text-brand-brass/40" aria-hidden>
+              ·
+            </span>
+            <span className="text-brand-brass">{STEP_LABELS[step - 1]}</span>
+          </p>
+        </div>
+
+        {step > 1 && step < 7 ? (
+          <button
+            type="button"
+            onClick={goBack}
+            className="mb-8 font-body text-[12px] font-medium uppercase tracking-[0.12em] text-brand-brass transition-colors hover:text-brand-charcoal"
+          >
+            ← Back
+          </button>
+        ) : null}
+
+        <AnimatePresence mode="wait">{stepContent}</AnimatePresence>
       </div>
 
       <ConsultationBookingModal
         key={consultationModalKey}
         isOpen={consultationModalOpen}
         onClose={() => setConsultationModalOpen(false)}
-        prefillName={form.fullName}
-        prefillPhone={form.phone}
-        prefillEmail={form.email}
+        prefillName={fullName.trim()}
+        prefillPhone={phoneFull || (phoneDigits ? `+91${phoneDigits}` : '')}
+        prefillEmail={email.trim()}
       />
     </main>
   )

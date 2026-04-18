@@ -83,7 +83,7 @@ export default function ProductSubPage({
         <div className="relative z-[2] mx-auto w-full max-w-[1400px]">
           <nav className="font-body text-[11px] font-normal text-brand-mist-light" aria-label="Breadcrumb">
             <Link to="/products" className="transition-colors hover:text-brand-brass-light">
-              Products & Services
+              Solutions
             </Link>
             <span className="mx-1.5 text-brand-mist" aria-hidden>
               →

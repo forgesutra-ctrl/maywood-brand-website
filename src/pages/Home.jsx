@@ -518,7 +518,7 @@ export default function Home() {
             </ul>
 
             <MotionLink
-              to="/maywood-finance"
+              to="/finance"
               className={['mt-10 inline-flex', buttonClasses('primary')].join(' ')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}

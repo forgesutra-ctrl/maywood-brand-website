@@ -4,18 +4,21 @@ import BrandLogo from '../ui/BrandLogo'
 import { SOCIAL } from '../../config/social'
 
 const solutionsLinks = [
-  { label: 'Home Interiors', to: '/products' },
-  { label: 'Corporate Spaces', to: '/products' },
-  { label: 'Retail & Hospitality', to: '/products' },
-  { label: 'Spas & Salons', to: '/products' },
+  { label: 'Home Interiors', to: '/products/home-interiors' },
+  { label: 'Corporate & Office Spaces', to: '/products/corporate-spaces' },
+  { label: 'Spas & Salons', to: '/products/spas-salons' },
+  { label: 'Retail Spaces', to: '/products/retail-spaces' },
+  { label: 'Hotels, Cafes & Restaurants', to: '/products/hotels-cafes' },
 ]
 
 const companyLinks = [
+  { label: 'Maywood Project Studio', to: '/project-studio' },
   { label: 'Manufacturing', to: '/manufacturing' },
-  { label: 'Maywood Plys', to: '/maywood-plys' },
-  { label: 'Finance', to: '/maywood-finance' },
+  { label: 'Maywood Ply', to: '/maywood-plys' },
+  { label: 'Maywood Finance', to: '/finance' },
   { label: 'Partner Program', to: '/partners' },
   { label: 'Experience Centers', to: '/experience-centers' },
+  { label: 'About Us', to: '/about' },
 ]
 
 const columnTitleClass =

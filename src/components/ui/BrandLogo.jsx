@@ -7,23 +7,19 @@ const imgClass = {
 }
 
 /**
- * Site wordmark + monogram. Use everywhere the old “MAYWOOD / INTERIORS” text lockup appeared.
+ * Site wordmark / monogram image.
  * @param {object} props
- * @param {boolean} [props.withNavWordmark] — header only: larger mark + “Maywood / Interiors” beside it
  */
-export default function BrandLogo({ to = '/', variant = 'navbar', withNavWordmark = false, className = '' }) {
-  const useNavLockup = withNavWordmark && variant === 'navbar'
-
+export default function BrandLogo({ to = '/', variant = 'navbar', className = '' }) {
   const imgLayoutClass = variant === 'footer' ? 'w-full h-full shrink-0 block' : 'shrink-0 block'
 
   const img = (
     <img
       src={BRAND.logoSrc}
-      alt={useNavLockup ? '' : BRAND.logoAlt}
+      alt={BRAND.logoAlt}
       width={320}
       height={96}
       decoding="async"
-      aria-hidden={useNavLockup ? true : undefined}
       className={[imgClass[variant] ?? imgClass.navbar, imgLayoutClass].join(' ')}
       onError={(e) => {
         e.currentTarget.src = '/assets/images/fallback.jpg'
@@ -31,26 +27,12 @@ export default function BrandLogo({ to = '/', variant = 'navbar', withNavWordmar
     />
   )
 
-  let inner
-  if (variant === 'footer') {
-    inner = <span className="inline-block rounded-[2px] bg-brand-ivory p-2 ring-1 ring-white/10">{img}</span>
-  } else if (useNavLockup) {
-    inner = (
-      <span className="flex min-w-0 items-center gap-3 sm:gap-4">
-        {img}
-        <span className="flex min-w-0 flex-col justify-center leading-tight">
-          <span className="font-display text-[clamp(18px,2.4vw,24px)] font-light uppercase tracking-[0.14em] text-brand-charcoal">
-            Maywood
-          </span>
-          <span className="mt-0.5 font-body text-[9px] font-normal uppercase tracking-[0.28em] text-brand-mist sm:text-[10px]">
-            Interiors
-          </span>
-        </span>
-      </span>
+  const inner =
+    variant === 'footer' ? (
+      <span className="inline-block rounded-[2px] bg-brand-ivory p-2 ring-1 ring-white/10">{img}</span>
+    ) : (
+      img
     )
-  } else {
-    inner = img
-  }
 
   if (!to) {
     return <span className={className}>{inner}</span>
@@ -59,7 +41,6 @@ export default function BrandLogo({ to = '/', variant = 'navbar', withNavWordmar
   return (
     <Link
       to={to}
-      aria-label={useNavLockup ? 'Maywood Interiors — home' : undefined}
       className={[
         'group relative z-10 min-w-0 shrink-0 transition-opacity duration-300 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass focus-visible:ring-offset-2',
         variant === 'navbar' ? 'focus-visible:ring-offset-transparent' : 'focus-visible:ring-offset-brand-charcoal',

@@ -237,7 +237,7 @@ export default function AboutUs() {
         </div>
       </section>
 
-      <section className="bg-brand-ivory px-6 py-32 lg:px-24">
+      <section id="team" className="scroll-mt-28 bg-brand-ivory px-6 py-32 lg:px-24">
         <div className="mx-auto max-w-[1400px]">
           <SectionLabel>Leadership</SectionLabel>
           <AnimatedText
@@ -340,7 +340,7 @@ export default function AboutUs() {
         </div>
       </section>
 
-      <section className="bg-brand-charcoal px-6 py-32 lg:px-24">
+      <section id="contact" className="scroll-mt-28 bg-brand-charcoal px-6 py-32 lg:px-24">
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-14 lg:grid-cols-2 lg:gap-20 lg:items-start">
           <div>
             <SectionLabel light>Get in Touch</SectionLabel>

@@ -9,6 +9,7 @@ import MaywoodManufacturing from './pages/MaywoodManufacturing'
 import MaywoodPlys from './pages/MaywoodPlys'
 import PartnerProgram from './pages/PartnerProgram'
 import Portfolio from './pages/Portfolio'
+import ProjectStudio from './pages/ProjectStudio'
 import Products from './pages/Products'
 import HomeInteriors from './pages/products/HomeInteriors'
 import CorporateSpaces from './pages/products/CorporateSpaces'
@@ -31,10 +32,12 @@ function App() {
           <Route path="products/hotels-cafes" element={<HotelsCafes />} />
           <Route path="experience-centers" element={<ExperienceCenters />} />
           <Route path="portfolio" element={<Portfolio />} />
-          <Route path="maywood-finance" element={<MaywoodFinance />} />
+          <Route path="finance" element={<MaywoodFinance />} />
+          <Route path="maywood-finance" element={<Navigate to="/finance" replace />} />
           <Route path="manufacturing" element={<MaywoodManufacturing />} />
           <Route path="maywood-manufacturing" element={<Navigate to="/manufacturing" replace />} />
           <Route path="maywood-plys" element={<MaywoodPlys />} />
+          <Route path="project-studio" element={<ProjectStudio />} />
           <Route path="partners" element={<PartnerProgram />} />
           <Route path="partner-program" element={<Navigate to="/partners" replace />} />
           <Route path="about" element={<AboutUs />} />

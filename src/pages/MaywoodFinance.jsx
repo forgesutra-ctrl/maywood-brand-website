@@ -271,7 +271,7 @@ export default function MaywoodFinance() {
 
           <div className="mx-auto mt-10 flex w-full max-w-lg flex-col items-stretch justify-center gap-4 sm:max-w-none sm:flex-row sm:items-center">
             <MotionLink
-              to="/maywood-finance#eligibility-cta"
+              to="/finance#eligibility-cta"
               className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('primary')].join(' ')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
