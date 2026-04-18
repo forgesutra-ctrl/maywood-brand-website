@@ -9,6 +9,17 @@ import ProcessSection from '../components/sections/ProcessSection'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonBaseClass, buttonClasses } from '../lib/buttonStyles'
+
+/** Hero only: visible gold outline on dark charcoal; matches primary padding & type scale */
+const heroConsultationCtaClass = [
+  'inline-flex cursor-pointer select-none items-center justify-center font-body text-[12px] font-medium uppercase leading-none tracking-[0.12em]',
+  'transition-[background-color,border-color,color,transform] duration-[250ms] ease-out',
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass focus-visible:ring-offset-2 focus-visible:ring-offset-brand-charcoal',
+  'rounded-[2px] px-9 py-[14px]',
+  'border border-solid border-[rgba(184,150,90,0.8)] bg-transparent text-[rgba(184,150,90,1)]',
+  'hover:bg-[rgba(184,150,90,0.1)] hover:border-[rgba(184,150,90,1)]',
+  'w-full justify-center sm:w-auto',
+].join(' ')
 import { IMAGES } from '../config/images'
 
 const MotionLink = motion(Link)
@@ -240,7 +251,7 @@ export default function Home() {
               interior solutions for homes and businesses across Bangalore.
             </p>
 
-            <div className="flex w-full max-w-xl flex-col gap-4 pt-2 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="flex w-full max-w-xl flex-col gap-4 pt-2 sm:max-w-none sm:flex-row sm:items-center sm:gap-4">
               <MotionLink
                 to="/instant-quote"
                 className={buttonClasses('primary', 'w-full justify-center sm:w-auto')}
@@ -249,11 +260,8 @@ export default function Home() {
               >
                 Get Instant Quote
               </MotionLink>
-              <Link
-                to="/experience-centers"
-                className={buttonClasses('ghost', 'w-full justify-center text-brand-brass-light hover:border-brand-brass-light sm:w-auto')}
-              >
-                Book free consultation
+              <Link to="/experience-centers" className={heroConsultationCtaClass}>
+                BOOK FREE CONSULTATION
               </Link>
             </div>
           </div>
