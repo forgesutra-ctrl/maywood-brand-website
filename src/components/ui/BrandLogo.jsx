@@ -3,7 +3,7 @@ import { BRAND } from '../../config/brand'
 
 const imgClass = {
   navbar: 'h-12 w-auto object-contain object-left sm:h-14 md:h-16',
-  footer: 'h-12 w-auto max-w-[220px] sm:h-[52px] sm:max-h-[52px]',
+  footer: 'h-12 w-auto object-contain object-left max-w-[220px] sm:h-[52px] sm:max-h-[52px]',
 }
 
 /**
@@ -14,6 +14,8 @@ const imgClass = {
 export default function BrandLogo({ to = '/', variant = 'navbar', withNavWordmark = false, className = '' }) {
   const useNavLockup = withNavWordmark && variant === 'navbar'
 
+  const imgLayoutClass = variant === 'footer' ? 'w-full h-full shrink-0 block' : 'shrink-0 block'
+
   const img = (
     <img
       src={BRAND.logoSrc}
@@ -22,7 +24,10 @@ export default function BrandLogo({ to = '/', variant = 'navbar', withNavWordmar
       height={96}
       decoding="async"
       aria-hidden={useNavLockup ? true : undefined}
-      className={[imgClass[variant] ?? imgClass.navbar, 'shrink-0'].join(' ')}
+      className={[imgClass[variant] ?? imgClass.navbar, imgLayoutClass].join(' ')}
+      onError={(e) => {
+        e.currentTarget.src = '/assets/images/fallback.jpg'
+      }}
     />
   )
 

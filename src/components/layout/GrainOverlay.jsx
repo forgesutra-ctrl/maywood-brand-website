@@ -5,7 +5,7 @@ const grainSvg = encodeURIComponent(
 export default function GrainOverlay() {
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-[9999]"
+      className="pointer-events-none fixed inset-0 z-[9999] bg-cover bg-center bg-no-repeat"
       style={{
         opacity: 0.025,
         backgroundImage: `url("data:image/svg+xml,${grainSvg}")`,

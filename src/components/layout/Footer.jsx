@@ -116,8 +116,8 @@ export default function Footer() {
             <h3 className={columnTitleClass}>Contact</h3>
             <ul className="space-y-3">
               <li>
-                <a href="tel:+910000000000" className={footerLinkClass}>
-                  +91 00000 00000
+                <a href="tel:+919606977677" className={footerLinkClass}>
+                  +91 96069 77677
                 </a>
               </li>
               <li>

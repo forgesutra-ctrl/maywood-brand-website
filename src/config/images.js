@@ -12,10 +12,6 @@ export const IMAGES = {
       src: '/images/gemini/bedroom-master.png',
       alt: 'Master bedroom interior — Maywood Interiors Bangalore',
     },
-    {
-      src: '/images/gemini/corporate-open-plan.png',
-      alt: 'Corporate office interior — Maywood Interiors Bangalore',
-    },
   ],
 
   livingRooms: {

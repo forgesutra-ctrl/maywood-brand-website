@@ -15,12 +15,7 @@ export default function HeroImageCarousel({ className = '' }) {
 
   return (
     <div
-      className={[
-        'relative h-full min-h-[45vh] w-full overflow-hidden sm:min-h-[50vh] lg:min-h-0',
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      className={['relative h-full min-h-full w-full overflow-hidden', className].filter(Boolean).join(' ')}
       role="region"
       aria-label="Featured Maywood interiors"
     >
@@ -31,9 +26,12 @@ export default function HeroImageCarousel({ className = '' }) {
           alt={slide.alt}
           loading="eager"
           className={[
-            'absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-[900ms] ease-out',
+            'absolute inset-0 h-full min-h-full w-full min-w-full object-cover object-top block transition-opacity duration-[900ms] ease-out',
             i === index ? 'opacity-100' : 'opacity-0',
           ].join(' ')}
+          onError={(e) => {
+            e.currentTarget.src = '/assets/images/fallback.jpg'
+          }}
         />
       ))}
     </div>

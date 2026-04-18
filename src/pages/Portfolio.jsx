@@ -5,17 +5,11 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
+import { projectImages as images } from '../data/projectImages'
 
 const MotionLink = motion(Link)
 
 const tapTransition = { type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }
-
-/** Files in `public/assets/images/projects/` as `project-1.png` … `project-{N}.png` (37 curated photos). */
-const PROJECT_IMAGE_COUNT = 37
-
-const images = Array.from({ length: PROJECT_IMAGE_COUNT }, (_, i) => ({
-  src: `/assets/images/projects/project-${i + 1}.png`,
-}))
 
 export default function Portfolio() {
   const [lightboxIndex, setLightboxIndex] = useState(null)
@@ -79,7 +73,10 @@ export default function Portfolio() {
                     alt=""
                     loading="lazy"
                     decoding="async"
-                    className="h-full w-full object-cover"
+                    className="w-full h-full object-cover object-[center_28%] block"
+                    onError={(e) => {
+                      e.currentTarget.src = '/assets/images/fallback.jpg'
+                    }}
                   />
                 </div>
               </button>
@@ -151,13 +148,16 @@ export default function Portfolio() {
             <ChevronRight className="h-8 w-8" strokeWidth={1.15} />
           </button>
           <div
-            className="relative max-h-[90vh] max-w-[min(96vw,1400px)]"
+            className="relative max-h-[90vh] max-w-[min(96vw,1400px)] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <img
               src={images[lightboxIndex].src}
               alt=""
-              className="max-h-[90vh] max-w-full object-contain"
+              className="w-full h-full max-h-[90vh] max-w-full object-cover object-center block"
+              onError={(e) => {
+                e.currentTarget.src = '/assets/images/fallback.jpg'
+              }}
             />
           </div>
         </div>

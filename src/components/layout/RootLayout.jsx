@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { AnimatePresence, motion as motionPrim } from 'framer-motion'
 import { Outlet, useLocation } from 'react-router-dom'
 import CustomCursor from './CustomCursor'
@@ -6,6 +7,7 @@ import GrainOverlay from './GrainOverlay'
 import Navbar from './Navbar'
 import ScrollProgress from './ScrollProgress'
 import SocialSidebar from './SocialSidebar'
+import WhatsAppButton from '../WhatsAppButton'
 
 const MotionDiv = motionPrim.div
 
@@ -25,6 +27,10 @@ const pageVariants = {
 export default function RootLayout() {
   const location = useLocation()
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [location.pathname])
+
   return (
     <div className="flex min-h-screen flex-col font-body text-brand-charcoal">
       <GrainOverlay />
@@ -32,6 +38,7 @@ export default function RootLayout() {
       <CustomCursor />
       <Navbar />
       <SocialSidebar />
+      <WhatsAppButton />
       <AnimatePresence mode="wait">
         <MotionDiv
           key={location.pathname}

@@ -3,7 +3,8 @@ import { motion, useInView } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
-import { buttonClasses } from '../lib/buttonStyles'
+import MaywoodPlysSection from '../components/MaywoodPlysSection'
+import { buttonBaseClass, buttonClasses } from '../lib/buttonStyles'
 import { IMAGES } from '../config/images'
 
 const MotionLink = motion(Link)
@@ -155,7 +156,10 @@ function ProcessStepRow({ step, index }) {
           src={processStepImageSrc(index)}
           alt={processStepImageAlt[index] ?? 'Maywood manufacturing — interior reference'}
           loading="lazy"
-          className="h-full w-full object-cover object-center"
+          className="w-full h-full object-cover object-[center_28%] block"
+          onError={(e) => {
+            e.currentTarget.src = '/assets/images/fallback.jpg'
+          }}
         />
       </div>
     </motion.div>
@@ -170,7 +174,10 @@ export default function MaywoodManufacturing() {
           src={IMAGES.corporate.hero}
           alt="Corporate office interior — Maywood Interiors Bangalore"
           loading="eager"
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          className="absolute inset-0 w-full h-full object-cover object-center block"
+          onError={(e) => {
+            e.currentTarget.src = '/assets/images/fallback.jpg'
+          }}
         />
         <div
           className="absolute inset-0"
@@ -209,7 +216,10 @@ export default function MaywoodManufacturing() {
               src={IMAGES.homeOffice.hero}
               alt="Home office interior — Maywood Interiors Bangalore"
               loading="lazy"
-              className="h-full min-h-[520px] w-full object-cover object-center"
+              className="w-full h-full min-h-[520px] object-cover object-[center_30%] block"
+              onError={(e) => {
+                e.currentTarget.src = '/assets/images/fallback.jpg'
+              }}
             />
           </div>
 
@@ -260,6 +270,8 @@ export default function MaywoodManufacturing() {
           </div>
         </div>
       </section>
+
+      <MaywoodPlysSection />
 
       <section className="bg-brand-charcoal px-6 py-32 lg:px-24">
         <div className="mx-auto max-w-[1400px]">
@@ -327,9 +339,32 @@ export default function MaywoodManufacturing() {
           <p className="mx-auto mt-6 max-w-md font-body text-[15px] font-normal leading-relaxed text-brand-charcoal/80">
             We run monthly factory visits for clients and partners. Register your interest below.
           </p>
+          <div className="mx-auto mt-10 flex w-full max-w-md flex-col gap-4 sm:max-w-none sm:flex-row sm:justify-center">
+            <MotionLink
+              to="/instant-quote"
+              className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('primary')].join(' ')}
+              whileTap={{ scale: 0.98 }}
+              transition={tapTransition}
+            >
+              Get Instant Quote
+            </MotionLink>
+            <MotionLink
+              to="/experience-centers"
+              className={[
+                buttonBaseClass,
+                'inline-flex w-full justify-center rounded-[2px] px-9 py-[14px] sm:w-auto',
+                'border border-[rgba(28,25,21,0.45)] bg-transparent text-brand-charcoal hover:border-brand-charcoal',
+                'focus-visible:ring-offset-brand-brass',
+              ].join(' ')}
+              whileTap={{ scale: 0.98 }}
+              transition={tapTransition}
+            >
+              Book free consultation
+            </MotionLink>
+          </div>
           <MotionLink
             to="/#consultation"
-            className={['mt-10 inline-flex', buttonClasses('dark')].join(' ')}
+            className={['mt-8 inline-flex', buttonClasses('dark')].join(' ')}
             whileTap={{ scale: 0.98 }}
             transition={tapTransition}
           >

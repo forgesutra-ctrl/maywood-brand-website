@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Facebook, Instagram, Linkedin, Loader2, Mail, MapPin, Phone, Youtube } from 'lucide-react'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
@@ -41,18 +42,68 @@ const LEADERSHIP = [
   },
 ]
 
-const CERTS = [
+const RECOGNITION_CERTS = [
   {
-    title: 'Quality Management',
-    standard: 'ISO 9001:2015',
-    desc: 'Our processes, materials and outputs are certified to international quality management standards — audited annually by a third-party body.',
+    title: 'ISO 9001:2015',
+    subtitle: 'Quality Management System',
+    description:
+      'Our design, manufacturing, and delivery processes are certified to international quality standards — audited annually by an independent third-party body.',
+    issuedBy: 'Bureau Veritas / TÜV / IAF Accredited Body',
   },
   {
-    title: 'Occupational Health & Safety',
-    standard: 'ISO 45001:2018',
-    desc: 'Every Maywood worksite and factory floor meets international health and safety standards. Our team goes home safe. Every day.',
+    title: 'ISO 45001:2018',
+    subtitle: 'Occupational Health & Safety',
+    description:
+      'Every Maywood worksite and factory floor meets international health and safety standards. Our team goes home safe. Every day.',
+    issuedBy: 'Bureau Veritas / TÜV / IAF Accredited Body',
   },
 ]
+
+const TIMELINE_MILESTONES = [
+  {
+    year: '2015',
+    title: 'Founded',
+    description: 'Started as a single design studio in Bangalore with one conviction — quality without compromise.',
+  },
+  {
+    year: '2018',
+    title: 'Factory Launch',
+    description: 'Opened our in-house manufacturing facility — the first step toward full vertical integration.',
+  },
+  {
+    year: '2020',
+    title: 'Maywood Plys',
+    description: 'Launched our own plywood range, cutting out supplier markups and taking control of material quality.',
+  },
+  {
+    year: '2022',
+    title: '500+ Projects',
+    description: 'Crossed 500 completed projects across residential, commercial, and hospitality segments.',
+  },
+  {
+    year: '2023',
+    title: 'Maywood Finance',
+    description: 'Launched our in-house financing arm — making premium interiors accessible to every budget.',
+  },
+  {
+    year: '2024',
+    title: 'ISO Certified',
+    description: 'Received dual ISO certification — 9001 and 45001 — validating our systems and processes.',
+  },
+]
+
+function GoldShieldIcon({ className = 'h-12 w-12 text-brand-brass' }) {
+  return (
+    <svg className={className} viewBox="0 0 48 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <path
+        d="M24 4L6 12v16c0 11.5 7.2 22.2 18 26 10.8-3.8 18-14.5 18-26V12L24 4z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
 
 const fieldClassDark =
   'w-full border-b border-white/25 bg-transparent py-2 font-body text-[15px] text-brand-ivory outline-none transition-colors placeholder:text-brand-mist-light/50 focus:border-brand-brass'
@@ -117,7 +168,10 @@ export default function AboutUs() {
               src={IMAGES.livingRooms.wide}
               alt="Living and dining interior — Maywood Interiors Bangalore"
               loading="eager"
-              className="h-full min-h-[360px] w-full object-cover object-center lg:min-h-[460px]"
+              className="w-full h-full min-h-[360px] object-cover object-[center_30%] block lg:min-h-[460px]"
+              onError={(e) => {
+                e.currentTarget.src = '/assets/images/fallback.jpg'
+              }}
             />
           </div>
         </div>
@@ -159,7 +213,10 @@ export default function AboutUs() {
               src="/assets/images/generated/about-design-studio.png"
               alt="Corporate reception — Maywood Interiors Bangalore"
               loading="lazy"
-              className="h-full w-full object-cover object-center"
+              className="w-full h-full object-cover object-[center_28%] block"
+              onError={(e) => {
+                e.currentTarget.src = '/assets/images/fallback.jpg'
+              }}
             />
           </div>
         </div>
@@ -197,7 +254,10 @@ export default function AboutUs() {
                     src={person.imageSrc}
                     alt={person.imageAlt}
                     loading="lazy"
-                    className="h-full w-full rounded-sm object-cover object-center"
+                    className="w-full h-full rounded-sm object-cover object-center block"
+                    onError={(e) => {
+                      e.currentTarget.src = '/assets/images/fallback.jpg'
+                    }}
                   />
                 </div>
                 <div className="p-6">
@@ -222,27 +282,60 @@ export default function AboutUs() {
         </div>
       </section>
 
-      <section className="bg-brand-ivory-deep px-6 py-24 lg:px-24">
-        <div className="mx-auto max-w-[1400px]">
-          <SectionLabel>Certifications</SectionLabel>
-          <AnimatedText
-            text="Standards that hold us accountable."
-            tag="h2"
-            className="mt-6 max-w-[900px] font-display text-[clamp(30px,4vw,48px)] font-light leading-[1.08] text-brand-charcoal"
-          />
+      <section className="bg-[#f5f0eb]">
+        <div className="mx-auto max-w-[1400px] px-6 py-24 lg:px-24">
+          <SectionLabel>Recognition</SectionLabel>
+          <h2 className="mt-6 max-w-[900px] font-display text-[clamp(30px,4vw,48px)] font-light leading-[1.08] text-brand-charcoal">
+            Standards that hold. Work that speaks.
+          </h2>
+          <p className="mt-4 max-w-[640px] font-body text-[15px] font-normal leading-relaxed text-brand-mist">
+            Independently verified quality — in our processes, our materials, and our people.
+          </p>
 
           <div className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
-            {CERTS.map((c) => (
+            {RECOGNITION_CERTS.map((c) => (
               <article
-                key={c.standard}
-                className="rounded-[2px] border-[0.5px] border-brand-brass bg-brand-ivory px-8 py-12 sm:px-10 sm:py-14 lg:px-14"
+                key={c.title}
+                className="rounded-sm border border-[rgba(184,150,90,0.4)] bg-[#f5f0eb] p-10"
               >
-                <div className="mb-8 h-20 w-20 shrink-0 rounded-md bg-brand-brass-pale ring-1 ring-brand-brass/20" aria-hidden />
+                <GoldShieldIcon className="mb-8 shrink-0" />
                 <h3 className="font-display text-[26px] font-normal leading-snug text-brand-charcoal">{c.title}</h3>
-                <p className="mt-3 font-body text-[14px] font-normal text-brand-brass">{c.standard}</p>
-                <p className="mt-5 font-body text-[13px] font-normal leading-[1.8] text-brand-mist">{c.desc}</p>
+                <p className="mt-2 font-body text-[14px] font-medium text-brand-brass">{c.subtitle}</p>
+                <p className="mt-5 font-body text-[13px] font-normal leading-[1.85] text-brand-mist">{c.description}</p>
+                <p className="mt-6 border-t border-[rgba(184,150,90,0.25)] pt-5 font-body text-[12px] font-normal leading-relaxed text-brand-mist">
+                  <span className="font-semibold text-brand-charcoal">Issued by:</span> {c.issuedBy}
+                </p>
               </article>
             ))}
+          </div>
+        </div>
+
+        <div className="bg-[#1a1612] px-6 pb-24 pt-16 lg:px-24 lg:pb-28 lg:pt-20">
+          <div className="mx-auto max-w-[1400px] overflow-x-auto [-webkit-overflow-scrolling:touch] md:overflow-visible">
+            <div className="relative min-w-[1320px] md:min-w-0">
+              <div
+                className="pointer-events-none absolute left-12 right-12 top-[9px] h-px bg-[rgba(184,150,90,0.45)] md:left-8 md:right-8"
+                aria-hidden
+              />
+              <div className="relative z-[1] flex w-max gap-6 md:w-full md:gap-4 lg:gap-6">
+                {TIMELINE_MILESTONES.map((m) => (
+                  <div
+                    key={m.year + m.title}
+                    className="w-[200px] flex-shrink-0 px-2 pb-2 pt-1 text-center md:w-auto md:flex-1 md:px-3 md:pb-0 md:pt-0"
+                  >
+                    <div className="mx-auto mb-5 flex h-[18px] items-start justify-center md:mb-6">
+                      <span
+                        className="mt-0 h-3 w-3 shrink-0 rounded-full border-2 border-brand-brass bg-[#1a1612]"
+                        aria-hidden
+                      />
+                    </div>
+                    <p className="font-display text-[18px] font-normal text-brand-brass">{m.year}</p>
+                    <p className="mt-3 font-display text-[17px] font-normal leading-snug text-brand-ivory">{m.title}</p>
+                    <p className="mt-3 font-body text-[12px] font-normal leading-[1.75] text-brand-mist-light">{m.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -264,8 +357,8 @@ export default function AboutUs() {
             <ul className="mt-10 space-y-5">
               <li className="flex items-start gap-3">
                 <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand-brass" strokeWidth={1.5} aria-hidden />
-                <a href="tel:+9198XXXXXXXX" className="font-body text-[15px] font-normal text-brand-ivory hover:text-brand-brass-light">
-                  +91 98XXX XXXXX
+                <a href="tel:+919606977677" className="font-body text-[15px] font-normal text-brand-ivory hover:text-brand-brass-light">
+                  +91 96069 77677
                 </a>
               </li>
               <li className="flex items-start gap-3">
@@ -399,20 +492,31 @@ export default function AboutUs() {
                   />
                 </label>
                 <div>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={`flex w-full items-center justify-center gap-2 ${buttonClasses('primary')} disabled:pointer-events-none disabled:opacity-50`}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} aria-hidden />
-                        Sending…
-                      </>
-                    ) : (
-                      'Send Message'
-                    )}
-                  </button>
+                  <div className="flex flex-col gap-4">
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className={`flex w-full items-center justify-center gap-2 ${buttonClasses('primary')} disabled:pointer-events-none disabled:opacity-50`}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} aria-hidden />
+                          Sending…
+                        </>
+                      ) : (
+                        'Send Message'
+                      )}
+                    </button>
+                    <Link
+                      to="/experience-centers"
+                      className={buttonClasses(
+                        'ghost',
+                        'flex w-full justify-center border-brand-brass text-brand-brass-light hover:border-brand-brass-light focus-visible:ring-offset-brand-charcoal',
+                      )}
+                    >
+                      Book free consultation
+                    </Link>
+                  </div>
                   {submitError ? <p className={`mt-4 ${submitErrorClass}`}>{submitError}</p> : null}
                 </div>
               </form>

@@ -3,7 +3,7 @@ import { motion, useInView } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
-import { buttonClasses } from '../lib/buttonStyles'
+import { buttonBaseClass, buttonClasses } from '../lib/buttonStyles'
 
 const MotionLink = motion(Link)
 
@@ -29,28 +29,69 @@ const FINANCE_STEPS = [
   },
 ]
 
-const SCENARIOS = [
+const EXAMPLE_SCENARIO_CARDS = [
   {
-    type: '2BHK Full Interiors',
-    value: '₹8,00,000',
-    emi: '₹24,999',
-    emiNote: 'for 36 months',
+    tag: '2BHK FULL INTERIORS',
+    projectValue: '₹8,00,000',
+    highlight: '₹24,999 / month',
+    tenure: 'for 36 months',
+    includes: [
+      'Design & 3D visualization',
+      'Modular kitchen (laminate finish)',
+      '2 wardrobes',
+      'Living & dining unit',
+      'False ceiling throughout',
+      'Complete installation',
+    ],
+    featured: false,
   },
   {
-    type: 'Modular Kitchen + 2 Wardrobes',
-    value: '₹3,00,000',
-    emi: '₹9,499',
-    emiNote: 'for 36 months',
+    tag: 'MODULAR KITCHEN + 2 WARDROBES',
+    projectValue: '₹3,00,000',
+    highlight: '₹9,499 / month',
+    tenure: 'for 36 months',
+    includes: [
+      'L-shaped modular kitchen',
+      'Hettich hardware',
+      '2 sliding wardrobes',
+      'Material selection session',
+      'Factory delivery + installation',
+    ],
+    featured: true,
   },
   {
-    type: 'Office Workspace (1000 sq ft)',
-    value: '₹15,00,000',
-    emi: '₹46,999',
-    emiNote: 'for 36 months',
+    tag: 'OFFICE WORKSPACE — 1000 SQ FT',
+    projectValue: '₹15,00,000',
+    highlight: '₹46,999 / month',
+    tenure: 'for 36 months',
+    includes: [
+      'Full office fit-out',
+      '20 workstations',
+      'Cabin + conference room',
+      'Reception & lobby',
+      'Complete electrical & installation',
+    ],
+    featured: false,
   },
 ]
 
-const INCLUDED = ['Design', 'Materials', 'Manufacturing', 'Installation']
+const NARRATIVE_SCENARIOS = [
+  {
+    align: 'left',
+    title: 'Ravi & Priya, Whitefield — 3BHK, ₹12L project',
+    body: 'They wanted full interiors but thought it was out of budget. With Maywood Finance, they paid ₹37,499/month over 3 years — less than their car EMI. Work started in 2 weeks.',
+  },
+  {
+    align: 'right',
+    title: 'Karthik, Indiranagar — Startup Office, 800 sq ft',
+    body: 'Needed a professional office fast. ₹10L fit-out, approved in 24 hours, work completed in 38 days. Monthly outgo: ₹31,499.',
+  },
+  {
+    align: 'left',
+    title: 'Meena, Jayanagar — Kitchen + Master Bedroom',
+    body: 'Selective scope, tight budget. ₹2.8L project, ₹8,799/month. She got the modular kitchen she always wanted without waiting to save up.',
+  },
+]
 
 function FinanceProcessFlow() {
   const ref = useRef(null)
@@ -121,7 +162,7 @@ export default function MaywoodFinance() {
               Check Eligibility
             </MotionLink>
             <a
-              href="tel:+910000000000"
+              href="tel:+919606977677"
               className={buttonClasses('ghost', 'text-brand-ivory hover:border-brand-brass')}
             >
               Talk to an Advisor
@@ -177,39 +218,45 @@ export default function MaywoodFinance() {
       </section>
 
       {/* Example scenarios */}
-      <section className="bg-brand-ivory-deep px-6 py-16 lg:px-24 lg:py-28">
+      <section className="bg-[#f5f0eb] px-6 py-16 lg:px-24 lg:py-28">
         <div className="mx-auto max-w-[1400px]">
-          <SectionLabel>See It In Numbers</SectionLabel>
+          <SectionLabel>See it in numbers</SectionLabel>
 
-          <AnimatedText
-            text="What does your project cost per month?"
-            tag="h2"
-            className="mt-6 max-w-[900px] font-display text-[clamp(30px,4vw,44px)] font-light leading-[1.08] text-brand-charcoal"
-          />
+          <h2 className="mt-6 max-w-[900px] font-display text-[clamp(30px,4vw,44px)] font-light leading-[1.08] text-brand-charcoal">
+            What does your project actually cost per month?
+          </h2>
+          <p className="mt-4 max-w-[640px] font-body text-[15px] font-normal leading-relaxed text-brand-mist">
+            Real examples. Real numbers. No surprises.
+          </p>
 
-          <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
-            {SCENARIOS.map((s) => (
+          <div className="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
+            {EXAMPLE_SCENARIO_CARDS.map((card) => (
               <article
-                key={s.type}
-                className="rounded-[2px] border-[0.5px] border-brand-brass-pale bg-brand-ivory p-10"
+                key={card.tag}
+                className={[
+                  'flex h-full flex-col rounded-[2px] bg-white px-8 py-10',
+                  card.featured
+                    ? 'border-2 border-brand-brass shadow-[0_24px_48px_-20px_rgba(184,150,90,0.35)]'
+                    : 'border border-brand-brass-pale/70',
+                ].join(' ')}
               >
-                <p className="font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-brass">
-                  {s.type}
+                <span className="inline-flex w-fit rounded-full border border-brand-brass bg-[rgba(184,150,90,0.12)] px-3.5 py-1.5 font-body text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-brass">
+                  {card.tag}
+                </span>
+                <p className="mt-6 font-body text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-mist">
+                  Project Value
                 </p>
-                <p className="mt-5 font-display text-[36px] font-light leading-none text-brand-charcoal">{s.value}</p>
-                <div className="mt-6 flex flex-wrap items-baseline gap-2">
-                  <span className="font-display text-[22px] font-normal text-brand-brass">
-                    {s.emi} / month
-                  </span>
-                  <span className="font-body text-[12px] text-brand-mist">{s.emiNote}</span>
-                </div>
-                <ul className="mt-8 space-y-2 border-t border-brand-ivory-deep pt-6">
-                  {INCLUDED.map((item) => (
-                    <li key={item} className="flex gap-2 font-body text-[13px] leading-relaxed text-brand-mist">
-                      <span className="text-brand-brass/80" aria-hidden>
-                        +
-                      </span>
-                      <span>{item}</span>
+                <p className="mt-2 font-display text-[34px] font-light leading-none text-brand-charcoal sm:text-[36px]">
+                  {card.projectValue}
+                </p>
+                <p className="mt-6 font-display text-[22px] font-normal leading-tight text-brand-brass sm:text-[24px]">
+                  {card.highlight}
+                </p>
+                <p className="mt-1 font-body text-[13px] font-normal text-brand-mist">{card.tenure}</p>
+                <ul className="mt-8 space-y-2.5 border-t border-[rgba(184,150,90,0.2)] pt-6">
+                  {card.includes.map((item) => (
+                    <li key={item} className="font-body text-[13px] font-normal leading-[1.75] text-brand-mist">
+                      {item}
                     </li>
                   ))}
                 </ul>
@@ -217,9 +264,52 @@ export default function MaywoodFinance() {
             ))}
           </div>
 
-          <p className="mx-auto mt-12 max-w-2xl text-center font-body text-[12px] italic leading-relaxed text-brand-mist">
-            EMI amounts are indicative. Final rates based on profile and tenure.
+          <p className="mx-auto mt-12 max-w-[720px] text-center font-body text-[12px] font-normal italic leading-relaxed text-brand-mist">
+            EMI amounts are indicative. Final rates based on applicant profile, tenure, and lending partner approval.
+            Maywood Finance is facilitated through partner NBFCs.
           </p>
+
+          <div className="mx-auto mt-10 flex w-full max-w-lg flex-col items-stretch justify-center gap-4 sm:max-w-none sm:flex-row sm:items-center">
+            <MotionLink
+              to="/maywood-finance#eligibility-cta"
+              className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('primary')].join(' ')}
+              whileTap={{ scale: 0.98 }}
+              transition={tapTransition}
+            >
+              Check my eligibility
+            </MotionLink>
+            <a
+              href="https://wa.me/919606977677"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={[
+                buttonBaseClass,
+                'inline-flex w-full justify-center rounded-[2px] px-9 py-[14px] sm:w-auto',
+                'border-[0.5px] border-brand-brass bg-transparent text-brand-brass hover:border-brand-charcoal hover:text-brand-charcoal',
+                'focus-visible:ring-offset-[#f5f0eb]',
+              ].join(' ')}
+            >
+              Talk to us first
+            </a>
+          </div>
+
+          <div className="mx-auto mt-20 max-w-[900px] space-y-14 lg:mt-24 lg:space-y-16">
+            {NARRATIVE_SCENARIOS.map((block) => (
+              <div
+                key={block.title}
+                className={[
+                  block.align === 'right'
+                    ? 'border-r-2 border-brand-brass pr-6 text-right lg:pr-10'
+                    : 'border-l-2 border-brand-brass pl-6 text-left lg:pl-10',
+                ].join(' ')}
+              >
+                <p className="font-display text-[18px] font-normal leading-snug text-brand-charcoal sm:text-[20px]">
+                  {block.title}
+                </p>
+                <p className="mt-4 font-body text-[14px] font-normal leading-[1.85] text-brand-mist">{block.body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

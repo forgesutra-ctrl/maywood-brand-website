@@ -1,3 +1,4 @@
+import { createElement } from 'react'
 import { Facebook, Instagram, Linkedin, Youtube } from 'lucide-react'
 import { SOCIAL } from '../../config/social'
 
@@ -26,7 +27,7 @@ export default function SocialSidebar() {
           className={className}
           aria-label={label}
         >
-          <Icon size={16} strokeWidth={1.5} aria-hidden />
+          {createElement(Icon, { size: 16, strokeWidth: 1.5, 'aria-hidden': true })}
         </a>
       ))}
     </aside>

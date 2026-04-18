@@ -42,7 +42,7 @@ const categories = [
     tag: 'Retail',
     title: 'Retail Spaces',
     desc: 'Fit-outs designed to maximize footfall, dwell time, and brand recall across every touchpoint.',
-    imageSrc: IMAGES.spas.waiting,
+    imageSrc: '/assets/images/generated/retail-storefront-facade.png',
     imageAlt: 'Hospitality lounge interior — Maywood Interiors Bangalore',
   },
   {
@@ -50,7 +50,7 @@ const categories = [
     tag: 'Hospitality',
     title: 'Hotels, Cafes & Restaurants',
     desc: 'Atmosphere is revenue. We design and build immersive hospitality environments across Bangalore.',
-    imageSrc: IMAGES.corporate.breakout,
+    imageSrc: '/assets/images/generated/hospitality-event-spaces.png',
     imageAlt: 'Office breakout lounge — Maywood Interiors Bangalore',
   },
 ]
@@ -68,8 +68,19 @@ const bottomBarVariants = {
 export default function Products() {
   return (
     <main className="flex-1">
-      <section className="flex min-h-[60vh] flex-col justify-center bg-brand-charcoal px-6 py-32 lg:px-24">
-        <div className="mx-auto w-full max-w-[1400px]">
+      <section className="relative flex min-h-[60vh] flex-col justify-center overflow-hidden px-6 py-32 lg:px-24">
+        <img
+          src="/assets/images/products-hero.png"
+          alt=""
+          loading="eager"
+          decoding="async"
+          className="absolute inset-0 z-0 h-full w-full object-cover object-center"
+          onError={(e) => {
+            e.currentTarget.src = '/assets/images/fallback.jpg'
+          }}
+        />
+        <div className="absolute inset-0 z-0 bg-black/70" aria-hidden />
+        <div className="relative z-10 mx-auto w-full max-w-[1400px]">
           <SectionLabel light>Products & Services</SectionLabel>
 
           <AnimatedText
@@ -84,14 +95,27 @@ export default function Products() {
             installation in-house.
           </p>
 
-          <MotionLink
-            to="/instant-quote"
-            className={['mt-12 inline-flex', buttonClasses('primary')].join(' ')}
-            whileTap={{ scale: 0.98 }}
-            transition={tapTransition}
-          >
-            Get Instant Quote
-          </MotionLink>
+          <div className="mt-12 flex w-full max-w-xl flex-col gap-4 sm:max-w-none sm:flex-row sm:items-center">
+            <MotionLink
+              to="/instant-quote"
+              className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('primary')].join(' ')}
+              whileTap={{ scale: 0.98 }}
+              transition={tapTransition}
+            >
+              Get Instant Quote
+            </MotionLink>
+            <MotionLink
+              to="/experience-centers"
+              className={[
+                'inline-flex w-full justify-center sm:w-auto',
+                buttonClasses('ghost', 'text-brand-brass-light hover:border-brand-brass-light'),
+              ].join(' ')}
+              whileTap={{ scale: 0.98 }}
+              transition={tapTransition}
+            >
+              Book free consultation
+            </MotionLink>
+          </div>
         </div>
       </section>
 
@@ -125,7 +149,10 @@ export default function Products() {
                       src={c.imageSrc}
                       alt={c.imageAlt}
                       loading="lazy"
-                      className="h-full w-full object-cover object-center"
+                      className="w-full h-full object-cover object-[center_28%] block"
+                      onError={(e) => {
+                        e.currentTarget.src = '/assets/images/fallback.jpg'
+                      }}
                     />
                     <div
                       className="absolute inset-0 bg-brand-brass opacity-0 transition-opacity duration-300 group-hover:opacity-[0.08]"

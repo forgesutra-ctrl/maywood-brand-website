@@ -1,7 +1,10 @@
 import { Fragment } from 'react'
 import { motion } from 'framer-motion'
+import { Shield } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import HeroImageCarousel from '../components/home/HeroImageCarousel'
+import MaywoodDifferenceSection from '../components/home/MaywoodDifferenceSection'
+import MaywoodPlysSection from '../components/MaywoodPlysSection'
 import ProcessSection from '../components/sections/ProcessSection'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
@@ -55,6 +58,29 @@ const SERVICE_CARDS = [
     to: '/products',
     imageSrc: IMAGES.spas.hero,
     imageAlt: 'Spa reception interior — Maywood Interiors Bangalore',
+  },
+]
+
+const MAYWOOD_ADVANTAGE_ITEMS = [
+  {
+    stat: '35%',
+    label: 'Faster timelines',
+    description: 'Our factory cuts delivery time vs industry standard',
+  },
+  {
+    stat: '20-30%',
+    label: 'Better pricing',
+    description: 'In-house plywood removes supplier markups entirely',
+  },
+  {
+    stat: '100%',
+    label: 'Quality controlled',
+    description: 'Every piece inspected at factory before it reaches your home',
+  },
+  {
+    stat: '1',
+    label: 'Single accountability',
+    description: 'One team owns your project from design to final installation',
   },
 ]
 
@@ -116,13 +142,13 @@ const OFFERING_CARDS = [
   {
     title: 'Corporate Offices',
     body: 'From 500 to 50,000 sq ft — workspaces that reflect your brand.',
-    imageSrc: IMAGES.corporate.reception,
+    imageSrc: '/assets/images/generated/corporate-office-open.png',
     imageAlt: 'Corporate reception — Maywood Interiors Bangalore',
   },
   {
     title: 'Cafes & Restaurants',
     body: 'Atmosphere is revenue. We design for footfall and dwell time.',
-    imageSrc: IMAGES.spas.waiting,
+    imageSrc: '/assets/images/generated/hospitality-event-spaces.png',
     imageAlt: 'Hospitality lounge interior — Maywood Interiors Bangalore',
   },
   {
@@ -133,13 +159,19 @@ const OFFERING_CARDS = [
   },
 ]
 
-function StatBlocks({ className = '' }) {
+function StatBlocks({ className = '', surface = 'dark' }) {
+  const labelClass =
+    surface === 'light'
+      ? 'text-brand-mist'
+      : 'text-brand-mist-light'
+  const valueClass = surface === 'light' ? 'text-brand-charcoal' : 'text-brand-brass'
+
   return (
     <div className={['flex flex-wrap items-end gap-10 sm:gap-14 lg:gap-16', className].filter(Boolean).join(' ')}>
       {HERO_STATS.map(({ value, label }) => (
         <div key={label} className="min-w-0">
-          <p className="font-display text-[36px] font-light leading-none text-brand-brass">{value}</p>
-          <p className="mt-2 font-body text-[10px] font-medium uppercase tracking-[0.14em] text-brand-mist-light">
+          <p className={['font-display text-[36px] font-light leading-none', valueClass].join(' ')}>{value}</p>
+          <p className={['mt-2 font-body text-[10px] font-medium uppercase tracking-[0.14em]', labelClass].join(' ')}>
             {label}
           </p>
         </div>
@@ -183,7 +215,7 @@ export default function Home() {
   return (
     <main className="flex-1 overflow-x-hidden">
       <section className="grid min-h-[min(100svh,1200px)] grid-cols-1 lg:grid-cols-[55fr_45fr] lg:min-h-[calc(100svh-1px)]">
-        <div className="relative flex min-h-[520px] flex-col justify-between bg-brand-charcoal px-6 py-16 lg:min-h-0 lg:px-14 lg:py-16 xl:px-20 xl:py-20">
+        <div className="relative flex min-h-[520px] min-w-0 flex-col justify-between bg-brand-charcoal px-6 py-16 lg:min-h-0 lg:px-14 lg:py-16 xl:px-20 xl:py-20">
           <p
             className="pointer-events-none absolute left-6 top-28 hidden origin-left -rotate-90 whitespace-nowrap font-body text-[10px] font-medium uppercase tracking-[0.25em] text-brand-brass lg:left-8 lg:block xl:left-10"
             aria-hidden
@@ -191,7 +223,7 @@ export default function Home() {
             EST. 2015 · BANGALORE
           </p>
 
-          <div className="max-w-xl space-y-8 lg:pl-6 xl:pl-4">
+          <div className="max-w-xl min-w-0 space-y-8 lg:pl-6 xl:pl-4">
             <SectionLabel light className="relative z-[1]">
               Bangalore&apos;s Integrated Interior Company
             </SectionLabel>
@@ -208,20 +240,20 @@ export default function Home() {
               interior solutions for homes and businesses across Bangalore.
             </p>
 
-            <div className="flex flex-wrap items-center gap-4 pt-2">
+            <div className="flex w-full max-w-xl flex-col gap-4 pt-2 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center">
               <MotionLink
                 to="/instant-quote"
-                className={buttonClasses('primary')}
+                className={buttonClasses('primary', 'w-full justify-center sm:w-auto')}
                 whileTap={{ scale: 0.98 }}
                 transition={tapTransition}
               >
                 Get Instant Quote
               </MotionLink>
               <Link
-                to="#consultation"
-                className={buttonClasses('ghost', 'text-brand-ivory hover:border-brand-brass')}
+                to="/experience-centers"
+                className={buttonClasses('ghost', 'w-full justify-center text-brand-brass-light hover:border-brand-brass-light sm:w-auto')}
               >
-                Book a Consultation
+                Book free consultation
               </Link>
             </div>
           </div>
@@ -231,9 +263,11 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="relative flex min-h-[360px] flex-col lg:min-h-0">
-          <div className="relative flex min-h-[320px] flex-1 flex-col overflow-hidden lg:min-h-0">
-            <HeroImageCarousel className="min-h-[320px] flex-1" />
+        <div className="relative flex min-h-[360px] min-w-0 flex-col overflow-hidden lg:min-h-0">
+          <div className="relative min-h-[320px] min-w-0 flex-1 lg:min-h-0">
+            <div className="absolute inset-0 overflow-hidden bg-brand-charcoal">
+              <HeroImageCarousel className="h-full min-h-full w-full" />
+            </div>
 
             <div className="absolute right-6 top-6 z-[3] w-[180px] bg-brand-brass-pale p-5 shadow-[0_20px_40px_-16px_rgba(28,25,21,0.35)]">
               <p className="font-body text-[9px] font-semibold uppercase tracking-[0.18em] text-brand-brass">
@@ -245,9 +279,9 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative z-[1] -mt-10 px-6 pb-10 lg:-ml-[60px] lg:-mt-16 lg:px-0 lg:pb-12">
+          <div className="relative z-[1] -mt-10 px-6 pb-10 lg:-mt-16 lg:px-0 lg:pb-12">
             <div className="border border-brand-brass-pale bg-brand-ivory-deep px-8 py-7 shadow-[0_24px_48px_-20px_rgba(28,25,21,0.2)]">
-              <StatBlocks className="justify-between gap-8 sm:gap-10" />
+              <StatBlocks surface="light" className="justify-between gap-8 sm:gap-10" />
             </div>
           </div>
         </div>
@@ -286,7 +320,10 @@ export default function Home() {
                     src={imageSrc}
                     alt={imageAlt}
                     loading="lazy"
-                    className="h-full w-full object-cover object-center"
+                    className="w-full h-full object-cover object-[center_28%] block"
+                    onError={(e) => {
+                      e.currentTarget.src = '/assets/images/fallback.jpg'
+                    }}
                   />
                 </div>
 
@@ -319,59 +356,25 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-brand-ivory px-6 py-16 lg:px-24 lg:py-32">
-        <div className="mx-auto grid max-w-[1400px] gap-14 lg:grid-cols-[40%_60%] lg:gap-20">
-          <div className="lg:sticky lg:top-[120px] lg:self-start">
-            <SectionLabel>The Maywood Difference</SectionLabel>
+      <MaywoodDifferenceSection differentiators={DIFFERENTIATOR_CARDS} />
 
-            <AnimatedText
-              text="Built different. Priced better. Delivered faster."
-              tag="h2"
-              getWordClassName={(w) => (w === 'better.' || w === 'faster.' ? 'italic' : '')}
-              className="mt-6 font-display text-[clamp(30px,4vw,44px)] font-light leading-[1.08] text-brand-charcoal"
-            />
-
-            <p className="mt-6 max-w-md font-body text-[14px] font-normal leading-[1.9] text-brand-mist">
-              Most interior firms outsource everything. We own the full chain — from raw plywood to final installation.
-            </p>
-
-            <MotionLink
-              to="#process"
-              className={['mt-10 inline-flex', buttonClasses('primary')].join(' ')}
-              whileTap={{ scale: 0.98 }}
-              transition={tapTransition}
-            >
-              See How It Works
-            </MotionLink>
-          </div>
-
-          <div className="min-w-0">
-            {DIFFERENTIATOR_CARDS.map((card, i) => (
-              <div
-                key={card.title}
-                className={[
-                  'border-brand-brass-pale px-8 py-10 sm:px-12 sm:py-10',
-                  i > 0 ? 'border-t-[1.5px]' : '',
-                ].join(' ')}
-              >
-                <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
-                  <div
-                    className="h-6 w-6 shrink-0 rounded-sm bg-[rgba(184,150,90,0.08)] ring-1 ring-brand-brass/15"
-                    aria-hidden
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-body text-[9px] font-semibold uppercase tracking-[0.2em] text-brand-mist">
-                      Why it matters
-                    </p>
-                    <p className="mt-2 inline-flex rounded-full border border-brand-brass/35 bg-brand-brass/[0.06] px-3 py-1 font-body text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-brass">
-                      {card.pill}
-                    </p>
-                    <h3 className="mt-5 font-display text-[22px] font-normal leading-snug text-brand-charcoal">
-                      {card.title}
-                    </h3>
-                    <p className="mt-3 font-body text-[13px] font-normal leading-[1.8] text-brand-mist">{card.body}</p>
-                  </div>
-                </div>
+      <section
+        className="border-y border-[rgba(184,150,90,0.45)] bg-[#1a1612] px-6 py-12"
+        aria-label="Maywood Advantage"
+      >
+        <div className="mx-auto max-w-[1400px]">
+          <div className="grid grid-cols-1 max-sm:divide-y-0 divide-y divide-[rgba(184,150,90,0.35)] sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+            {MAYWOOD_ADVANTAGE_ITEMS.map((item) => (
+              <div key={item.label} className="group px-4 py-8 text-center sm:px-6 lg:px-8">
+                <p className="font-display text-[48px] font-light leading-none text-brand-brass/70 transition-colors duration-300 group-hover:text-brand-brass">
+                  {item.stat}
+                </p>
+                <p className="mt-4 font-body text-[14px] font-semibold uppercase tracking-[0.12em] text-white">
+                  {item.label}
+                </p>
+                <p className="mt-3 font-body text-[13px] font-normal leading-relaxed text-brand-mist-light">
+                  {item.description}
+                </p>
               </div>
             ))}
           </div>
@@ -407,7 +410,7 @@ export default function Home() {
                     src={card.imageSrc}
                     alt={card.imageAlt}
                     loading="lazy"
-                    className="h-[180px] w-full object-cover object-center"
+                    className="w-full h-full object-cover object-[center_28%] block"
                   />
                 </div>
                 <div className="relative z-[1] p-8">
@@ -443,12 +446,15 @@ export default function Home() {
                 key={item.title}
                 className="group overflow-hidden border border-brand-brass-pale/60 bg-brand-ivory-deep/50"
               >
-                <div className="relative w-full max-w-full overflow-hidden">
+                <div className="relative h-[220px] w-full max-w-full overflow-hidden">
                   <img
                     src={item.src}
                     alt={item.alt}
                     loading="lazy"
-                    className="h-[220px] w-full object-cover object-center"
+                    className="w-full h-full object-cover object-[center_28%] block"
+                    onError={(e) => {
+                      e.currentTarget.src = '/assets/images/fallback.jpg'
+                    }}
                   />
                 </div>
                 <div className="px-4 py-4">
@@ -462,85 +468,104 @@ export default function Home() {
         </div>
       </section>
 
+      <MaywoodPlysSection />
+
       <ProcessSection />
 
-      <section className="grid grid-cols-1 lg:grid-cols-2">
-        <div className="bg-brand-charcoal-mid px-6 py-16 lg:px-24 lg:py-24">
-          <span className="inline-flex rounded-sm border border-brand-brass px-3.5 py-1.5 font-body text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-brass">
-            Maywood Finance
-          </span>
+      <section
+        className="relative overflow-hidden px-6 py-16 lg:px-24 lg:py-28"
+        style={{
+          background: 'linear-gradient(135deg, #1a1612 0%, #0f0d0a 100%)',
+        }}
+      >
+        <p
+          className="pointer-events-none absolute -left-4 top-1/2 -translate-y-1/2 select-none font-display text-[min(42vw,380px)] font-light leading-none text-brand-brass/[0.04]"
+          aria-hidden
+        >
+          “
+        </p>
+        <div className="relative z-[1] mx-auto flex max-w-[1400px] flex-col lg:grid lg:grid-cols-2 lg:items-center lg:gap-20">
+          <div className="lg:pr-4">
+            <span className="inline-flex rounded-sm border border-brand-brass px-3.5 py-1.5 font-body text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-brass">
+              Maywood Finance
+            </span>
 
-          <AnimatedText
-            text="Design now. Pay later."
-            tag="h2"
-            getWordClassName={(_w, i) => (i >= 2 ? 'italic text-[#D4B483]' : '')}
-            className="mt-8 font-display text-[clamp(30px,4vw,46px)] font-light leading-[1.06] text-brand-ivory"
-          />
+            <AnimatedText
+              text="Design now. Pay later."
+              tag="h2"
+              getWordClassName={(_w, i) => (i >= 2 ? 'italic text-[#D4B483]' : '')}
+              className="mt-8 font-display text-[clamp(32px,4vw,48px)] font-light leading-[1.06] text-brand-ivory"
+            />
 
-          <p className="mt-6 max-w-xl font-body text-[14px] font-normal leading-[1.9] text-brand-mist-light">
-            Your dream interior shouldn&apos;t be held hostage by budget timing. Maywood Finance offers flexible,
-            zero-hassle EMI plans — so you can start now and pay as your project comes to life.
-          </p>
-
-          <ul className="mt-10 space-y-4">
-            {[
-              'EMI plans starting at ₹4,999/month',
-              'Flexible tenures from 6 to 36 months',
-              'Quick approval, minimal documentation',
-            ].map((line) => (
-              <li key={line} className="flex gap-3 font-body text-[13px] font-normal leading-relaxed text-brand-ivory">
-                <span className="shrink-0 font-display text-brand-brass" aria-hidden>
-                  —
-                </span>
-                <span>{line}</span>
-              </li>
-            ))}
-          </ul>
-
-          <MotionLink
-            to="/maywood-finance"
-            className={['mt-10 inline-flex', buttonClasses('primary')].join(' ')}
-            whileTap={{ scale: 0.98 }}
-            transition={tapTransition}
-          >
-            Check Your Eligibility
-          </MotionLink>
-        </div>
-
-        <div className="bg-brand-charcoal px-6 py-16 lg:px-24 lg:py-24">
-          <div
-            className="mx-auto max-w-md rounded-[4px] border-[0.5px] border-[rgba(184,150,90,0.2)] bg-[rgba(255,255,255,0.03)] p-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-[12px]"
-            style={{ WebkitBackdropFilter: 'blur(12px)' }}
-          >
-            <p className="font-body text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-brass">
-              Estimated Monthly EMI
+            <p className="mt-6 max-w-xl font-body text-[16px] font-normal leading-[1.9] text-brand-mist-light">
+              Your dream interior shouldn&apos;t be held hostage by budget timing. Maywood Finance offers flexible,
+              zero-hassle EMI plans — so you can start now and pay as your project comes to life.
             </p>
-            <p className="mt-4 font-display text-[56px] font-light leading-none text-brand-ivory">₹8,499</p>
-            <p className="mt-3 font-body text-[12px] font-normal text-brand-mist">
-              for a ₹3,00,000 project · 36 months
-            </p>
-            <div className="my-8 h-px w-full bg-[rgba(184,150,90,0.15)]" aria-hidden />
-            <p className="font-body text-[13px] font-normal leading-relaxed text-brand-mist-light">
-              Includes: 3D design, manufacturing, materials & installation
-            </p>
-            <p className="mt-4 font-body text-[11px] italic leading-relaxed text-brand-mist">
-              Actual EMI calculated after consultation.
-            </p>
+
+            <ul className="mt-10 space-y-4">
+              {[
+                'EMI plans starting at ₹4,999/month',
+                'Flexible tenures from 6 to 36 months',
+                'Quick approval, minimal documentation',
+              ].map((line) => (
+                <li key={line} className="flex gap-3 font-body text-[15px] font-normal leading-relaxed text-brand-ivory">
+                  <span className="shrink-0 font-display text-brand-brass" aria-hidden>
+                    —
+                  </span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+
             <MotionLink
-              to="#consultation"
-              className={['mt-8 flex w-full justify-center', buttonClasses('primary')].join(' ')}
+              to="/maywood-finance"
+              className={['mt-10 inline-flex', buttonClasses('primary')].join(' ')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
             >
-              Book Free Consultation
+              Check Your Eligibility
             </MotionLink>
+          </div>
+
+          <div
+            className="my-12 h-px w-full max-w-md shrink-0 self-center bg-[rgba(184,150,90,0.35)] lg:hidden"
+            aria-hidden
+          />
+
+          <div className="flex justify-center lg:justify-end">
+            <div className="w-full max-w-md rounded-sm border border-[rgba(184,150,90,0.45)] bg-[#1e1a14] p-10 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(184,150,90,0.08)]">
+              <p className="font-body text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-brass">
+                Estimated Monthly EMI
+              </p>
+              <p className="mt-5 font-display text-[clamp(56px,8vw,76px)] font-light leading-none text-brand-ivory">
+                ₹8,499
+              </p>
+              <p className="mt-4 font-body text-[13px] font-normal text-brand-mist">
+                for a ₹3,00,000 project · 36 months
+              </p>
+              <div className="my-8 h-px w-full bg-[rgba(184,150,90,0.22)]" aria-hidden />
+              <p className="font-body text-[14px] font-normal leading-relaxed text-brand-mist-light">
+                Includes: 3D design, manufacturing, materials & installation
+              </p>
+              <p className="mt-4 font-body text-[12px] italic leading-relaxed text-brand-mist">
+                Actual EMI calculated after consultation.
+              </p>
+              <MotionLink
+                to="#consultation"
+                className={['mt-8 flex w-full justify-center', buttonClasses('primary')].join(' ')}
+                whileTap={{ scale: 0.98 }}
+                transition={tapTransition}
+              >
+                Book Free Consultation
+              </MotionLink>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-[#1C1915] px-6 py-16 lg:px-24 lg:py-32">
-        <div className="relative z-[2] mx-auto max-w-[1400px]">
-          <div className="grid grid-cols-1 gap-px bg-[rgba(184,150,90,0.25)] sm:grid-cols-2 lg:grid-cols-4">
+      <section className="relative overflow-hidden bg-[#1C1915]">
+        <div className="bg-[#1e1a14] px-6 py-14 lg:px-24 lg:py-20">
+          <div className="mx-auto flex max-w-[1400px] flex-col divide-y divide-[rgba(184,150,90,0.22)] sm:flex-row sm:divide-x sm:divide-y-0">
             {[
               { value: '500+', label: 'Projects Completed' },
               { value: '₹50 Cr+', label: 'Interior Value Delivered' },
@@ -549,43 +574,59 @@ export default function Home() {
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="flex flex-col items-center justify-center bg-[rgba(28,25,21,0.35)] px-8 py-12 text-center backdrop-blur-[2px] sm:px-10 sm:py-12"
+                className="group relative flex flex-1 flex-col items-center justify-center px-4 py-10 text-center transition-[filter] duration-300 hover:brightness-110 sm:py-12 sm:pl-8 sm:pr-8"
               >
-                <p className="font-display text-[52px] leading-none text-brand-brass-light">{stat.value}</p>
-                <p className="mt-4 font-body text-[11px] font-medium uppercase tracking-[0.12em] text-brand-mist-light">
+                <div
+                  className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(circle,rgba(184,150,90,0.14)_0%,transparent_68%)] opacity-90 transition-opacity duration-300 group-hover:opacity-100"
+                  aria-hidden
+                />
+                <p className="relative z-[1] font-display text-[48px] font-light leading-none text-brand-brass-light">
+                  {stat.value}
+                </p>
+                <p className="relative z-[1] mt-4 max-w-[12rem] font-body text-[11px] font-medium uppercase tracking-[0.12em] text-brand-mist-light">
                   {stat.label}
                 </p>
               </div>
             ))}
           </div>
+        </div>
 
-          <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-            <div className="rounded-[2px] border-[0.5px] border-[rgba(184,150,90,0.35)] bg-[rgba(247,243,237,0.04)] px-10 py-6">
-              <p className="font-display text-[20px] font-normal text-brand-ivory">ISO 9001:2015</p>
-              <p className="mt-2 font-body text-[11px] font-medium uppercase tracking-[0.14em] text-brand-mist-light">
-                Quality Management System
-              </p>
+        <div className="px-6 py-16 lg:px-24 lg:py-20">
+          <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
+            <div className="flex gap-4 rounded-sm border border-[rgba(184,150,90,0.4)] bg-[#1a1612] px-8 py-7">
+              <Shield className="mt-0.5 h-7 w-7 shrink-0 text-brand-brass" strokeWidth={1.25} aria-hidden />
+              <div>
+                <p className="font-display text-[20px] font-normal text-brand-ivory">ISO 9001:2015</p>
+                <p className="mt-2 font-body text-[14px] font-normal leading-relaxed text-brand-mist-light">
+                  Quality Management System
+                </p>
+              </div>
             </div>
-            <div className="rounded-[2px] border-[0.5px] border-[rgba(184,150,90,0.35)] bg-[rgba(247,243,237,0.04)] px-10 py-6">
-              <p className="font-display text-[20px] font-normal text-brand-ivory">ISO 45001:2018</p>
-              <p className="mt-2 font-body text-[11px] font-medium uppercase tracking-[0.14em] text-brand-mist-light">
-                Occupational Health & Safety
-              </p>
+            <div className="flex gap-4 rounded-sm border border-[rgba(184,150,90,0.4)] bg-[#1a1612] px-8 py-7">
+              <Shield className="mt-0.5 h-7 w-7 shrink-0 text-brand-brass" strokeWidth={1.25} aria-hidden />
+              <div>
+                <p className="font-display text-[20px] font-normal text-brand-ivory">ISO 45001:2018</p>
+                <p className="mt-2 font-body text-[14px] font-normal leading-relaxed text-brand-mist-light">
+                  Occupational Health & Safety
+                </p>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div className="relative mx-auto mt-20 max-w-[900px] px-4 text-center">
+        <div className="bg-[rgba(184,150,90,0.03)] px-6 py-16 lg:px-24 lg:py-24">
+          <div className="relative mx-auto max-w-[700px] text-center">
             <span
-              className="pointer-events-none absolute -left-2 top-0 font-display text-[120px] font-light leading-none text-brand-brass/25 sm:left-0"
+              className="pointer-events-none block font-display text-[96px] font-light leading-[0.85] text-brand-brass/35"
               aria-hidden
             >
               “
             </span>
-            <blockquote className="relative z-[1] mx-auto max-w-[700px] font-display text-[clamp(18px,4vw,26px)] font-light italic leading-[1.5] text-brand-ivory">
+            <blockquote className="relative z-[1] -mt-2 font-display text-[20px] font-light italic leading-[1.8] text-brand-ivory">
               Maywood transformed our 3BHK in Whitefield completely. The quality of their plywood, the speed of
               execution, and the finish — I&apos;ve recommended them to four neighbours already.
             </blockquote>
-            <p className="relative z-[1] mt-8 font-body text-[13px] text-brand-mist-light">
+            <p className="relative z-[1] mt-8 font-body text-[13px] font-medium uppercase tracking-[0.14em] text-brand-brass">
               — Priya Raghavan, Whitefield, Bangalore
             </p>
           </div>
@@ -605,27 +646,27 @@ export default function Home() {
             Get a no-obligation estimate in minutes. Our team will reach out within 24 hours.
           </p>
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <div className="mx-auto mt-10 flex w-full max-w-md flex-col gap-4 sm:max-w-none sm:flex-row sm:items-center sm:justify-center">
             <MotionLink
               to="/instant-quote"
-              className={buttonClasses('dark')}
+              className={buttonClasses('dark', 'w-full justify-center sm:w-auto')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
             >
               Get Instant Quote
             </MotionLink>
             <MotionLink
-              to="#consultation"
+              to="/experience-centers"
               className={[
                 buttonBaseClass,
-                'rounded-[2px] px-9 py-[14px]',
+                'w-full justify-center rounded-[2px] px-9 py-[14px] sm:w-auto',
                 'border border-[rgba(28,25,21,0.35)] bg-transparent text-brand-charcoal hover:border-brand-charcoal',
                 'focus-visible:ring-offset-brand-brass',
               ].join(' ')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
             >
-              Book Consultation
+              Book free consultation
             </MotionLink>
           </div>
         </div>

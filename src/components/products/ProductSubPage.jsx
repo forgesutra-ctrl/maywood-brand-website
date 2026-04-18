@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import ProcessSection from '../sections/ProcessSection'
 import SectionLabel from '../ui/SectionLabel'
 import AnimatedText from '../ui/AnimatedText'
-import { buttonClasses } from '../../lib/buttonStyles'
+import { buttonBaseClass, buttonClasses } from '../../lib/buttonStyles'
 
 const MotionLink = motion(Link)
 
@@ -21,14 +21,29 @@ export function ProductsBrassCta() {
         <p className="mx-auto mt-6 max-w-md font-body text-[15px] font-normal leading-relaxed text-brand-charcoal/70">
           Talk to a Maywood designer — free, no obligation.
         </p>
-        <MotionLink
-          to="/#consultation"
-          className={['mt-10 inline-flex', buttonClasses('dark')].join(' ')}
-          whileTap={{ scale: 0.98 }}
-          transition={tapTransition}
-        >
-          Book Free Consultation
-        </MotionLink>
+        <div className="mx-auto mt-10 flex w-full max-w-sm flex-col gap-4 sm:max-w-none sm:flex-row sm:justify-center">
+          <MotionLink
+            to="/instant-quote"
+            className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('primary')].join(' ')}
+            whileTap={{ scale: 0.98 }}
+            transition={tapTransition}
+          >
+            Get Instant Quote
+          </MotionLink>
+          <MotionLink
+            to="/experience-centers"
+            className={[
+              buttonBaseClass,
+              'inline-flex w-full justify-center rounded-[2px] px-9 py-[14px] sm:w-auto',
+              'border border-[rgba(28,25,21,0.45)] bg-transparent text-brand-charcoal hover:border-brand-charcoal',
+              'focus-visible:ring-offset-brand-brass',
+            ].join(' ')}
+            whileTap={{ scale: 0.98 }}
+            transition={tapTransition}
+          >
+            Book free consultation
+          </MotionLink>
+        </div>
       </div>
     </section>
   )
@@ -59,7 +74,10 @@ export default function ProductSubPage({
           src={heroImageSrc}
           alt={heroImageAlt}
           loading="eager"
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          className="absolute inset-0 w-full h-full object-cover object-center block"
+          onError={(e) => {
+            e.currentTarget.src = '/assets/images/fallback.jpg'
+          }}
         />
         <div className={['absolute inset-0', heroOverlayClassName].filter(Boolean).join(' ')} aria-hidden />
         <div className="relative z-[2] mx-auto w-full max-w-[1400px]">
@@ -88,18 +106,23 @@ export default function ProductSubPage({
             {heroSubtext}
           </p>
 
-          <div className="mt-10 flex flex-wrap items-center gap-4">
+          <div className="mt-10 flex w-full max-w-xl flex-col gap-4 sm:max-w-none sm:flex-row sm:items-center">
             <MotionLink
               to="/instant-quote"
-              className={buttonClasses('primary')}
+              className={buttonClasses('primary', 'w-full justify-center sm:w-auto')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
             >
               Get Instant Quote
             </MotionLink>
-            <Link to="/#consultation" className={buttonClasses('ghost', 'text-brand-ivory hover:border-brand-brass')}>
-              Book Consultation
-            </Link>
+            <MotionLink
+              to="/experience-centers"
+              className={buttonClasses('ghost', 'w-full justify-center text-brand-brass-light hover:border-brand-brass-light sm:w-auto')}
+              whileTap={{ scale: 0.98 }}
+              transition={tapTransition}
+            >
+              Book free consultation
+            </MotionLink>
           </div>
         </div>
       </section>
@@ -110,7 +133,10 @@ export default function ProductSubPage({
             src={overviewImageSrc}
             alt={overviewImageAlt}
             loading="lazy"
-            className="h-full min-h-[480px] w-full object-cover object-center"
+            className="w-full h-full min-h-[480px] object-cover object-[center_30%] block"
+            onError={(e) => {
+              e.currentTarget.src = '/assets/images/fallback.jpg'
+            }}
           />
         </div>
         <div className="flex flex-col justify-center px-6 py-16 lg:px-12 lg:py-20 xl:pr-24">
@@ -151,7 +177,10 @@ export default function ProductSubPage({
                     src={card.imageSrc}
                     alt={card.imageAlt}
                     loading="lazy"
-                    className="h-full w-full object-cover object-center"
+                    className="w-full h-full object-cover object-[center_28%] block"
+                    onError={(e) => {
+                      e.currentTarget.src = '/assets/images/fallback.jpg'
+                    }}
                   />
                 </div>
                 <div className="p-8">

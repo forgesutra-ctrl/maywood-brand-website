@@ -25,21 +25,21 @@ export default function ProcessSection({ sectionId = 'process' }) {
           className="mt-6 max-w-[920px] font-display text-[clamp(30px,4vw,48px)] font-light leading-[1.06] text-brand-ivory"
         />
 
-        <p className="mt-6 max-w-lg font-body text-[14px] font-normal leading-relaxed text-brand-mist-light">
+        <p className="mt-6 max-w-lg font-body text-[15px] font-normal leading-relaxed text-brand-mist-light">
           Four structured stages. Complete transparency at every step.
         </p>
 
-        <div ref={ref} className="relative z-[1] mt-20 lg:mt-24">
+        <div ref={ref} className="relative z-[1] mt-16 lg:mt-20">
           <div
-            className="pointer-events-none absolute left-[10%] right-[10%] top-[26px] hidden h-px bg-[rgba(184,150,90,0.3)] lg:block"
+            className="pointer-events-none absolute left-[5%] right-[5%] top-[52px] z-0 hidden h-0 border-t border-dashed border-[rgba(184,150,90,0.45)] lg:block"
             aria-hidden
           />
 
-          <div className="grid grid-cols-1 gap-14 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+          <div className="relative z-[1] grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
             {PROCESS_STEPS.map(({ n, title, desc }, i) => (
               <motion.div
                 key={title}
-                className="relative z-[1] flex flex-col items-center text-center"
+                className="relative overflow-hidden rounded-sm border border-[rgba(184,150,90,0.2)] bg-[rgba(28,25,21,0.55)] p-6 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:p-7"
                 initial={{ y: 28, opacity: 0 }}
                 animate={inView ? { y: 0, opacity: 1 } : { y: 28, opacity: 0 }}
                 transition={{
@@ -49,15 +49,16 @@ export default function ProcessSection({ sectionId = 'process' }) {
                 }}
               >
                 <div
-                  className="relative z-[1] flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border-[0.5px] border-brand-brass bg-brand-charcoal-mid"
-                  style={{ boxShadow: '0 0 0 4px #1C1915' }}
-                >
-                  <span className="font-display text-[20px] font-normal text-brand-brass">{n}</span>
+                  className="pointer-events-none absolute -left-[20%] -top-[30%] h-[140%] w-[140%] bg-[radial-gradient(ellipse_55%_50%_at_50%_0%,rgba(184,150,90,0.06),transparent_62%)]"
+                  aria-hidden
+                />
+                <div className="relative">
+                  <p className="font-display text-[48px] font-light leading-none text-brand-brass">
+                    {String(n).padStart(2, '0')}
+                  </p>
+                  <h3 className="mt-3 font-display text-[18px] font-normal leading-snug text-brand-ivory">{title}</h3>
+                  <p className="mt-3 font-body text-[14px] font-normal leading-relaxed text-[#B5B0A8]">{desc}</p>
                 </div>
-                <h3 className="mt-8 font-display text-[20px] font-normal leading-snug text-brand-ivory">{title}</h3>
-                <p className="mt-3 max-w-[160px] font-body text-[12px] font-normal leading-relaxed text-brand-mist">
-                  {desc}
-                </p>
               </motion.div>
             ))}
           </div>

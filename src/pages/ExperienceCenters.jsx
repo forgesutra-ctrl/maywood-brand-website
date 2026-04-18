@@ -1,13 +1,13 @@
 import { useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Clock, Instagram, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+import ExperienceCenterPhotoGallery from '../components/ExperienceCenterPhotoGallery'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
 import { supabase } from '../lib/supabase'
 import { IMAGES } from '../config/images'
-import { SOCIAL } from '../config/social'
 
 const MotionLink = motion(Link)
 const tapTransition = { type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }
@@ -28,32 +28,25 @@ const heroStripItems = [
   },
 ]
 
-const locations = [
-  {
-    name: 'Koramangala Experience Center',
-    address: '123, 5th Block, Koramangala, Bengaluru – 560095\n(Near Sony World Signal)',
-    mapsQuery: '123 5th Block Koramangala Bengaluru 560095',
-    imageSrc: IMAGES.corporate.reception,
-    imageAlt: 'Corporate reception — Maywood Interiors Bangalore',
-    bullets: [
-      'Full kitchen and wardrobe live mockups',
-      '300+ material and finish samples',
-      'Dedicated design consultation bays',
-    ],
-  },
-  {
-    name: 'Whitefield Experience Center',
-    address: 'Plot 47, ITPL Main Road, Whitefield, Bengaluru – 560066\n(Opposite Phoenix Marketcity)',
-    mapsQuery: 'Plot 47 ITPL Main Road Whitefield Bengaluru 560066',
-    imageSrc: IMAGES.spas.hero,
-    imageAlt: 'Spa reception — Maywood Interiors Bangalore',
-    bullets: [
-      'Commercial and hospitality display zone',
-      'In-house plywood material library',
-      'On-site 3D visualization studio',
-    ],
-  },
-]
+const RR_NAGAR = {
+  name: 'RR Nagar Experience Center',
+  addressLines: [
+    '34, 4th Cross Rd, RR Nagar via,',
+    'Uttarahalli Main Rd, Vaddara Palya,',
+    'Kodipur, Bengaluru, Karnataka 560061',
+  ],
+  hours: 'Monday – Saturday, 10am – 7pm | Sunday 11am – 5pm',
+  features: [
+    'Full wardrobe and kitchen live displays',
+    '300+ material and finish samples',
+    'Dedicated design consultation bays',
+    'ISO certified showroom',
+  ],
+  directionsUrl:
+    'https://maps.google.com/?q=34,4th+Cross+Rd,Uttarahalli+Main+Rd,Vaddara+Palya,Kodipur,Bengaluru,Karnataka+560061',
+  mapEmbedSrc:
+    'https://maps.google.com/maps?q=34+4th+Cross+Rd+Uttarahalli+Main+Rd+Vaddara+Palya+Kodipur+Bengaluru+Karnataka+560061&output=embed',
+}
 
 const visitSteps = [
   {
@@ -92,14 +85,31 @@ const initialVisitForm = {
   note: '',
 }
 
-function VisitProcessFlow() {
+function VisitProcessFlow({ forDarkBackdrop = false }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-10% 0px', amount: 0.15 })
 
+  const lineClass = forDarkBackdrop
+    ? 'bg-white/30'
+    : 'bg-[rgba(184,150,90,0.35)]'
+  const circleClass = forDarkBackdrop
+    ? 'relative z-[1] flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border border-white/60 bg-white/5 text-white'
+    : 'relative z-[1] flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border-[0.5px] border-brand-brass bg-brand-ivory-deep'
+  const circleShadow = forDarkBackdrop ? { boxShadow: '0 0 0 4px rgba(0,0,0,0.25)' } : { boxShadow: '0 0 0 4px #EDE8DF' }
+  const numClass = forDarkBackdrop ? 'font-display text-[20px] font-normal text-white' : 'font-display text-[20px] font-normal text-brand-brass'
+  const titleClass = forDarkBackdrop
+    ? 'mt-8 font-display text-[20px] font-normal leading-snug text-white'
+    : 'mt-8 font-display text-[20px] font-normal leading-snug text-brand-charcoal'
+  const descClass = forDarkBackdrop
+    ? 'mt-3 max-w-[200px] font-body text-[12px] font-normal leading-relaxed text-white/70'
+    : 'mt-3 max-w-[200px] font-body text-[12px] font-normal leading-relaxed text-brand-mist'
+
   return (
-    <div ref={ref} className="relative mt-16 lg:mt-20">
+    <div ref={ref} className={['relative mt-16 lg:mt-20', forDarkBackdrop ? 'z-10' : ''].filter(Boolean).join(' ')}>
       <div
-        className="pointer-events-none absolute left-[10%] right-[10%] top-[26px] hidden h-px bg-[rgba(184,150,90,0.35)] lg:block"
+        className={['pointer-events-none absolute left-[10%] right-[10%] top-[26px] hidden h-px lg:block', lineClass].join(
+          ' ',
+        )}
         aria-hidden
       />
 
@@ -107,7 +117,7 @@ function VisitProcessFlow() {
         {visitSteps.map(({ n, title, desc }, i) => (
           <motion.div
             key={title}
-            className="relative flex flex-col items-center text-center"
+            className="relative z-10 flex flex-col items-center text-center"
             initial={{ y: 28, opacity: 0 }}
             animate={inView ? { y: 0, opacity: 1 } : { y: 28, opacity: 0 }}
             transition={{
@@ -116,14 +126,11 @@ function VisitProcessFlow() {
               ease: motionEase,
             }}
           >
-            <div
-              className="relative z-[1] flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full border-[0.5px] border-brand-brass bg-brand-ivory-deep"
-              style={{ boxShadow: '0 0 0 4px #EDE8DF' }}
-            >
-              <span className="font-display text-[20px] font-normal text-brand-brass">{n}</span>
+            <div className={circleClass} style={circleShadow}>
+              <span className={numClass}>{n}</span>
             </div>
-            <h3 className="mt-8 font-display text-[20px] font-normal leading-snug text-brand-charcoal">{title}</h3>
-            <p className="mt-3 max-w-[200px] font-body text-[12px] font-normal leading-relaxed text-brand-mist">{desc}</p>
+            <h3 className={titleClass}>{title}</h3>
+            <p className={descClass}>{desc}</p>
           </motion.div>
         ))}
       </div>
@@ -170,7 +177,10 @@ export default function ExperienceCenters() {
           src={IMAGES.livingRooms.wide}
           alt="Living and dining interior — Maywood Interiors Bangalore"
           loading="eager"
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          className="absolute inset-0 w-full h-full object-cover object-center block"
+          onError={(e) => {
+            e.currentTarget.src = '/assets/images/fallback.jpg'
+          }}
         />
         <div className="absolute inset-0 bg-[#1C1915]/75" aria-hidden />
         <div className="relative z-[2] mx-auto w-full max-w-[1400px]">
@@ -209,98 +219,129 @@ export default function ExperienceCenters() {
         <div className="mx-auto max-w-[1400px]">
           <SectionLabel>Our Locations</SectionLabel>
           <AnimatedText
-            text="Two centers. Across Bangalore."
+            text="Visit us. See it in person."
             tag="h2"
             className="mt-6 max-w-[900px] font-display text-[clamp(30px,4vw,48px)] font-light leading-[1.08] text-brand-charcoal"
           />
 
-          <div className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-8">
-            {locations.map((loc) => (
-              <article key={loc.name} className="overflow-hidden bg-brand-ivory shadow-[0_20px_50px_-24px_rgba(28,25,21,0.12)] ring-1 ring-brand-brass-pale/60">
-                <div className="h-[300px] overflow-hidden">
-                  <img
-                    src={loc.imageSrc}
-                    alt={loc.imageAlt}
-                    loading="lazy"
-                    className="h-full min-h-[300px] w-full object-cover object-center"
-                  />
-                </div>
-                <div className="p-10">
-                  <span className="inline-block rounded-[2px] border-[0.5px] border-brand-brass bg-[rgba(184,150,90,0.1)] px-3.5 py-1 font-body text-[10px] font-medium uppercase tracking-[0.18em] text-brand-brass">
-                    Now Open
-                  </span>
-                  <h3 className="mt-5 font-display text-[30px] font-normal leading-tight text-brand-charcoal">{loc.name}</h3>
-                  <p className="mt-4 whitespace-pre-line font-body text-[14px] font-normal leading-[1.7] text-brand-mist">
-                    {loc.address}
+          <article className="mx-auto mt-14 max-w-[min(100%,900px)] overflow-hidden rounded-sm bg-brand-ivory shadow-[0_20px_50px_-24px_rgba(28,25,21,0.12)] ring-1 ring-brand-brass-pale/60">
+            <div className="h-[min(52vw,320px)] overflow-hidden sm:h-[340px]">
+              <img
+                src="/assets/images/experience-center/ec-hero.jpg"
+                alt=""
+                loading="lazy"
+                className="block h-full w-full object-cover object-center"
+              />
+            </div>
+            <div className="p-8 sm:p-10">
+              <span className="inline-block rounded-[2px] border-[0.5px] border-brand-brass bg-[rgba(184,150,90,0.1)] px-3.5 py-1 font-body text-[10px] font-medium uppercase tracking-[0.18em] text-brand-brass">
+                Now Open
+              </span>
+              <h3 className="mt-5 font-display text-[clamp(26px,3.5vw,32px)] font-normal leading-tight text-brand-charcoal">
+                {RR_NAGAR.name}
+              </h3>
+              <address className="mt-4 not-italic">
+                {RR_NAGAR.addressLines.map((line) => (
+                  <p key={line} className="font-body text-[14px] font-normal leading-[1.7] text-brand-mist">
+                    {line}
                   </p>
-                  <div className="mt-4 flex items-start gap-2">
-                    <Clock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-mist" strokeWidth={1.5} aria-hidden />
-                    <p className="font-body text-[13px] font-normal leading-relaxed text-brand-mist">
-                      Monday – Saturday, 10am – 7pm · Sunday 11am – 5pm
-                    </p>
-                  </div>
-                  <div className="mt-4 flex items-center gap-2">
-                    <span className="font-body text-[12px] font-normal text-brand-mist">Follow our journey</span>
-                    <a
-                      href={SOCIAL.instagram}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#B8965A] transition-opacity duration-200 hover:opacity-70"
-                      aria-label="Maywood Interiors on Instagram"
-                    >
-                      <Instagram size={18} strokeWidth={1.5} />
-                    </a>
-                  </div>
-                  <div className="my-6 h-px bg-brand-brass-pale" aria-hidden />
-                  <ul className="space-y-3">
-                    {loc.bullets.map((b) => (
-                      <li key={b} className="flex gap-3 font-body text-[13px] font-normal leading-relaxed text-brand-mist">
-                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-brass" aria-hidden />
-                        <span>{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-8 flex flex-wrap items-center gap-4">
-                    <a href="#book-visit" className={buttonClasses('primary')}>
-                      Book a Visit
-                    </a>
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.mapsQuery)}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-body text-[12px] font-medium uppercase tracking-[0.14em] text-brand-brass transition-opacity hover:opacity-80"
-                    >
-                      Get Directions →
-                    </a>
-                  </div>
+                ))}
+              </address>
+              <p className="mt-4 font-body text-[13px] font-normal leading-relaxed text-brand-mist">{RR_NAGAR.hours}</p>
+              <div className="my-6 h-px bg-brand-brass-pale" aria-hidden />
+              <ul className="space-y-3">
+                {RR_NAGAR.features.map((b) => (
+                  <li key={b} className="flex gap-3 font-body text-[13px] font-normal leading-relaxed text-brand-mist">
+                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-brass" aria-hidden />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <a href="#book-visit" className={buttonClasses('primary')}>
+                  Book a visit
+                </a>
+                <a
+                  href={RR_NAGAR.directionsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-body text-[12px] font-medium uppercase tracking-[0.14em] text-brand-brass transition-opacity hover:opacity-80"
+                >
+                  Get Directions →
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <div className="mx-auto mt-20 max-w-[min(100%,1100px)]">
+            <ExperienceCenterPhotoGallery />
+          </div>
+
+          <div className="mx-auto mt-16 max-w-[1400px]">
+            <iframe
+              title="RR Nagar Experience Center on Google Maps"
+              src={RR_NAGAR.mapEmbedSrc}
+              className="h-[300px] w-full rounded-sm border-0 md:h-[450px]"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
+          </div>
+
+          <div className="mx-auto mt-24 max-w-[1400px] rounded-sm bg-brand-charcoal px-6 py-16 sm:px-10 sm:py-20 lg:px-16">
+            <SectionLabel light>Expanding across Bangalore</SectionLabel>
+            <h2 className="mt-6 font-display text-[clamp(26px,3.5vw,40px)] font-light leading-[1.1] text-brand-ivory">
+              4 more centers coming soon.
+            </h2>
+            <p className="mt-4 max-w-xl font-body text-[14px] font-normal leading-relaxed text-white/70">
+              We&apos;re bringing Maywood closer to you — across every corner of Bangalore.
+            </p>
+            <div className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col items-center justify-center rounded-sm border border-dashed border-brand-brass/50 bg-brand-charcoal-mid/40 px-4 py-10 text-center sm:py-12"
+                >
+                  <span className="rounded-full border border-brand-brass/60 bg-brand-brass/10 px-5 py-2 font-body text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-brass-light">
+                    Coming soon
+                  </span>
+                  <p className="mt-4 font-body text-[12px] font-normal leading-snug text-white/60">
+                    New location — opening 2025-26
+                  </p>
                 </div>
-              </article>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="relative overflow-hidden px-6 py-28 lg:px-24">
+      <section className="relative w-full overflow-hidden bg-brand-charcoal px-6 py-28 lg:px-24">
         <img
-          src={IMAGES.spas.waiting}
-          alt="Hospitality lounge interior — Maywood Interiors Bangalore"
+          src="/assets/images/experience-center/gallery-02.png"
+          alt=""
           loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          className="absolute inset-0 z-0 block h-full w-full object-cover object-center"
+          onError={(e) => {
+            e.currentTarget.src = '/assets/images/fallback.jpg'
+          }}
         />
-        <div className="absolute inset-0 bg-brand-ivory-deep/88" aria-hidden />
-        <div className="relative z-[1] mx-auto max-w-[1400px]">
-          <SectionLabel>During Your Visit</SectionLabel>
+        <div
+          className="absolute inset-0 z-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70"
+          aria-hidden
+        />
+        <div className="relative z-10 mx-auto max-w-[1400px]">
+          <SectionLabel className="relative z-10">During Your Visit</SectionLabel>
           <AnimatedText
             text="A visit designed around your decision."
             tag="h2"
-            getWordClassName={(_w, i) => (i >= 4 ? 'italic' : '')}
-            className="mt-6 max-w-[920px] font-display text-[clamp(30px,4vw,48px)] font-light leading-[1.08] text-brand-charcoal"
+            getWordClassName={(_w, i) => (i >= 4 ? 'italic text-[#D4B483]' : '')}
+            className="relative z-10 mt-6 max-w-[920px] font-display text-[clamp(30px,4vw,48px)] font-light leading-[1.08] text-white"
           />
-          <p className="mt-6 max-w-[500px] font-body text-[14px] font-normal leading-relaxed text-brand-mist">
+          <p className="relative z-10 mt-6 max-w-[500px] font-body text-[14px] font-normal leading-relaxed text-white/80">
             No pressure. No salespeople chasing you around. Just a structured, guided experience to help you make the right
             choices.
           </p>
-          <VisitProcessFlow />
+          <VisitProcessFlow forDarkBackdrop />
         </div>
       </section>
 
@@ -389,8 +430,7 @@ export default function ExperienceCenters() {
                     required
                   >
                     <option value="">Select center</option>
-                    <option value="Koramangala">Koramangala</option>
-                    <option value="Whitefield">Whitefield</option>
+                    <option value="RR Nagar Experience Center">RR Nagar Experience Center</option>
                   </select>
                 </label>
                 <label className="block">
