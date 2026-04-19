@@ -250,7 +250,7 @@ export default function Navbar() {
         <div className="flex shrink-0 items-center gap-1 md:gap-3">
           <MotionLink
             to="/instant-quote"
-            className={buttonClasses('primary', 'hidden whitespace-nowrap lg:inline-flex')}
+            className={buttonClasses('ctaPrimary', 'hidden whitespace-nowrap lg:inline-flex focus-visible:ring-offset-[#F7F3ED]')}
             whileTap={{ scale: 0.98 }}
             transition={{ type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
           >
@@ -398,7 +398,7 @@ export default function Navbar() {
               <div className="shrink-0 border-t border-[rgba(184,150,90,0.25)] bg-[#1a1612] px-5 py-5">
                 <MotionLink
                   to="/instant-quote"
-                  className={buttonClasses('primary', 'w-full justify-center')}
+                  className={buttonClasses('ctaPrimary', 'w-full justify-center focus-visible:ring-offset-[#1a1612]')}
                   whileTap={{ scale: 0.98 }}
                   transition={{ type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
                   onClick={() => setMobileOpen(false)}

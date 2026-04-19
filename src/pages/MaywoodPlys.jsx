@@ -135,10 +135,7 @@ export default function MaywoodPlys() {
             </Link>
             <Link
               to="/experience-centers"
-              className={[
-                'inline-flex w-full justify-center sm:w-auto',
-                buttonClasses('ghost', 'text-brand-brass-light hover:border-brand-brass-light'),
-              ].join(' ')}
+              className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaSecondary', 'focus-visible:ring-offset-[#1a1612]')].join(' ')}
             >
               Book free consultation
             </Link>
@@ -282,16 +279,13 @@ export default function MaywoodPlys() {
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
             <Link
               to="/instant-quote"
-              className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('primary')].join(' ')}
+              className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaPrimary', 'focus-visible:ring-offset-[#1a1612]')].join(' ')}
             >
               Get a free quote
             </Link>
             <Link
               to="/experience-centers"
-              className={[
-                'inline-flex w-full justify-center sm:w-auto',
-                buttonClasses('ghost', 'text-brand-brass-light hover:border-brand-brass-light'),
-              ].join(' ')}
+              className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaSecondary', 'focus-visible:ring-offset-[#1a1612]')].join(' ')}
             >
               Book free consultation
             </Link>

@@ -510,8 +510,8 @@ export default function AboutUs() {
                     <Link
                       to="/experience-centers"
                       className={buttonClasses(
-                        'ghost',
-                        'flex w-full justify-center border-brand-brass text-brand-brass-light hover:border-brand-brass-light focus-visible:ring-offset-brand-charcoal',
+                        'ctaSecondary',
+                        'flex w-full justify-center focus-visible:ring-offset-brand-charcoal',
                       )}
                     >
                       Book free consultation

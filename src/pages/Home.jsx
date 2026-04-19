@@ -10,19 +10,8 @@ import ProcessSection from '../components/sections/ProcessSection'
 import { HOME_PROCESS_STEPS } from '../data/processSteps'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
-import { buttonBaseClass, buttonClasses } from '../lib/buttonStyles'
+import { buttonClasses } from '../lib/buttonStyles'
 import { IMAGES } from '../config/images'
-
-/** Hero only: visible gold outline on dark charcoal; matches primary padding & type scale */
-const heroConsultationCtaClass = [
-  'inline-flex cursor-pointer select-none items-center justify-center font-body text-[12px] font-medium uppercase leading-none tracking-[0.12em]',
-  'transition-[background-color,border-color,color,transform] duration-[250ms] ease-out',
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1612]',
-  'rounded-[2px] px-9 py-[14px]',
-  'border border-solid border-[rgba(184,150,90,0.8)] bg-transparent text-[rgba(184,150,90,1)]',
-  'hover:bg-[rgba(184,150,90,0.1)] hover:border-[rgba(184,150,90,1)]',
-  'w-full justify-center sm:w-auto',
-].join(' ')
 
 const MotionLink = motion(Link)
 
@@ -256,13 +245,16 @@ export default function Home() {
               <div className="flex w-full max-w-xl flex-col gap-4 pt-2 sm:max-w-none sm:flex-row sm:items-center sm:gap-4">
                 <MotionLink
                   to="/instant-quote"
-                  className={buttonClasses('primary', 'w-full justify-center sm:w-auto')}
+                  className={buttonClasses('ctaPrimary', 'w-full justify-center sm:w-auto focus-visible:ring-offset-[#1a1612]')}
                   whileTap={{ scale: 0.98 }}
                   transition={tapTransition}
                 >
                   Get Instant Quote
                 </MotionLink>
-                <Link to="/experience-centers" className={heroConsultationCtaClass}>
+                <Link
+                  to="/experience-centers"
+                  className={buttonClasses('ctaSecondary', 'w-full justify-center sm:w-auto focus-visible:ring-offset-[#1a1612]')}
+                >
                   BOOK FREE CONSULTATION
                 </Link>
               </div>
@@ -437,7 +429,7 @@ export default function Home() {
           <div className="mt-12 flex flex-col items-center">
             <MotionLink
               to="/instant-quote"
-              className={buttonClasses('primary', 'min-w-[min(100%,280px)] justify-center px-10 py-[16px] text-[13px]')}
+              className={buttonClasses('ctaPrimary', 'min-w-[min(100%,280px)] justify-center focus-visible:ring-offset-[#f5f0eb]')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
             >
@@ -657,7 +649,7 @@ export default function Home() {
               </p>
               <MotionLink
                 to="#consultation"
-                className={['mt-8 flex w-full justify-center', buttonClasses('primary')].join(' ')}
+                className={['mt-8 flex w-full justify-center', buttonClasses('ctaSecondary', 'focus-visible:ring-offset-[#1e1a14]')].join(' ')}
                 whileTap={{ scale: 0.98 }}
                 transition={tapTransition}
               >
@@ -754,7 +746,7 @@ export default function Home() {
           <div className="mx-auto mt-10 flex w-full max-w-md flex-col gap-4 sm:max-w-none sm:flex-row sm:items-center sm:justify-center">
             <MotionLink
               to="/instant-quote"
-              className={buttonClasses('dark', 'w-full justify-center sm:w-auto')}
+              className={buttonClasses('ctaPrimary', 'w-full justify-center sm:w-auto focus-visible:ring-offset-brand-brass')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
             >
@@ -762,12 +754,7 @@ export default function Home() {
             </MotionLink>
             <MotionLink
               to="/experience-centers"
-              className={[
-                buttonBaseClass,
-                'w-full justify-center rounded-[2px] px-9 py-[14px] sm:w-auto',
-                'border border-[rgba(28,25,21,0.35)] bg-transparent text-brand-charcoal hover:border-brand-charcoal',
-                'focus-visible:ring-offset-brand-brass',
-              ].join(' ')}
+              className={buttonClasses('ctaSecondary', 'w-full justify-center sm:w-auto focus-visible:ring-offset-brand-brass')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
             >

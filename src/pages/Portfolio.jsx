@@ -96,7 +96,7 @@ export default function Portfolio() {
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <MotionLink
               to="/instant-quote"
-              className={buttonClasses('dark')}
+              className={buttonClasses('ctaPrimary', 'focus-visible:ring-offset-brand-brass')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
             >

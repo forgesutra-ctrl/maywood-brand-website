@@ -682,7 +682,7 @@ export default function InstantQuote() {
               <button
                 type="button"
                 onClick={openConsultationModal}
-                className={buttonClasses('primary', 'w-full justify-center sm:flex-1')}
+                className={buttonClasses('ctaSecondary', 'w-full justify-center sm:flex-1 focus-visible:ring-offset-brand-ivory')}
               >
                 BOOK A FREE CONSULTATION
               </button>

@@ -98,7 +98,7 @@ export default function Products() {
           <div className="mt-12 flex w-full max-w-xl flex-col gap-4 sm:max-w-none sm:flex-row sm:items-center">
             <MotionLink
               to="/instant-quote"
-              className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('primary')].join(' ')}
+              className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaPrimary', 'focus-visible:ring-offset-[#1C1915]')].join(' ')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
             >
@@ -106,10 +106,7 @@ export default function Products() {
             </MotionLink>
             <MotionLink
               to="/experience-centers"
-              className={[
-                'inline-flex w-full justify-center sm:w-auto',
-                buttonClasses('ghost', 'text-brand-brass-light hover:border-brand-brass-light'),
-              ].join(' ')}
+              className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaSecondary', 'focus-visible:ring-offset-[#1C1915]')].join(' ')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
             >

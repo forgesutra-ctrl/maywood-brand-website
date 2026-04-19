@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import ProcessSection from '../sections/ProcessSection'
 import SectionLabel from '../ui/SectionLabel'
 import AnimatedText from '../ui/AnimatedText'
-import { buttonBaseClass, buttonClasses } from '../../lib/buttonStyles'
+import { buttonClasses } from '../../lib/buttonStyles'
 
 const MotionLink = motion(Link)
 
@@ -24,7 +24,7 @@ export function ProductsBrassCta() {
         <div className="mx-auto mt-10 flex w-full max-w-sm flex-col gap-4 sm:max-w-none sm:flex-row sm:justify-center">
           <MotionLink
             to="/instant-quote"
-            className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('primary')].join(' ')}
+            className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaPrimary', 'focus-visible:ring-offset-brand-brass')].join(' ')}
             whileTap={{ scale: 0.98 }}
             transition={tapTransition}
           >
@@ -32,12 +32,7 @@ export function ProductsBrassCta() {
           </MotionLink>
           <MotionLink
             to="/experience-centers"
-            className={[
-              buttonBaseClass,
-              'inline-flex w-full justify-center rounded-[2px] px-9 py-[14px] sm:w-auto',
-              'border border-[rgba(28,25,21,0.45)] bg-transparent text-brand-charcoal hover:border-brand-charcoal',
-              'focus-visible:ring-offset-brand-brass',
-            ].join(' ')}
+            className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaSecondary', 'focus-visible:ring-offset-brand-brass')].join(' ')}
             whileTap={{ scale: 0.98 }}
             transition={tapTransition}
           >
@@ -109,7 +104,7 @@ export default function ProductSubPage({
           <div className="mt-10 flex w-full max-w-xl flex-col gap-4 sm:max-w-none sm:flex-row sm:items-center">
             <MotionLink
               to="/instant-quote"
-              className={buttonClasses('primary', 'w-full justify-center sm:w-auto')}
+              className={buttonClasses('ctaPrimary', 'w-full justify-center sm:w-auto focus-visible:ring-offset-[#1C1915]')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
             >
@@ -117,7 +112,7 @@ export default function ProductSubPage({
             </MotionLink>
             <MotionLink
               to="/experience-centers"
-              className={buttonClasses('ghost', 'w-full justify-center text-brand-brass-light hover:border-brand-brass-light sm:w-auto')}
+              className={buttonClasses('ctaSecondary', 'w-full justify-center sm:w-auto focus-visible:ring-offset-[#1C1915]')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
             >
