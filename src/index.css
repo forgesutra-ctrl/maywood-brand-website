@@ -30,6 +30,12 @@ body {
   body.custom-cursor-on input[type='submit'] {
     cursor: none;
   }
+
+  /* Hero image carousel: show normal cursor; CustomCursor hides ring/dot via JS */
+  body.custom-cursor-on [data-hide-custom-cursor],
+  body.custom-cursor-on [data-hide-custom-cursor] * {
+    cursor: default !important;
+  }
 }
 
 @keyframes home-marquee {
@@ -49,4 +55,11 @@ body {
 
 .home-marquee-track:hover {
   animation-play-state: paused;
+}
+
+/* Homepage hero: gold ticker below CTAs */
+.hero-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: home-marquee 75s linear infinite;
 }

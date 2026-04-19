@@ -17,6 +17,7 @@ const SOLUTIONS_ITEMS = [
 ]
 
 const ABOUT_ITEMS = [
+  { label: 'Experience Centers', to: '/experience-centers' },
   { label: 'Maywood Process', to: '/project-studio' },
   { label: 'The Team', to: '/about#team' },
   { label: 'Awards & Certifications', to: '/about#awards' },
@@ -25,10 +26,8 @@ const ABOUT_ITEMS = [
 
 const DIRECT_NAV = [
   { label: 'Maywood Finance', to: '/finance' },
-  { label: 'Maywood Manufacturing', to: '/manufacturing' },
+  { label: 'Manufacturing', to: '/manufacturing' },
   { label: 'Maywood Ply', to: '/maywood-plys' },
-  { label: 'Maywood Project Studio', to: '/project-studio' },
-  { label: 'Experience Centers', to: '/experience-centers' },
   { label: 'Partner Program', to: '/partners' },
 ]
 
@@ -58,7 +57,11 @@ function isSolutionsActive(pathname) {
 }
 
 function isAboutParentActive(pathname) {
-  return pathname === '/about'
+  return (
+    pathname === '/about' ||
+    pathname === '/experience-centers' ||
+    pathname === '/project-studio'
+  )
 }
 
 function isDropdownItemActive(location, to) {

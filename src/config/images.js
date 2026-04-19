@@ -1,10 +1,6 @@
 export const IMAGES = {
   heroCarousel: [
     {
-      src: '/assets/images/generated/home-living-room-hero.png',
-      alt: 'Premium Indian living room interior — Maywood Interiors Bangalore',
-    },
-    {
       src: '/images/gemini/kitchen-premium.png',
       alt: 'Modular kitchen design — Maywood Interiors Bangalore',
     },
@@ -60,36 +56,64 @@ export const IMAGES = {
 
   portfolio: [
     {
-      src: '/assets/images/generated/home-2bhk-project.png',
+      src: '/assets/images/projects/3bhk-full-home/3bhk-01.jpg',
+      carouselImages: [
+        '/assets/images/projects/3bhk-full-home/3bhk-01.jpg',
+        '/assets/images/projects/3bhk-full-home/3bhk-02.jpg',
+        '/assets/images/projects/3bhk-full-home/3bhk-03.jpg',
+        '/assets/images/projects/3bhk-full-home/3bhk-04.jpg',
+        '/assets/images/projects/3bhk-full-home/3bhk-05.jpg',
+        '/assets/images/projects/3bhk-full-home/3bhk-06.jpg',
+      ],
       tag: 'Residential · Bangalore',
       title: '3BHK Full Home Interiors',
       detail: 'False ceiling, TV unit, teak carpentry, full home',
       alt: '3BHK full home interiors — Maywood Interiors Bangalore',
     },
     {
-      src: '/images/gemini/kitchen-premium.png',
-      tag: 'Modular Kitchen · Bangalore',
+      src: '/assets/images/projects/parallel-kitchen/kitchen-01.jpg',
+      carouselImages: [
+        '/assets/images/projects/parallel-kitchen/kitchen-01.jpg',
+        '/assets/images/projects/parallel-kitchen/kitchen-02.jpg',
+        '/assets/images/projects/parallel-kitchen/kitchen-03.jpg',
+        '/assets/images/projects/parallel-kitchen/kitchen-04.jpg',
+      ],
+      tag: 'MODULAR KITCHEN · BANGALORE',
       title: 'Premium Parallel Kitchen',
       detail: 'Cream cabinets, gold edges, geometric backsplash',
       alt: 'Premium modular kitchen — Maywood Interiors Bangalore',
     },
     {
-      src: '/assets/images/generated/corporate-office-open.png',
-      tag: 'Commercial · Bangalore',
+      src: '/assets/images/projects/corporate-office/office-01.jpg',
+      carouselImages: [
+        '/assets/images/projects/corporate-office/office-01.jpg',
+        '/assets/images/projects/corporate-office/office-02.jpg',
+      ],
+      tag: 'COMMERCIAL · BANGALORE',
       title: 'Corporate Office Fit-Out',
       detail: 'Open plan, glass cabins, teak workstations',
       alt: 'Corporate office fit-out — Maywood Interiors Bangalore',
     },
     {
-      src: '/images/gemini/bedroom-indian.png',
-      tag: 'Residential · Bedroom',
+      src: '/assets/images/projects/master-bedroom/bedroom-01.jpg',
+      carouselImages: [
+        '/assets/images/projects/master-bedroom/bedroom-01.jpg',
+        '/assets/images/projects/master-bedroom/bedroom-02.jpg',
+        '/assets/images/projects/master-bedroom/bedroom-03.jpg',
+        '/assets/images/projects/master-bedroom/bedroom-04.jpg',
+      ],
+      tag: 'RESIDENTIAL · BEDROOM',
       title: 'Indian Master Bedroom',
       detail: 'Floral wallpaper panel, teak bed, mauve wardrobes',
       alt: 'Indian bedroom design — Maywood Interiors Bangalore',
     },
     {
-      src: '/images/gemini/spa-treatment-room.png',
-      tag: 'Hospitality · Wellness',
+      src: '/assets/images/projects/spa-treatment/spa-01.jpg',
+      carouselImages: [
+        '/assets/images/projects/spa-treatment/spa-01.jpg',
+        '/assets/images/projects/spa-treatment/spa-02.jpg',
+      ],
+      tag: 'HOSPITALITY · WELLNESS',
       title: 'Luxury Spa Treatment Room',
       detail: 'Fluted wood panel, marble floor, ambient lighting',
       alt: 'Spa treatment room — Maywood Interiors Bangalore',

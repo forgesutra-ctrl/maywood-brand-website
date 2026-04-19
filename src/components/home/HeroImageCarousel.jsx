@@ -26,7 +26,7 @@ export default function HeroImageCarousel({ className = '' }) {
           alt={slide.alt}
           loading="eager"
           className={[
-            'absolute inset-0 h-full min-h-full w-full min-w-full object-cover object-top block transition-opacity duration-[900ms] ease-out',
+            'absolute inset-0 h-full min-h-full w-full min-w-full object-cover object-center block transition-opacity duration-[900ms] ease-out',
             i === index ? 'opacity-100' : 'opacity-0',
           ].join(' ')}
           onError={(e) => {

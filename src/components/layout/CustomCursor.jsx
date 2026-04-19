@@ -19,6 +19,7 @@ export default function CustomCursor() {
   const target = useRef({ x: 0, y: 0 })
   const ringPos = useRef({ x: 0, y: 0 })
   const hovering = useRef(false)
+  const suppressCursor = useRef(false)
   const raf = useRef(0)
   const ringInit = useRef(false)
 
@@ -47,9 +48,10 @@ export default function CustomCursor() {
         ringInit.current = true
       }
       const under = document.elementFromPoint(e.clientX, e.clientY)
+      suppressCursor.current = Boolean(under?.closest('[data-hide-custom-cursor]'))
       hovering.current = isInteractive(under)
       if (ringRef.current) {
-        ringRef.current.classList.toggle('cursor-ring--hover', hovering.current)
+        ringRef.current.classList.toggle('cursor-ring--hover', hovering.current && !suppressCursor.current)
       }
     }
 
@@ -59,13 +61,16 @@ export default function CustomCursor() {
 
       const dx = target.current.x
       const dy = target.current.y
+      const hidden = suppressCursor.current
       if (dotRef.current) {
         dotRef.current.style.transform = `translate3d(${dx}px, ${dy}px, 0) translate(-50%, -50%)`
+        dotRef.current.style.opacity = hidden ? '0' : ''
       }
       if (ringRef.current) {
         const rx = ringPos.current.x
         const ry = ringPos.current.y
         ringRef.current.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`
+        ringRef.current.style.opacity = hidden ? '0' : ''
       }
       raf.current = requestAnimationFrame(loop)
     }
