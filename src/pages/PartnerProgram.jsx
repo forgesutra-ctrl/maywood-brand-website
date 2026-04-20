@@ -268,44 +268,53 @@ export default function PartnerProgram() {
   return (
     <main className="flex-1">
       {/* HERO */}
-      <section className="relative flex min-h-[72vh] w-full flex-col overflow-hidden bg-brand-charcoal">
-        <div className="flex flex-1 flex-col justify-center px-6 py-28 lg:px-24 lg:py-32">
-          <div className="mx-auto w-full max-w-[1400px]">
-            <SectionLabel light>Partner Program</SectionLabel>
+      <section className="relative flex min-h-[72vh] w-full flex-col overflow-hidden">
+        <img
+          src="/assets/images/partners-hero.jpg"
+          alt=""
+          loading="eager"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-black/70" aria-hidden />
+        <div className="relative z-10 flex flex-1 flex-col">
+          <div className="flex flex-1 flex-col justify-center px-6 py-28 lg:px-24 lg:py-32">
+            <div className="mx-auto w-full max-w-[1400px]">
+              <SectionLabel light>Partner Program</SectionLabel>
 
-            <AnimatedText
-              text="Build a Scalable Interior Business. Backed by Maywood."
-              tag="h1"
-              getWordClassName={(_w, i) => (i >= 6 ? 'italic text-[#D4B483]' : '')}
-              className="mt-8 max-w-[1100px] font-display text-[60px] font-light leading-[1.06] text-brand-ivory max-lg:text-[clamp(34px,8vw,60px)]"
-            />
+              <AnimatedText
+                text="Build a Scalable Interior Business. Backed by Maywood."
+                tag="h1"
+                getWordClassName={(_w, i) => (i >= 6 ? 'italic text-[#D4B483]' : '')}
+                className="mt-8 max-w-[1100px] font-display text-[60px] font-light leading-[1.06] text-brand-ivory max-lg:text-[clamp(34px,8vw,60px)]"
+              />
 
-            <p className="mt-8 max-w-[560px] font-body text-[15px] font-normal leading-[1.85] text-brand-mist-light">
-              Join Bangalore&apos;s most reliable interior execution network. We handle manufacturing, quality,
-              technology and logistics — you focus on clients and growth.
-            </p>
+              <p className="mt-8 max-w-[560px] font-body text-[15px] font-normal leading-[1.85] text-brand-mist-light">
+                Join Bangalore&apos;s most reliable interior execution network. We handle manufacturing, quality,
+                technology and logistics — you focus on clients and growth.
+              </p>
 
-            <div className="mt-10 flex flex-wrap items-center gap-4">
-              <a href="#apply" className={[buttonClasses('primary'), 'uppercase tracking-[0.12em]'].join(' ')}>
-                Apply to Partner
-              </a>
-              <a
-                href="/partner-deck.pdf"
-                className={[buttonClasses('ghost', 'text-brand-ivory hover:border-brand-brass'), 'uppercase tracking-[0.12em]'].join(
-                  ' ',
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Download Program Overview
-              </a>
+              <div className="mt-10 flex flex-wrap items-center gap-4">
+                <a href="#apply" className={[buttonClasses('primary'), 'uppercase tracking-[0.12em]'].join(' ')}>
+                  Apply to Partner
+                </a>
+                <a
+                  href="/partner-deck.pdf"
+                  className={[buttonClasses('ghost', 'text-brand-ivory hover:border-brand-brass'), 'uppercase tracking-[0.12em]'].join(
+                    ' ',
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Download Program Overview
+                </a>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="border-t border-white/[0.08] bg-brand-ivory-deep px-6 py-10 lg:px-24">
-          <div className="mx-auto max-w-[1400px]">
-            <HeroStatStrip />
+          <div className="border-t border-white/[0.08] bg-brand-ivory-deep px-6 py-10 lg:px-24">
+            <div className="mx-auto max-w-[1400px]">
+              <HeroStatStrip />
+            </div>
           </div>
         </div>
       </section>
