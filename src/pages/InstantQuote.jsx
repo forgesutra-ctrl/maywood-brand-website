@@ -2,6 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, ChevronRight } from 'lucide-react'
 import ConsultationBookingModal from '../components/ConsultationBookingModal'
+import MaywoodCalculator from '../components/MaywoodCalculator'
+import {
+  computeEstimate,
+  emiMonthly,
+  formatInr,
+  formatInrRange,
+  parseAreaNumber,
+  SQMT_TO_SQFT,
+} from '../lib/maywoodEstimate'
 import { buttonBaseClass, buttonClasses } from '../lib/buttonStyles'
 
 const STEP_LABELS = [
@@ -9,7 +18,6 @@ const STEP_LABELS = [
   'Property Type',
   'Scope',
   'Area',
-  'Budget',
   'Location',
   'Estimate',
 ]
@@ -49,150 +57,10 @@ const SCOPE_BY_PROPERTY = {
   ],
 }
 
-const BUDGET_BY_PROPERTY = {
-  Residential: [
-    'Under ₹5 Lakhs',
-    '₹5L – ₹10L',
-    '₹10L – ₹20L',
-    '₹20L – ₹35L',
-    '₹35L – ₹50L',
-    'Above ₹50L',
-  ],
-  Commercial: [
-    'Under ₹10 Lakhs',
-    '₹10L – ₹25L',
-    '₹25L – ₹50L',
-    '₹50L – ₹1 Cr',
-    'Above ₹1 Cr',
-  ],
-  Retail: [
-    'Under ₹5 Lakhs',
-    '₹5L – ₹15L',
-    '₹15L – ₹30L',
-    '₹30L – ₹50L',
-    'Above ₹50L',
-  ],
-}
-
 const AREA_PILLS = {
   Residential: [500, 800, 1000, 1200, 1500, '2000+'],
   Commercial: [500, 1000, 2000, 5000, '10000+'],
   Retail: [200, 500, 800, '1500+'],
-}
-
-/** Rates keyed exactly to SCOPE_BY_PROPERTY labels */
-const SCOPE_RATES = {
-  Residential: {
-    'Full Home Interiors': { kind: 'sqft', min: 1200, max: 1800 },
-    'Modular Kitchen': { kind: 'flat', min: 150_000, max: 350_000 },
-    'Wardrobes & Storage': { kind: 'flat', min: 60_000, max: 150_000 },
-    'Living & Dining': { kind: 'flat', min: 80_000, max: 180_000 },
-    Bedrooms: { kind: 'perRoom', min: 70_000, max: 150_000, rooms: 1 },
-    'Home Office': { kind: 'flat', min: 50_000, max: 120_000 },
-    'Pooja Room': { kind: 'flat', min: 40_000, max: 90_000 },
-    Bathrooms: { kind: 'flat', min: 40_000, max: 80_000 },
-  },
-  Commercial: {
-    'Full Office Fit-out': { kind: 'sqft', min: 1500, max: 2200 },
-    'Open Workstations': { kind: 'sqft', min: 900, max: 1400 },
-    'Cabin & Conference': { kind: 'sqft', min: 1200, max: 2000 },
-    'Reception & Lobby': { kind: 'sqft', min: 1000, max: 1800 },
-    'Breakout Areas': { kind: 'sqft', min: 800, max: 1200 },
-    'IT & Server Room': { kind: 'flat', min: 120_000, max: 200_000 },
-  },
-  Retail: {
-    'Full Store Fit-out': { kind: 'sqft', min: 1200, max: 2000 },
-    'Storefront & Façade': { kind: 'sqft', min: 800, max: 1500 },
-    'Display Fixtures': { kind: 'sqft', min: 600, max: 1200 },
-    'Trial Rooms': { kind: 'flat', min: 80_000, max: 150_000 },
-    'Checkout & POS': { kind: 'flat', min: 60_000, max: 120_000 },
-    'Storage & Back Office': { kind: 'flat', min: 50_000, max: 100_000 },
-  },
-}
-
-const SQMT_TO_SQFT = 10.7639
-
-function formatInr(n) {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(Math.round(n))
-}
-
-function formatInrRange(low, high) {
-  return `${formatInr(low)} – ${formatInr(high)}`
-}
-
-/** EMI (monthly) at 12% p.a. for n months */
-function emiMonthly(principal, annualRate, months) {
-  if (!principal || principal <= 0) return 0
-  const r = annualRate / 12
-  if (r === 0) return principal / months
-  const pow = (1 + r) ** months
-  return (principal * r * pow) / (pow - 1)
-}
-
-function parseAreaNumber(raw, unit) {
-  const cleaned = String(raw ?? '')
-    .replace(/,/g, '')
-    .match(/[\d.]+/)
-  if (!cleaned) return null
-  const n = parseFloat(cleaned[0])
-  if (!Number.isFinite(n) || n <= 0) return null
-  const sqft = unit === 'sqmt' ? n * SQMT_TO_SQFT : n
-  return sqft
-}
-
-function computeEstimate(propertyType, scopeKeys, areaSqft) {
-  const table = SCOPE_RATES[propertyType] || {}
-  const breakdown = []
-  let flatMin = 0
-  let flatMax = 0
-  let sumSqftMin = 0
-  let sumSqftMax = 0
-
-  for (const label of scopeKeys) {
-    const rate = table[label]
-    if (!rate) continue
-    if (rate.kind === 'flat') {
-      flatMin += rate.min
-      flatMax += rate.max
-      breakdown.push({
-        label,
-        low: rate.min,
-        high: rate.max,
-        line: `${formatInr(rate.min)} – ${formatInr(rate.max)}`,
-      })
-    } else if (rate.kind === 'perRoom') {
-      const rooms = rate.rooms ?? 1
-      const cMin = rate.min * rooms
-      const cMax = rate.max * rooms
-      flatMin += cMin
-      flatMax += cMax
-      breakdown.push({
-        label,
-        low: cMin,
-        high: cMax,
-        line: `${formatInr(rate.min)} – ${formatInr(rate.max)} / room`,
-      })
-    } else {
-      sumSqftMin += rate.min
-      sumSqftMax += rate.max
-      const cMin = rate.min * areaSqft
-      const cMax = rate.max * areaSqft
-      breakdown.push({
-        label,
-        low: cMin,
-        high: cMax,
-        line: `${formatInr(rate.min)} – ${formatInr(rate.max)} / sq ft → ${formatInr(cMin)} – ${formatInr(cMax)}`,
-      })
-    }
-  }
-
-  const totalMin = flatMin + sumSqftMin * areaSqft
-  const totalMax = flatMax + sumSqftMax * areaSqft
-  return { breakdown, totalMin, totalMax }
 }
 
 function pillToSqft(pill) {
@@ -230,7 +98,6 @@ export default function InstantQuote() {
   const [scope, setScope] = useState([])
   const [areaInput, setAreaInput] = useState('')
   const [areaUnit, setAreaUnit] = useState('sqft')
-  const [budget, setBudget] = useState('')
   const [location, setLocation] = useState('')
   const [estimateLow, setEstimateLow] = useState(0)
   const [estimateHigh, setEstimateHigh] = useState(0)
@@ -257,7 +124,11 @@ export default function InstantQuote() {
     [areaInput, areaUnit, propertyType],
   )
 
-  const emiApprox = useMemo(() => emiMonthly(estimateLow, 0.12, 36), [estimateLow])
+  const estimateMid = useMemo(
+    () => (estimateLow + estimateHigh) / 2,
+    [estimateLow, estimateHigh],
+  )
+  const emiApprox = useMemo(() => emiMonthly(estimateMid, 0.12, 36), [estimateMid])
 
   const toggleScope = (key) => {
     setScope((prev) => (prev.includes(key) ? prev.filter((s) => s !== key) : [...prev, key]))
@@ -272,11 +143,10 @@ export default function InstantQuote() {
   const selectProperty = (type) => {
     setPropertyType(type)
     setScope([])
-    setBudget('')
     setStep(3)
   }
 
-  const handleStep6Submit = (e) => {
+  const handleStep5Submit = (e) => {
     e.preventDefault()
     if (!location.trim() || !propertyType || !areaSqft || scope.length === 0) return
 
@@ -293,7 +163,6 @@ export default function InstantQuote() {
       scope: [...scope],
       area: areaInput.trim(),
       areaUnit,
-      budget,
       location: location.trim(),
       estimateLow: Math.round(totalMin),
       estimateHigh: Math.round(totalMax),
@@ -301,7 +170,7 @@ export default function InstantQuote() {
     }
     console.log(payload)
 
-    setStep(7)
+    setStep(6)
   }
 
   const goBack = () => {
@@ -323,14 +192,10 @@ export default function InstantQuote() {
       setStep(5)
       return
     }
-    if (step === 7) {
-      setStep(6)
-      return
-    }
     setStep((s) => s - 1)
   }
 
-  const progressPct = Math.min(100, (step / 7) * 100)
+  const progressPct = Math.min(100, (step / 6) * 100)
 
   const stepContent = (() => {
     switch (step) {
@@ -581,45 +446,12 @@ export default function InstantQuote() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.3 }}
-            className="mx-auto max-w-[640px]"
-          >
-            <h2 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
-              What&apos;s your approximate budget?
-            </h2>
-            <p className="mt-3 font-body text-[14px] font-normal text-brand-mist">
-              We&apos;ll tailor our recommendation to your range
-            </p>
-            <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {BUDGET_BY_PROPERTY[propertyType].map((b) => (
-                <button
-                  key={b}
-                  type="button"
-                  onClick={() => {
-                    setBudget(b)
-                    setStep(6)
-                  }}
-                  className="rounded-sm border border-brand-brass-pale bg-brand-ivory-deep/30 px-5 py-4 text-left font-body text-[14px] text-brand-charcoal transition-all hover:border-brand-brass hover:bg-brand-brass-pale/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass"
-                >
-                  {b}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )
-      case 6:
-        return (
-          <motion.div
-            key="s6"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.3 }}
             className="mx-auto max-w-[480px]"
           >
             <h2 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
               Which area in Bangalore?
             </h2>
-            <form onSubmit={handleStep6Submit} className="mt-10 space-y-10">
+            <form onSubmit={handleStep5Submit} className="mt-10 space-y-10">
               <div>
                 <label className={labelClass}>Location</label>
                 <input
@@ -646,10 +478,10 @@ export default function InstantQuote() {
             </form>
           </motion.div>
         )
-      case 7:
+      case 6:
         return (
           <motion.div
-            key="s7"
+            key="s6"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -678,6 +510,7 @@ export default function InstantQuote() {
                 As low as {formatInr(Math.round(emiApprox))} / month on 36-month plan
               </p>
             </div>
+            <MaywoodCalculator className="mt-10" contactGate={false} />
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
               <button
                 type="button"
@@ -719,7 +552,7 @@ export default function InstantQuote() {
             />
           </div>
           <p className="mt-3 font-body text-[11px] font-medium uppercase tracking-[0.16em] text-brand-mist">
-            Step {step} of 7
+            Step {step} of 6
             <span className="mx-2 text-brand-brass/40" aria-hidden>
               ·
             </span>
@@ -727,7 +560,7 @@ export default function InstantQuote() {
           </p>
         </div>
 
-        {step > 1 && step < 7 ? (
+        {step > 1 && step < 6 ? (
           <button
             type="button"
             onClick={goBack}

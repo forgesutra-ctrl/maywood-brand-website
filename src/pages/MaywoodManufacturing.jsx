@@ -18,10 +18,10 @@ const HERO_STATS = [
 ]
 
 const MICRO_STATS = [
-  { label: 'Production Capacity', value: '80 projects/month' },
-  { label: 'CNC Machines', value: '12 units' },
-  { label: 'Edge Banding Lines', value: '6 lines' },
-  { label: 'Quality Checkpoints', value: '4 stages' },
+  { value: '30', label: 'PROJECTS / MONTH', subtext: 'Production Capacity' },
+  { value: '4', label: 'TYPES OF MACHINES' },
+  { value: '2', label: 'PRODUCTION LINES' },
+  { value: '4', label: 'QUALITY CHECK POINTS', subtext: 'Stages' },
 ]
 
 const PROCESS_STEPS = [
@@ -30,12 +30,19 @@ const PROCESS_STEPS = [
     desc: 'Maywood Plys and sourced materials are inspected and logged on arrival. No substandard raw material enters the production floor.',
   },
   {
-    title: 'CNC Precision Cutting',
-    desc: 'Computer-controlled cutting to tolerances of 0.1mm. Every panel is cut exactly to spec — no manual error.',
+    label: '60 Ton Cold Press',
+    title: 'Stronger bonding. No bubbling.',
+    desc: 'High-pressure pressing ensures firm bonding between layers — preventing air gaps, bubbles, and long-term damage.',
   },
   {
-    title: 'Edge Banding & Surface Treatment',
-    desc: 'All exposed edges sealed and finished. Surface laminates applied under controlled pressure for perfect adhesion.',
+    label: 'Panel Saw',
+    title: 'Perfect cuts. Clean finishes.',
+    desc: 'Precision cutting ensures every panel fits exactly as designed — no gaps, no uneven edges.',
+  },
+  {
+    label: 'Multi-boring',
+    title: 'Accurate joints. Solid structure.',
+    desc: 'Pre-drilled precision joints ensure better alignment, stronger assembly, and long-term durability.',
   },
   {
     title: 'Sub-Assembly',
@@ -44,10 +51,6 @@ const PROCESS_STEPS = [
   {
     title: 'Quality Inspection',
     desc: 'Every piece passes a 22-point checklist before dispatch. Defect rate: under 0.3%.',
-  },
-  {
-    title: 'Dispatch & Installation',
-    desc: 'Units wrapped, loaded and delivered on schedule. Our own installation crews handle the on-site fit.',
   },
 ]
 
@@ -98,18 +101,19 @@ function HeroStatStrip() {
 }
 
 const processStepImageAlt = [
-  'Home office interior — Maywood Interiors Bangalore',
-  'Corporate workstations — Maywood Interiors Bangalore',
-  'Home office interior — Maywood Interiors Bangalore',
-  'Corporate workstations — Maywood Interiors Bangalore',
-  'Home office interior — Maywood Interiors Bangalore',
-  'Corporate workstations — Maywood Interiors Bangalore',
+  'Material intake at Maywood manufacturing — Bangalore',
+  'Cold press bonding — Maywood manufacturing — Bangalore',
+  'Panel saw precision cutting — Maywood manufacturing — Bangalore',
+  'Multi-boring and drilling — Maywood manufacturing — Bangalore',
+  'Sub-assembly bay — Maywood manufacturing — Bangalore',
+  'Quality inspection — Maywood manufacturing — Bangalore',
 ]
 
 const PROCESS_STEP_IMAGE_SRC = [
   '/assets/images/generated/mfg-step1-material-intake.png',
-  '/assets/images/generated/mfg-step2-cnc-cutting.png',
-  '/assets/images/generated/mfg-step3-edge-banding.png',
+  '/assets/images/manufacturing/cold-press.jpg',
+  '/assets/images/manufacturing/panel-saw.jpg',
+  '/assets/images/manufacturing/multi-boring.jpg',
   '/assets/images/generated/mfg-step4-sub-assembly.png',
   '/assets/images/generated/mfg-step5-quality-inspection.png',
 ]
@@ -146,17 +150,38 @@ function ProcessStepRow({ step, index }) {
           >
             {String(index + 1).padStart(2, '0')}
           </span>
-          <h3 className="relative font-display text-[24px] font-normal leading-snug text-brand-charcoal">{step.title}</h3>
+          {step.label ? (
+            <p className="relative font-body text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-brass">{step.label}</p>
+          ) : null}
+          <h3
+            className={`relative font-display text-[24px] font-normal leading-snug text-brand-charcoal${step.label ? ' mt-2' : ''}`}
+          >
+            {step.title}
+          </h3>
           <p className="relative mt-4 max-w-md font-body text-[13px] font-normal leading-[1.8] text-brand-mist">{step.desc}</p>
         </div>
       </div>
 
-      <div className={`relative h-[260px] overflow-hidden lg:h-[260px] ${isEven ? 'order-1' : 'order-2'}`}>
+      <div
+        className={[
+          'relative overflow-hidden',
+          isEven ? 'order-1' : 'order-2',
+          index === 1
+            ? 'min-h-[300px] h-[380px] bg-brand-ivory-deep sm:h-[420px] lg:h-[460px]'
+            : 'h-[260px] lg:h-[260px]',
+        ].join(' ')}
+      >
         <img
           src={processStepImageSrc(index)}
           alt={processStepImageAlt[index] ?? 'Maywood manufacturing — interior reference'}
           loading="lazy"
-          className="w-full h-full object-cover object-[center_28%] block"
+          className={
+            index === 1
+              ? 'block h-full w-full object-contain object-center p-2 sm:p-3'
+              : index === 2 || index === 3
+                ? 'block h-full w-full object-cover object-center'
+                : 'block h-full w-full object-cover object-[center_28%]'
+          }
           onError={(e) => {
             e.currentTarget.src = '/assets/images/fallback.jpg'
           }}
@@ -171,38 +196,44 @@ export default function MaywoodManufacturing() {
     <main className="flex-1">
       <section className="relative flex min-h-[70vh] flex-col overflow-hidden">
         <img
-          src={IMAGES.corporate.hero}
+          src="/assets/images/manufacturing-hero.jpg"
           alt="Corporate office interior — Maywood Interiors Bangalore"
           loading="eager"
-          className="absolute inset-0 w-full h-full object-cover object-center block"
+          className="absolute inset-0 h-full w-full object-cover object-center object-top block"
           onError={(e) => {
             e.currentTarget.src = '/assets/images/fallback.jpg'
           }}
         />
-        <div
-          className="absolute inset-0"
-          style={{ backgroundColor: 'rgba(28, 25, 21, 0.75)' }}
-          aria-hidden
-        />
-        <div className="relative z-[2] flex flex-1 flex-col justify-center px-6 py-32 lg:px-24">
+        <div className="absolute inset-0 bg-black/60" aria-hidden />
+        <div className="relative z-10 flex flex-1 flex-col justify-center px-6 py-32 lg:px-24">
           <div className="mx-auto w-full max-w-[1400px]">
             <SectionLabel light>Maywood Manufacturing</SectionLabel>
 
             <AnimatedText
-              text="Where your interiors are actually made."
+              text="Built In-House. Built Better."
               tag="h1"
-              getWordClassName={(_w, i) => (i >= 4 ? 'italic text-[#D4B483]' : '')}
+              getWordClassName={(_w, i) => (i >= 3 ? 'italic text-[#D4B483]' : '')}
               className="mt-8 max-w-[1100px] font-display text-[64px] font-light leading-[1.06] text-brand-ivory max-lg:text-[clamp(38px,9vw,64px)]"
             />
 
             <p className="mt-8 max-w-[520px] font-body text-[15px] font-normal leading-[1.85] text-brand-mist-light">
-              Our Bangalore manufacturing facility gives us complete control over quality, timelines and cost — advantages that
-              pass directly to every client.
+              Complete control over materials, manufacturing, and quality — so your interiors are delivered right, every time.
             </p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              {['In-house Plywood', 'Precision Manufacturing', 'Faster Delivery'].map((label) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center rounded-full border border-[rgba(184,150,90,0.6)] bg-transparent px-4 py-1.5 font-body text-[12px] font-semibold uppercase tracking-[0.12em] text-[#B8965A]"
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="relative z-[2] border-t border-white/[0.08] bg-brand-ivory-deep px-6 py-10 lg:px-24">
+        <div className="relative z-10 border-t border-white/[0.08] bg-brand-ivory-deep px-6 py-10 lg:px-24">
           <div className="mx-auto max-w-[1400px]">
             <HeroStatStrip />
           </div>
@@ -238,10 +269,15 @@ export default function MaywoodManufacturing() {
             </p>
 
             <div className="mt-10 grid grid-cols-2 gap-x-8 gap-y-8">
-              {MICRO_STATS.map(({ label, value }) => (
+              {MICRO_STATS.map(({ label, value, subtext }) => (
                 <div key={label}>
-                  <p className="font-body text-[10px] font-medium uppercase tracking-[0.18em] text-brand-brass">{label}</p>
-                  <p className="mt-2 font-display text-[28px] font-normal leading-none text-brand-charcoal">{value}</p>
+                  <p className="font-display text-[28px] font-normal leading-none text-brand-charcoal">{value}</p>
+                  <p className="mt-2 font-body text-[10px] font-medium uppercase tracking-[0.18em] text-brand-brass">
+                    {label}
+                  </p>
+                  {subtext ? (
+                    <p className="mt-1 font-body text-[10px] font-medium tracking-[0.14em] text-brand-mist">{subtext}</p>
+                  ) : null}
                 </div>
               ))}
             </div>

@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import HeroImageCarousel from '../components/home/HeroImageCarousel'
 import PortfolioCarouselMini from '../components/home/PortfolioCarouselMini'
 import MaywoodDifferenceSection from '../components/home/MaywoodDifferenceSection'
+import MaywoodCalculator from '../components/MaywoodCalculator'
 import MaywoodPlysSection from '../components/MaywoodPlysSection'
 import ProcessSection from '../components/sections/ProcessSection'
 import { HOME_PROCESS_STEPS } from '../data/processSteps'
@@ -347,98 +348,27 @@ export default function Home() {
         className="bg-[#f5f0eb] px-6 py-[80px]"
         aria-labelledby="instant-quote-teaser-heading"
       >
-        <div className="mx-auto max-w-[800px]">
-          <div className="pointer-events-none select-none">
-            <SectionLabel className="justify-center">INSTANT QUOTE</SectionLabel>
+        <div className="mx-auto max-w-[960px]">
+          <SectionLabel className="justify-center">INSTANT QUOTE</SectionLabel>
 
-            <h2
-              id="instant-quote-teaser-heading"
-              className="mt-6 text-center font-display text-[clamp(24px,3.6vw,38px)] font-light leading-[1.2] text-brand-charcoal"
-            >
-              Get your interior price and timeline estimate in minutes.
-            </h2>
+          <h2
+            id="instant-quote-teaser-heading"
+            className="mt-6 text-center font-display text-[clamp(24px,3.6vw,38px)] font-light leading-[1.2] text-brand-charcoal"
+          >
+            Get your interior price and timeline estimate in minutes.
+          </h2>
 
-            <div
-              className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8"
-              aria-hidden
-            >
-              <div className="rounded-[2px] border border-[rgba(28,25,21,0.08)] bg-[rgba(255,255,255,0.45)] p-5">
-                <p className="font-body text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-mist">
-                  Property Type
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <div className="rounded-full bg-brand-brass px-3 py-1.5 font-body text-[11px] font-medium uppercase tracking-[0.08em] text-brand-charcoal">
-                    2BHK
-                  </div>
-                  <div className="rounded-full border border-[rgba(28,25,21,0.12)] bg-transparent px-3 py-1.5 font-body text-[11px] font-medium uppercase tracking-[0.08em] text-brand-charcoal/80">
-                    3BHK
-                  </div>
-                  <div className="rounded-full border border-[rgba(28,25,21,0.12)] bg-transparent px-3 py-1.5 font-body text-[11px] font-medium uppercase tracking-[0.08em] text-brand-charcoal/80">
-                    Villa
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-[2px] border border-[rgba(28,25,21,0.08)] bg-[rgba(255,255,255,0.45)] p-5">
-                <p className="font-body text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-mist">
-                  Size (sq ft)
-                </p>
-                <div className="relative mt-5 h-2 w-full rounded-full bg-brand-ivory-deep">
-                  <div
-                    className="absolute left-0 top-0 h-full w-[42%] rounded-full bg-brand-brass/35"
-                    aria-hidden
-                  />
-                  <div
-                    className="absolute left-[38%] top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand-brass bg-white shadow-sm"
-                    aria-hidden
-                  />
-                </div>
-                <p className="mt-4 text-center font-body text-[14px] font-medium text-brand-charcoal">800 sq ft</p>
-              </div>
-
-              <div className="rounded-[2px] border border-[rgba(28,25,21,0.08)] bg-[rgba(255,255,255,0.45)] p-5">
-                <p className="font-body text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-mist">
-                  Scope
-                </p>
-                <div className="mt-4 space-y-2.5 font-body text-[13px] leading-snug text-brand-charcoal">
-                  <div className="flex items-center gap-2">
-                    <div className="text-brand-brass" aria-hidden>
-                      ✓
-                    </div>
-                    Kitchen
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="text-brand-brass" aria-hidden>
-                      ✓
-                    </div>
-                    Bedrooms (2)
-                  </div>
-                  <div className="flex items-center gap-2 text-brand-mist">
-                    <div aria-hidden>☐</div>
-                    Pooja Room
-                  </div>
-                  <div className="flex items-center gap-2 text-brand-mist">
-                    <div aria-hidden>☐</div>
-                    Home Office
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-12 flex flex-col items-center">
-            <MotionLink
-              to="/instant-quote"
-              className={buttonClasses('ctaPrimary', 'min-w-[min(100%,280px)] justify-center focus-visible:ring-offset-[#f5f0eb]')}
-              whileTap={{ scale: 0.98 }}
-              transition={tapTransition}
-            >
-              GET INSTANT QUOTE →
-            </MotionLink>
-            <p className="mt-4 max-w-md text-center font-body text-[13px] font-normal leading-relaxed text-brand-mist">
-              Takes 2 minutes. No commitment required.
-            </p>
-          </div>
+          <MaywoodCalculator
+            className="mt-10"
+            contactGate
+            showTabs={['budget', 'emi']}
+            resultCta={{
+              to: '/instant-quote',
+              label: 'GET FULL INSTANT QUOTE →',
+              subtext: 'Get a detailed breakdown with timeline in 2 minutes.',
+              ctaClassName: 'focus-visible:ring-offset-[#f5f0eb]',
+            }}
+          />
         </div>
       </section>
 
