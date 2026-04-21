@@ -180,7 +180,7 @@ export default function MaywoodFinance() {
             Real examples. Real numbers. No surprises.
           </p>
 
-          <MaywoodCalculator className="mt-10" contactGate />
+          <MaywoodCalculator className="mt-10" contactGate calculatorLeadSource="finance-page" />
 
           <p className="mx-auto mt-12 max-w-[720px] text-center font-body text-[12px] font-normal italic leading-relaxed text-brand-mist">
             EMI amounts are indicative. Final rates based on applicant profile, tenure, and lending partner approval.

@@ -21,6 +21,7 @@ const ABOUT_ITEMS = [
   { label: 'Maywood Process', to: '/project-studio' },
   { label: 'The Team', to: '/about#team' },
   { label: 'Awards & Certifications', to: '/about#awards' },
+  { label: 'Portfolio', to: '/portfolio' },
   { label: 'Contact', to: '/about#contact' },
 ]
 
@@ -60,7 +61,8 @@ function isAboutParentActive(pathname) {
   return (
     pathname === '/about' ||
     pathname === '/experience-centers' ||
-    pathname === '/project-studio'
+    pathname === '/project-studio' ||
+    pathname === '/portfolio'
   )
 }
 

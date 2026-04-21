@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import SectionLabel from './ui/SectionLabel'
 import { computeEstimate, formatInr, formatInrRange } from '../lib/maywoodEstimate'
 import { buttonClasses } from '../lib/buttonStyles'
+import { saveCalculatorLead } from '../utils/adminDataStore'
 
 const TABS = [
   { id: 'budget', label: 'Budget Calculator' },
@@ -119,6 +120,7 @@ function splitPhases(totalDays) {
 export default function MaywoodCalculator({
   className = '',
   contactGate = false,
+  calculatorLeadSource = undefined,
   showTabs = null,
   resultCta = null,
 }) {
@@ -231,12 +233,14 @@ export default function MaywoodCalculator({
   const handleGateSubmit = (e) => {
     e.preventDefault()
     if (!gateValid) return
-    const contact = {
-      fullName: gateName.trim(),
-      phone: `+91${gatePhoneDigits}`,
-      email: gateEmail.trim(),
+    if (calculatorLeadSource) {
+      saveCalculatorLead({
+        name: gateName.trim(),
+        phone: `+91${gatePhoneDigits}`,
+        email: gateEmail.trim(),
+        source: calculatorLeadSource,
+      })
     }
-    console.log('MaywoodCalculator contact:', contact)
     setContactUnlocked(true)
   }
 

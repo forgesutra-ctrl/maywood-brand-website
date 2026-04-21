@@ -1,5 +1,16 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import RootLayout from './components/layout/RootLayout'
+import AdminAuthGuard from './pages/admin/AdminAuthGuard'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminLogin from './pages/admin/AdminLogin'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminConsultations from './pages/admin/AdminConsultations'
+import AdminLeads from './pages/admin/AdminLeads'
+import AdminPartnerApplications from './pages/admin/AdminPartnerApplications'
+import AdminQuotes from './pages/admin/AdminQuotes'
+import AdminAnalytics from './pages/admin/AdminAnalytics'
+import AdminSettings from './pages/admin/AdminSettings'
+import AdminPlaceholderPage from './pages/admin/AdminPlaceholderPage'
 import AboutUs from './pages/AboutUs'
 import ExperienceCenters from './pages/ExperienceCenters'
 import Home from './pages/Home'
@@ -21,6 +32,19 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="admin/login" element={<AdminLogin />} />
+        <Route path="admin" element={<AdminAuthGuard />}>
+          <Route element={<AdminLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="leads" element={<AdminLeads />} />
+            <Route path="quotes" element={<AdminQuotes />} />
+            <Route path="consultations" element={<AdminConsultations />} />
+            <Route path="partners" element={<AdminPartnerApplications />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
+        </Route>
         <Route element={<RootLayout />}>
           <Route index element={<Home />} />
           <Route path="instant-quote" element={<InstantQuote />} />

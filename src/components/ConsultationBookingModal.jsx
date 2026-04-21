@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle2, X } from 'lucide-react'
+import { saveConsultationBooking } from '../utils/adminDataStore'
 
 const TIME_SLOTS = [
   '10:00 AM – 11:00 AM',
@@ -56,6 +57,15 @@ export default function ConsultationBookingModal({ isOpen, onClose, prefillName,
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    saveConsultationBooking({
+      name: consult.fullName.trim(),
+      phone: consult.phone.trim(),
+      email: consult.email.trim(),
+      preferredDate: consult.date,
+      timeSlot: consult.timeSlot,
+      preferredCenter: consult.center,
+      projectNote: consult.note,
+    })
     setSubmitted(true)
   }
 

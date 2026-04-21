@@ -141,10 +141,18 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-[rgba(184,150,90,0.15)]">
-        <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-6 px-5 py-6 md:flex-row md:px-8 lg:px-10">
+        <div className="mx-auto flex max-w-[1400px] flex-col gap-2 px-5 py-6 md:px-8 lg:px-10">
           <p className="text-center font-body text-[12px] text-brand-mist md:text-left">
             © {new Date().getFullYear()} Maywood Interiors. All rights reserved.
           </p>
+          <div className="flex justify-center md:justify-end">
+            <Link
+              to="/admin"
+              className="font-body text-[11px] text-[rgba(255,255,255,0.2)] transition-colors hover:text-[rgba(255,255,255,0.35)]"
+            >
+              Admin
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

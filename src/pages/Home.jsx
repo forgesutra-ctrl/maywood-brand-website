@@ -361,6 +361,7 @@ export default function Home() {
           <MaywoodCalculator
             className="mt-10"
             contactGate
+            calculatorLeadSource="homepage-calculator"
             showTabs={['budget', 'emi']}
             resultCta={{
               to: '/instant-quote',

@@ -6,6 +6,7 @@ import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
 import { supabase } from '../lib/supabase'
+import { savePartnerApplication } from '../utils/adminDataStore'
 
 const motionEase = [0.16, 1, 0.3, 1]
 
@@ -256,6 +257,16 @@ export default function PartnerProgram() {
         business_description: form.about.trim(),
       })
       if (error) throw error
+      savePartnerApplication({
+        fullName: form.fullName.trim(),
+        company: form.company.trim(),
+        partnerType: form.partnerType,
+        phone: form.phone.trim(),
+        email: form.email.trim(),
+        city: form.city.trim(),
+        about: form.about.trim(),
+        agreed: form.agreed,
+      })
       setSubmitted(true)
       setForm(initialForm)
     } catch {

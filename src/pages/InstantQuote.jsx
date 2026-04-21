@@ -12,6 +12,7 @@ import {
   SQMT_TO_SQFT,
 } from '../lib/maywoodEstimate'
 import { buttonBaseClass, buttonClasses } from '../lib/buttonStyles'
+import { saveQuoteRequest } from '../utils/adminDataStore'
 
 const STEP_LABELS = [
   'Your Details',
@@ -155,7 +156,7 @@ export default function InstantQuote() {
     setEstimateLow(totalMin)
     setEstimateHigh(totalMax)
 
-    const payload = {
+    saveQuoteRequest({
       name: fullName.trim(),
       phone: phoneFull,
       email: email.trim(),
@@ -166,9 +167,7 @@ export default function InstantQuote() {
       location: location.trim(),
       estimateLow: Math.round(totalMin),
       estimateHigh: Math.round(totalMax),
-      timestamp: new Date().toISOString(),
-    }
-    console.log(payload)
+    })
 
     setStep(6)
   }
