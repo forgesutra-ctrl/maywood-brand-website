@@ -14,7 +14,6 @@ import {
   Users,
   Wrench,
 } from 'lucide-react'
-import AnimatedText from '../components/ui/AnimatedText'
 
 const GOLD = '#c9a465'
 
@@ -253,37 +252,52 @@ function PmsMarqueeCards({ stripKey }) {
 export default function ProjectStudio() {
   return (
     <main className="flex-1">
-      {/* Hero — two columns, light cream */}
-      <section className="flex min-h-[max(600px,70vh)] items-center bg-[#faf9f7] py-20">
-        <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:gap-16 lg:px-24">
-          <div className="flex max-w-xl flex-col justify-center lg:max-w-none">
-            <div className="flex flex-col gap-3">
-              <div className="h-px w-14 shrink-0 bg-brand-brass" aria-hidden />
-              <p className="font-body text-[11px] font-medium uppercase leading-none tracking-[0.22em] text-brand-brass">
-                MAYWOOD PROCESS
-              </p>
-            </div>
+      <section
+        style={{
+          backgroundImage: "url('/assets/images/maywood-process-hero.png')",
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'right center',
+          backgroundColor: '#0d1117',
+          minHeight: '100vh',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Gradient overlay — dark on left, transparent on right */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(to right, rgba(10,8,6,0.95) 0%, rgba(10,8,6,0.85) 25%, rgba(10,8,6,0.25) 48%, rgba(10,8,6,0.0) 60%)',
+            zIndex: 1,
+          }}
+        />
 
-            <AnimatedText
-              text="A Process You Can Trust. Powered by Technology."
-              tag="h1"
-              getWordClassName={(_w, i, n) => (i >= n - 3 ? 'italic text-brand-brass' : '')}
-              className="mt-8 font-display text-[clamp(32px,4.2vw,52px)] font-light leading-[1.06] text-[#1a1612]"
-            />
-
-            <p className="mt-6 max-w-[540px] font-body text-[15px] font-normal leading-relaxed text-brand-mist">
-              Every Maywood project is managed through a structured process and AI-driven project management—ensuring
-              transparency, speed, and complete control.
-            </p>
-          </div>
-
-          <div className="flex w-full justify-center lg:justify-end">
-            <img
-              src="/assets/images/maywood-process-diagram.svg"
-              alt="Maywood process cycle: Marketing, Sales, Design, Pre-Production, Production, Post-Production, Installation, and Post-Installation."
-              className="h-auto w-full max-w-full rounded-xl object-contain shadow-[0_24px_60px_-24px_rgba(26,22,18,0.22),0_8px_24px_-12px_rgba(26,22,18,0.12)] lg:max-w-[560px]"
-            />
-          </div>
+        {/* Text content */}
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 2,
+            paddingLeft: '5rem',
+            maxWidth: '480px',
+          }}
+        >
+          <p style={{ color: '#c9a465', fontSize: '11px', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '12px' }}>
+            Maywood Process
+          </p>
+          <div style={{ width: '40px', height: '1px', backgroundColor: '#c9a465', marginBottom: '20px' }} />
+          <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '3.5rem', color: '#ffffff', lineHeight: 1.15, fontWeight: 300, marginBottom: '8px' }}>
+            A Process You Can Trust.
+          </h1>
+          <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '3.5rem', color: '#c9a465', lineHeight: 1.15, fontStyle: 'italic', fontWeight: 300, marginBottom: '24px' }}>
+            Powered by Technology.
+          </h1>
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', lineHeight: 1.7, maxWidth: '380px' }}>
+            Every Maywood project is managed through a structured process and AI-driven project management—ensuring transparency, speed, and complete control.
+          </p>
         </div>
       </section>
 
