@@ -130,8 +130,9 @@ export default function Footer() {
               </li>
               <li>
                 <p className="font-body text-[13px] leading-relaxed text-brand-mist-light">
-                  Indiranagar Studio · Whitefield Gallery
-                  <span className="mt-1 block text-brand-mist">Bangalore, India</span>
+                  34, 4th Cross Rd, RR Nagar via,
+                  <span className="mt-1 block text-brand-mist">Uttarahalli Main Rd, Vaddara Palya,</span>
+                  <span className="mt-1 block text-brand-mist">Kodipur, Bengaluru - 560061</span>
                 </p>
               </li>
             </ul>
