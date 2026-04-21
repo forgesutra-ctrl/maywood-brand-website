@@ -72,3 +72,17 @@ body {
   width: max-content;
   animation: home-marquee 75s linear infinite;
 }
+
+/* About page — team stats ticker */
+.team-ticker-track {
+  display: flex;
+  width: max-content;
+  gap: 3rem;
+  animation: home-marquee 42s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-ticker-track {
+    animation: none;
+  }
+}

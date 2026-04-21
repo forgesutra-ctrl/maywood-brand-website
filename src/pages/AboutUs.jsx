@@ -7,39 +7,13 @@ import { buttonClasses } from '../lib/buttonStyles'
 import { supabase } from '../lib/supabase'
 import { IMAGES } from '../config/images'
 import { SOCIAL } from '../config/social'
+import TeamStudioRoom from '../components/about/TeamStudioRoom'
 
 const STATS = [
   { value: '9 Years', label: 'In Business' },
   { value: '500+', label: 'Projects Completed' },
   { value: '200+', label: 'Team Members' },
   { value: '3', label: 'Business Verticals' },
-]
-
-const LEADERSHIP = [
-  {
-    name: '[Founder Name]',
-    role: 'Founder & Managing Director',
-    bio: '20 years in construction and interiors. Built Maywood from a single studio to a 200-person operation.',
-    linkedin: 'https://linkedin.com',
-    imageSrc: IMAGES.corporate.reception,
-    imageAlt: 'Maywood corporate workspace — Maywood Interiors Bangalore',
-  },
-  {
-    name: '[Design Director Name]',
-    role: 'Head of Design',
-    bio: 'Former hospitality designer with projects across India, Singapore and Dubai. Leads the Maywood design studio.',
-    linkedin: 'https://linkedin.com',
-    imageSrc: IMAGES.livingRooms.wide,
-    imageAlt: 'Residential interior design context — Maywood Interiors Bangalore',
-  },
-  {
-    name: '[Operations Name]',
-    role: 'Head of Manufacturing & Operations',
-    bio: 'Mechanical engineer by training. Built and runs the Maywood manufacturing facility.',
-    linkedin: 'https://linkedin.com',
-    imageSrc: IMAGES.livingRooms.secondary,
-    imageAlt: 'Residential interior — Maywood Interiors Bangalore',
-  },
 ]
 
 const RECOGNITION_CERTS = [
@@ -122,7 +96,6 @@ export default function AboutUs() {
   const [sent, setSent] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
-
   const handleContactSubmit = async (e) => {
     e.preventDefault()
     setSubmitError('')
@@ -237,50 +210,7 @@ export default function AboutUs() {
         </div>
       </section>
 
-      <section id="team" className="scroll-mt-28 bg-brand-ivory px-6 py-32 lg:px-24">
-        <div className="mx-auto max-w-[1400px]">
-          <SectionLabel>Leadership</SectionLabel>
-          <AnimatedText
-            text="The people behind Maywood."
-            tag="h2"
-            className="mt-6 max-w-[900px] font-display text-[clamp(30px,4vw,48px)] font-light leading-[1.08] text-brand-charcoal"
-          />
-
-          <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8">
-            {LEADERSHIP.map((person) => (
-              <article key={person.name} className="border border-brand-brass-pale/50 bg-brand-ivory">
-                <div className="h-[260px] overflow-hidden">
-                  <img
-                    src={person.imageSrc}
-                    alt={person.imageAlt}
-                    loading="lazy"
-                    className="w-full h-full rounded-sm object-cover object-center block"
-                    onError={(e) => {
-                      e.currentTarget.src = '/assets/images/fallback.jpg'
-                    }}
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="font-display text-[22px] font-normal leading-snug text-brand-charcoal">{person.name}</h3>
-                  <p className="mt-2 font-body text-[12px] font-medium uppercase tracking-[0.14em] text-brand-brass">
-                    {person.role}
-                  </p>
-                  <p className="mt-4 font-body text-[13px] font-normal leading-[1.65] text-brand-mist">{person.bio}</p>
-                  <a
-                    href={person.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 inline-flex text-brand-mist transition-colors hover:text-brand-brass"
-                    aria-label={`${person.name} on LinkedIn`}
-                  >
-                    <Linkedin className="h-4 w-4" strokeWidth={1.5} />
-                  </a>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TeamStudioRoom />
 
       <section id="awards" className="scroll-mt-28 bg-[#f5f0eb]">
         <div className="mx-auto max-w-[1400px] px-6 py-24 lg:px-24">
