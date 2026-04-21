@@ -28,6 +28,11 @@ const ISO_CERTIFICATE_DISPLAY = [
   },
 ]
 
+const TOP_100_AWARD = {
+  imgSrc: '/assets/awards/top-100-interiors-india.jpg',
+  alt: 'Top 100 Interior Designers & Architects of India — Top Interiors India, 2025 — Maywood Interiors Private Limited',
+}
+
 const TIMELINE_MILESTONES = [
   {
     year: '2015',
@@ -224,6 +229,33 @@ export default function AboutUs() {
       <section id="awards" className="scroll-mt-28 bg-[#f5f0eb]">
         <div className="mx-auto max-w-[1400px] px-6 py-24 lg:px-24">
           <p className="text-center font-body text-[11px] font-medium uppercase tracking-[0.22em] text-[#c9a465]">
+            — RECOGNITION —
+          </p>
+          <h3 className="mt-5 text-center font-display text-[clamp(24px,3vw,36px)] font-light leading-snug text-brand-charcoal">
+            Awards &amp; Honours
+          </h3>
+          <div className="mx-auto mt-10 flex max-w-xs flex-col items-center">
+            <button
+              type="button"
+              onClick={() => setCertLightbox({ src: TOP_100_AWARD.imgSrc, alt: TOP_100_AWARD.alt })}
+              className="w-full border-0 bg-transparent p-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a465] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f5f0eb]"
+            >
+              <img
+                src={TOP_100_AWARD.imgSrc}
+                alt={TOP_100_AWARD.alt}
+                loading="lazy"
+                className="mx-auto block w-full max-w-xs cursor-zoom-in rounded-xl object-contain shadow-lg transition-all duration-300 hover:scale-105"
+              />
+            </button>
+            <p className="mt-4 text-center font-body text-[14px] font-normal leading-snug text-brand-charcoal/90">
+              Top 100 Interior Designers &amp; Architects of India
+            </p>
+            <p className="mt-1.5 text-center font-body text-[13px] font-normal leading-relaxed text-brand-mist">
+              Top Interiors India — 2025
+            </p>
+          </div>
+
+          <p className="mt-20 text-center font-body text-[11px] font-medium uppercase tracking-[0.22em] text-[#c9a465]">
             TRUST &amp; COMPLIANCE
           </p>
           <h2 className="mt-5 text-center font-display text-[clamp(30px,4vw,48px)] font-light leading-[1.08] text-brand-charcoal">
