@@ -24,16 +24,17 @@ import {
 const PAGE_SIZE = 20
 
 function formatScope(row) {
-  const s = row.scope
+  const s = row.project_scope ?? row.scope
   if (s == null) return '—'
   return Array.isArray(s) ? s.join(', ') : String(s)
 }
 
 function formatAreaSqFt(row) {
-  if (row.area == null || String(row.area).trim() === '') return '—'
+  const a = row.area_sqft ?? row.area
+  if (a == null || String(a).trim() === '') return '—'
   const u = row.areaUnit || 'sqft'
   const label = u === 'sqmt' ? 'sq m' : 'sq ft'
-  return `${String(row.area).trim()} ${label}`
+  return `${String(a).trim()} ${label}`
 }
 
 function formatEstimate(row) {

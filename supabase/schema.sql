@@ -5,17 +5,18 @@
 create table if not exists quote_requests (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
-  name text,
+  full_name text,
   phone text,
   email text,
   property_type text,
-  scope text[],
-  area text,
+  project_scope text[],
+  area_sqft numeric,
   area_unit text,
   location text,
   estimate_low numeric,
   estimate_high numeric,
   source text default 'instant-quote',
+  status text not null default 'new',
   contacted boolean not null default false
 );
 
@@ -47,13 +48,13 @@ create table if not exists calculator_leads (
 create table if not exists partner_applications (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
-  name text,
-  company text,
+  full_name text,
+  company_name text,
   partner_type text,
   phone text,
   email text,
   city text,
-  about text,
+  business_description text,
   status text not null default 'new',
   contacted boolean not null default false
 );

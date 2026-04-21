@@ -3,128 +3,163 @@ import { createPortal } from 'react-dom'
 import { Loader2, X } from 'lucide-react'
 import { getAllLeads, LEADS_UPDATED_EVENT } from '../../utils/adminDataStore'
 import { getSourceLabels } from '../../utils/adminSettingsStore'
+import { startOfWeekMonday } from '../../utils/adminPageUtils'
 import { supabase } from '../../utils/supabaseClient'
 
-function formatSupabaseError(error) {
-  if (!error) return 'Unknown error'
-  if (typeof error === 'object' && error !== null && 'message' in error) {
-    const parts = [error.message, error.details, error.hint].filter(Boolean)
-    return parts.length ? parts.join(' — ') : String(error)
-  }
-  return String(error)
-}
+const StatusPill = ({ ok, okText, failText, error }) => (
+  <div>
+    <span
+      style={{
+        display: 'inline-block',
+        padding: '3px 10px',
+        borderRadius: 999,
+        fontSize: 12,
+        fontWeight: 500,
+        background: ok ? '#d1fae5' : '#fee2e2',
+        color: ok ? '#065f46' : '#991b1b',
+      }}
+    >
+      {ok ? okText : failText}
+    </span>
+    {error && !ok ? (
+      <div style={{ fontSize: 11, color: '#991b1b', marginTop: 4, paddingLeft: 4 }}>{error}</div>
+    ) : null}
+  </div>
+)
 
 function AdminConnectionStatusBar() {
-  const [phase, setPhase] = useState('running')
-  const [supabaseOk, setSupabaseOk] = useState(false)
-  const [supabaseError, setSupabaseError] = useState('')
-  const [envOk, setEnvOk] = useState(false)
-  const [tableOk, setTableOk] = useState(false)
-  const [tableError, setTableError] = useState('')
+  const [status, setStatus] = useState({
+    checking: true,
+    supabase: null,
+    env: null,
+    tables: null,
+    errors: {},
+  })
 
   useEffect(() => {
-    let cancelled = false
-
-    async function run() {
-      const envLoaded = import.meta.env.VITE_SUPABASE_URL !== undefined
-      if (!cancelled) setEnvOk(envLoaded)
-
-      let readErr = null
+    const runChecks = async () => {
       try {
-        const { error } = await supabase.from('quote_requests').select('id').limit(1)
-        readErr = error
-      } catch (e) {
-        readErr = e
-      }
-      if (!cancelled) {
-        if (readErr) {
-          setSupabaseOk(false)
-          setSupabaseError(formatSupabaseError(readErr))
-        } else {
-          setSupabaseOk(true)
-          setSupabaseError('')
+        const envLoaded =
+          typeof import.meta.env.VITE_SUPABASE_URL !== 'undefined' &&
+          import.meta.env.VITE_SUPABASE_URL !== ''
+
+        if (!envLoaded) {
+          setStatus({
+            checking: false,
+            supabase: false,
+            env: false,
+            tables: false,
+            errors: {
+              env: 'VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are not set in Vercel environment variables',
+            },
+          })
+          return
         }
-      }
 
-      const testRow = {
-        name: 'CONNECTION_TEST',
-        phone: '0000000000',
-        email: 'test@test.com',
-        source: 'admin-test',
-      }
-      let insertedId = null
-      let insErr = null
-      try {
-        const { data, error } = await supabase.from('calculator_leads').insert([testRow]).select('id')
-        insErr = error
-        insertedId = data?.[0]?.id ?? null
-      } catch (e) {
-        insErr = e
-      }
-
-      if (insertedId) {
         try {
-          await supabase.from('calculator_leads').delete().eq('id', insertedId)
-        } catch {
-          /* best-effort cleanup */
-        }
-      }
+          const { error: connError } = await supabase.from('quote_requests').select('id').limit(1)
 
-      if (!cancelled) {
-        if (insErr) {
-          setTableOk(false)
-          setTableError(formatSupabaseError(insErr))
-        } else {
-          setTableOk(true)
-          setTableError('')
+          if (connError) throw connError
+
+          try {
+            const { data: inserted, error: insertError } = await supabase
+              .from('calculator_leads')
+              .insert([{ name: 'CONNECTION_TEST', phone: '0000000000', email: 'test@test.com', source: 'admin-test' }])
+              .select()
+
+            if (insertError) throw insertError
+
+            if (inserted?.[0]?.id) {
+              await supabase.from('calculator_leads').delete().eq('id', inserted[0].id)
+            }
+
+            setStatus({ checking: false, supabase: true, env: true, tables: true, errors: {} })
+          } catch (tableErr) {
+            const m = tableErr?.message ?? String(tableErr)
+            const d = tableErr?.details ?? ''
+            const h = tableErr?.hint != null ? tableErr.hint : 'Check RLS policies in Supabase'
+            setStatus({
+              checking: false,
+              supabase: true,
+              env: true,
+              tables: false,
+              errors: { tables: `${m} | ${d} | Hint: ${h}` },
+            })
+          }
+        } catch (connErr) {
+          setStatus({
+            checking: false,
+            supabase: false,
+            env: true,
+            tables: false,
+            errors: { supabase: connErr?.message || 'Cannot reach Supabase — check URL and anon key' },
+          })
         }
-        setPhase('done')
+      } catch (unexpected) {
+        const envOk =
+          typeof import.meta.env.VITE_SUPABASE_URL !== 'undefined' &&
+          import.meta.env.VITE_SUPABASE_URL !== ''
+        setStatus({
+          checking: false,
+          supabase: false,
+          env: envOk,
+          tables: false,
+          errors: { supabase: unexpected?.message || String(unexpected) },
+        })
       }
     }
 
-    run()
-    return () => {
-      cancelled = true
-    }
+    runChecks()
   }, [])
 
-  const pillOk = 'inline-flex rounded-full bg-emerald-100 px-3 py-1 font-body text-[11px] font-semibold uppercase tracking-[0.06em] text-emerald-900'
-  const pillBad = 'inline-flex rounded-full bg-red-100 px-3 py-1 font-body text-[11px] font-semibold uppercase tracking-[0.06em] text-red-900'
+  if (status.checking) {
+    return (
+      <div
+        style={{
+          padding: '12px 16px',
+          background: '#f5f0eb',
+          borderRadius: 8,
+          marginBottom: 24,
+          fontSize: 13,
+          color: '#888',
+        }}
+      >
+        Running connection checks...
+      </div>
+    )
+  }
 
   return (
-    <section
-      className="rounded-lg border border-brand-brass-pale/35 bg-brand-ivory-deep/80 px-4 py-4 shadow-sm md:px-5"
-      aria-label="Connection status"
+    <div
+      style={{
+        padding: '12px 16px',
+        background: '#f5f0eb',
+        borderRadius: 8,
+        marginBottom: 24,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+      }}
     >
-      {phase === 'running' ? (
-        <div className="flex items-center gap-2 font-body text-[13px] text-brand-mist">
-          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-brand-brass" aria-hidden />
-          Running connection checks…
-        </div>
-      ) : (
-        <ul className="space-y-4">
-          <li>
-            <span className={supabaseOk ? pillOk : pillBad}>{supabaseOk ? 'Supabase Connected' : 'Supabase NOT Connected'}</span>
-            {!supabaseOk && supabaseError ? (
-              <p className="mt-2 font-mono text-[11px] leading-relaxed text-red-800">{supabaseError}</p>
-            ) : null}
-          </li>
-          <li>
-            <span className={envOk ? pillOk : pillBad}>
-              {envOk ? 'ENV vars loaded' : 'ENV vars MISSING — add to Vercel settings'}
-            </span>
-          </li>
-          <li>
-            <span className={tableOk ? pillOk : pillBad}>
-              {tableOk ? 'Tables accessible' : 'Table insert blocked — check RLS policies'}
-            </span>
-            {!tableOk && tableError ? (
-              <p className="mt-2 font-mono text-[11px] leading-relaxed text-red-800">{tableError}</p>
-            ) : null}
-          </li>
-        </ul>
-      )}
-    </section>
+      <StatusPill
+        ok={status.env}
+        okText="ENV vars loaded"
+        failText="ENV vars MISSING — add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to Vercel Settings → Environment Variables"
+        error={status.errors.env}
+      />
+      <StatusPill
+        ok={status.supabase}
+        okText="Supabase Connected"
+        failText="Supabase NOT Connected"
+        error={status.errors.supabase}
+      />
+      <StatusPill
+        ok={status.tables}
+        okText="Tables accessible"
+        failText="Table insert blocked — check RLS policies in Supabase dashboard"
+        error={status.errors.tables}
+      />
+    </div>
   )
 }
 
@@ -144,7 +179,7 @@ const BADGE_STYLES = {
 }
 
 function displayName(row) {
-  const n = row.fullName ?? row.name
+  const n = row.full_name ?? row.fullName ?? row.name
   return n && String(n).trim() ? String(n).trim() : '—'
 }
 
@@ -197,20 +232,6 @@ function formatFieldLabel(key) {
     .replace(/_/g, ' ')
     .replace(/^\s+/, '')
     .replace(/\b\w/g, (c) => c.toUpperCase())
-}
-
-function weekAgo() {
-  const t = new Date()
-  t.setDate(t.getDate() - 7)
-  return t
-}
-
-function countInRange(rows, filterFn) {
-  const w = weekAgo()
-  return rows.filter((r) => {
-    const ts = new Date(r.timestamp)
-    return !Number.isNaN(ts.getTime()) && ts >= w && filterFn(r)
-  }).length
 }
 
 function todayLocalDateString() {
@@ -298,6 +319,16 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [drawerRecord, setDrawerRecord] = useState(null)
   const [labelTick, setLabelTick] = useState(0)
+  const [cardStats, setCardStats] = useState({
+    total: 0,
+    quotes: 0,
+    consultations: 0,
+    partners: 0,
+    trendTotal: 0,
+    trendQuotes: 0,
+    trendConsultations: 0,
+    trendPartners: 0,
+  })
 
   useEffect(() => {
     const onLabels = () => setLabelTick((t) => t + 1)
@@ -307,15 +338,70 @@ export default function AdminDashboard() {
 
   const sourceLabels = useMemo(() => getSourceLabels(), [labelTick])
 
+  const fetchStats = useCallback(async () => {
+    const weekStart = startOfWeekMonday(new Date())
+    const weekIso = weekStart.toISOString()
+
+    const [
+      quotesRes,
+      consultationsRes,
+      calculatorRes,
+      partnersRes,
+      trendQuotesRes,
+      trendConsultationsRes,
+      trendCalculatorRes,
+      trendPartnersRes,
+    ] = await Promise.all([
+      supabase.from('quote_requests').select('id', { count: 'exact', head: true }),
+      supabase.from('consultation_bookings').select('id', { count: 'exact', head: true }),
+      supabase.from('calculator_leads').select('id', { count: 'exact', head: true }).neq('name', 'CONNECTION_TEST'),
+      supabase.from('partner_applications').select('id', { count: 'exact', head: true }),
+      supabase.from('quote_requests').select('id', { count: 'exact', head: true }).gte('created_at', weekIso),
+      supabase
+        .from('consultation_bookings')
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', weekIso),
+      supabase
+        .from('calculator_leads')
+        .select('id', { count: 'exact', head: true })
+        .neq('name', 'CONNECTION_TEST')
+        .gte('created_at', weekIso),
+      supabase.from('partner_applications').select('id', { count: 'exact', head: true }).gte('created_at', weekIso),
+    ])
+
+    const quotes = quotesRes.count ?? 0
+    const consultations = consultationsRes.count ?? 0
+    const calculators = calculatorRes.count ?? 0
+    const partners = partnersRes.count ?? 0
+    const tq = trendQuotesRes.count ?? 0
+    const tc = trendConsultationsRes.count ?? 0
+    const tcalc = trendCalculatorRes.count ?? 0
+    const tp = trendPartnersRes.count ?? 0
+
+    setCardStats({
+      total: quotes + consultations + calculators + partners,
+      quotes,
+      consultations,
+      partners,
+      trendTotal: tq + tc + tcalc + tp,
+      trendQuotes: tq,
+      trendConsultations: tc,
+      trendPartners: tp,
+    })
+  }, [])
+
   const refresh = useCallback(async () => {
     setLoading(true)
     try {
-      const rows = await getAllLeads()
+      const [rows] = await Promise.all([
+        getAllLeads({ excludeCalculatorConnectionTest: true }),
+        fetchStats(),
+      ])
       setLeads(rows)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [fetchStats])
 
   useEffect(() => {
     refresh()
@@ -335,23 +421,6 @@ export default function AdminDashboard() {
       document.removeEventListener('visibilitychange', onVis)
     }
   }, [refresh])
-
-  const stats = useMemo(() => {
-    const total = leads.length
-    const quotes = leads.filter((r) => r.type === 'quote').length
-    const consultations = leads.filter((r) => r.type === 'consultation').length
-    const partners = leads.filter((r) => r.type === 'partner').length
-    return {
-      total,
-      quotes,
-      consultations,
-      partners,
-      trendTotal: countInRange(leads, () => true),
-      trendQuotes: countInRange(leads, (r) => r.type === 'quote'),
-      trendConsultations: countInRange(leads, (r) => r.type === 'consultation'),
-      trendPartners: countInRange(leads, (r) => r.type === 'partner'),
-    }
-  }, [leads])
 
   const sourceCounts = useMemo(() => {
     const map = Object.fromEntries(SOURCE_KEY_IDS.map((key) => [key, 0]))
@@ -404,17 +473,17 @@ export default function AdminDashboard() {
   const recentTen = useMemo(() => leads.slice(0, 10), [leads])
 
   const statCards = [
-    { value: stats.total, label: 'Total Leads', trend: stats.trendTotal },
-    { value: stats.quotes, label: 'Quote Requests', trend: stats.trendQuotes },
-    { value: stats.consultations, label: 'Consultations Booked', trend: stats.trendConsultations },
-    { value: stats.partners, label: 'Partner Applications', trend: stats.trendPartners },
+    { value: cardStats.total, label: 'Total Leads', trend: cardStats.trendTotal },
+    { value: cardStats.quotes, label: 'Quote Requests', trend: cardStats.trendQuotes },
+    { value: cardStats.consultations, label: 'Consultations Booked', trend: cardStats.trendConsultations },
+    { value: cardStats.partners, label: 'Partner Applications', trend: cardStats.trendPartners },
   ]
 
   const mainContent = loading ? (
     <div className="flex min-h-[320px] items-center justify-center rounded-lg border border-brand-brass-pale/40 bg-white shadow-sm">
       <Loader2 className="h-10 w-10 animate-spin text-brand-brass" aria-label="Loading" />
     </div>
-  ) : leads.length === 0 ? (
+  ) : cardStats.total === 0 ? (
     <div className="rounded-lg border border-brand-brass-pale/50 bg-white p-12 text-center shadow-sm">
       <p className="font-body text-[15px] leading-relaxed text-brand-mist">
         No leads yet. They&apos;ll appear here as customers interact with the site.

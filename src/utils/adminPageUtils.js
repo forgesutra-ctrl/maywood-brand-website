@@ -6,7 +6,7 @@ export const DATE_FILTER_IDS = [
 ]
 
 export function displayName(row) {
-  const n = row.fullName ?? row.name
+  const n = row.full_name ?? row.fullName ?? row.name
   return n && String(n).trim() ? String(n).trim() : '—'
 }
 

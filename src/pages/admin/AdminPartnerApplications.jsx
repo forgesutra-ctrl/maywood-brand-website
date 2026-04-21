@@ -23,7 +23,7 @@ import {
 const PAGE_SIZE = 20
 
 function displayPartnerName(row) {
-  const n = row.fullName ?? row.name
+  const n = row.full_name ?? row.fullName ?? row.name
   return n && String(n).trim() ? String(n).trim() : '—'
 }
 
@@ -302,7 +302,10 @@ export default function AdminPartnerApplications() {
                         </div>
                       </td>
                       <td className="max-w-[120px] px-3 py-3 font-body text-[12px] text-brand-charcoal">
-                        {row.company != null && String(row.company).trim() ? String(row.company) : '—'}
+                        {(() => {
+                          const v = row.company_name ?? row.company
+                          return v != null && String(v).trim() ? String(v) : '—'
+                        })()}
                       </td>
                       <td className="max-w-[120px] px-3 py-3 font-body text-[12px] text-brand-charcoal">
                         {row.partnerType != null && String(row.partnerType).trim() ? String(row.partnerType) : '—'}
@@ -382,16 +385,19 @@ export default function AdminPartnerApplications() {
                             <p className="font-body text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-brass">
                               Full application
                             </p>
-                            {row.about != null && String(row.about).trim() !== '' ? (
-                              <div className="mt-4 rounded-sm border border-brand-brass-pale/30 bg-brand-ivory-deep/40 p-4">
-                                <p className="font-body text-[10px] font-semibold uppercase tracking-[0.1em] text-brand-mist">
-                                  Application text
-                                </p>
-                                <p className="mt-2 whitespace-pre-wrap font-body text-[14px] leading-relaxed text-brand-charcoal">
-                                  {String(row.about)}
-                                </p>
-                              </div>
-                            ) : null}
+                            {(() => {
+                              const text = row.business_description ?? row.about
+                              return text != null && String(text).trim() !== '' ? (
+                                <div className="mt-4 rounded-sm border border-brand-brass-pale/30 bg-brand-ivory-deep/40 p-4">
+                                  <p className="font-body text-[10px] font-semibold uppercase tracking-[0.1em] text-brand-mist">
+                                    Application text
+                                  </p>
+                                  <p className="mt-2 whitespace-pre-wrap font-body text-[14px] leading-relaxed text-brand-charcoal">
+                                    {String(text)}
+                                  </p>
+                                </div>
+                              ) : null
+                            })()}
                             <div className="mt-4 rounded-sm border border-brand-brass-pale/30 bg-brand-ivory-deep/40 p-4">
                               <p className="font-body text-[10px] font-semibold uppercase tracking-[0.1em] text-brand-mist">
                                 Terms &amp; checkbox

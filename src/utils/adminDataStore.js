@@ -26,22 +26,29 @@ export async function testSupabaseConnection() {
   return true
 }
 
+function parseAreaSqftForDb(data) {
+  if (data.area == null || String(data.area).trim() === '') return null
+  const n = Number(String(data.area).replace(/,/g, ''))
+  return Number.isFinite(n) ? n : null
+}
+
 function buildQuoteInsertRow(data) {
-  const scope = Array.isArray(data.scope) ? data.scope.map((s) => String(s)) : []
+  const project_scope = Array.isArray(data.scope) ? data.scope.map((s) => String(s)) : []
   const low = data.estimateLow != null ? Number(data.estimateLow) : null
   const high = data.estimateHigh != null ? Number(data.estimateHigh) : null
   return {
-    name: data.name != null ? String(data.name) : null,
+    full_name: data.name != null ? String(data.name) : null,
     phone: data.phone != null ? String(data.phone) : null,
     email: data.email != null ? String(data.email) : null,
     property_type: data.propertyType != null ? String(data.propertyType) : null,
-    scope,
-    area: data.area != null ? String(data.area) : null,
+    project_scope,
+    area_sqft: parseAreaSqftForDb(data),
     area_unit: data.areaUnit != null ? String(data.areaUnit) : null,
     location: data.location != null ? String(data.location) : null,
     estimate_low: Number.isFinite(low) ? low : null,
     estimate_high: Number.isFinite(high) ? high : null,
     source: data.source != null && String(data.source).trim() !== '' ? String(data.source) : 'instant-quote',
+    status: 'new',
   }
 }
 
@@ -74,22 +81,29 @@ function mapCalculatorSourceToPage(source) {
 }
 
 function normalizeQuote(r) {
+  const full_name = r.full_name ?? r.name
+  const project_scope = r.project_scope ?? r.scope
+  const area_sqft = r.area_sqft ?? r.area
   return {
     id: r.id,
     type: 'quote',
     table: TABLE.quote,
     timestamp: r.created_at,
     sourcePage: r.source || 'instant-quote',
-    name: r.name,
+    full_name,
+    project_scope,
+    area_sqft,
+    name: full_name,
     phone: r.phone,
     email: r.email,
     propertyType: r.property_type,
-    scope: r.scope,
-    area: r.area,
+    scope: project_scope,
+    area: area_sqft,
     areaUnit: r.area_unit,
     location: r.location,
     estimateLow: r.estimate_low,
     estimateHigh: r.estimate_high,
+    quoteStatus: r.status ?? 'new',
     contacted: Boolean(r.contacted),
   }
 }
@@ -130,30 +144,45 @@ function normalizeCalculator(r) {
 }
 
 function normalizePartner(r) {
+  const full_name = r.full_name ?? r.name
+  const company_name = r.company_name ?? r.company
+  const business_description = r.business_description ?? r.about
   return {
     id: r.id,
     type: 'partner',
     table: TABLE.partner,
     timestamp: r.created_at,
     sourcePage: 'partner-form',
-    name: r.name,
-    fullName: r.name,
-    company: r.company,
+    full_name,
+    company_name,
+    business_description,
+    name: full_name,
+    fullName: full_name,
+    company: company_name,
     partnerType: r.partner_type,
     phone: r.phone,
     email: r.email,
     city: r.city,
-    about: r.about,
+    about: business_description,
     partnerStatus: PARTNER_ORDER.includes(r.status) ? r.status : 'new',
     contacted: Boolean(r.contacted),
   }
 }
 
-export async function getAllLeads() {
+/**
+ * @param {{ excludeCalculatorConnectionTest?: boolean }} [options]
+ */
+export async function getAllLeads(options = {}) {
+  const { excludeCalculatorConnectionTest = false } = options
+  const calculatorQuery = (() => {
+    let q = supabase.from('calculator_leads').select('*').order('created_at', { ascending: false })
+    if (excludeCalculatorConnectionTest) q = q.neq('name', 'CONNECTION_TEST')
+    return q
+  })()
   const [quotes, consultations, calculators, partners] = await Promise.all([
     supabase.from('quote_requests').select('*').order('created_at', { ascending: false }),
     supabase.from('consultation_bookings').select('*').order('created_at', { ascending: false }),
-    supabase.from('calculator_leads').select('*').order('created_at', { ascending: false }),
+    calculatorQuery,
     supabase.from('partner_applications').select('*').order('created_at', { ascending: false }),
   ])
   if (quotes.error) console.error('quote_requests:', quotes.error)
@@ -232,13 +261,13 @@ export async function saveCalculatorLead(data) {
 
 export async function savePartnerApplication(data) {
   const row = {
-    name: String(data.fullName ?? data.name ?? '').trim() || null,
-    company: data.company != null ? String(data.company) : null,
+    full_name: String(data.fullName ?? data.name ?? '').trim() || null,
+    company_name: data.company != null ? String(data.company) : null,
+    business_description: data.about != null ? String(data.about) : null,
     partner_type: data.partnerType != null ? String(data.partnerType) : null,
     phone: data.phone != null ? String(data.phone) : null,
     email: data.email != null ? String(data.email) : null,
     city: data.city != null ? String(data.city) : null,
-    about: data.about != null ? String(data.about) : null,
   }
   console.log('[Maywood] Attempting to save partner application:', row)
   const { data: result, error } = await supabase.from('partner_applications').insert([row]).select()

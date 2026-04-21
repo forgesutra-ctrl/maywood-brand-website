@@ -35,7 +35,7 @@ const BADGE_BY_TYPE = {
 const PAGE_SIZE = 20
 
 function displayName(row) {
-  const n = row.fullName ?? row.name
+  const n = row.full_name ?? row.fullName ?? row.name
   return n && String(n).trim() ? String(n).trim() : '—'
 }
 
