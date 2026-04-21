@@ -1,5 +1,50 @@
 import { supabase } from './supabaseClient'
 
+function logSupabaseError(context, error) {
+  console.error(`[Maywood] SUPABASE ERROR ${context}:`, error?.message, error?.details, error?.hint, error?.code)
+}
+
+/** Smoke test: env vars + read on quote_requests (validates URL, key, RLS SELECT). */
+export async function testSupabaseConnection() {
+  const url = import.meta.env.VITE_SUPABASE_URL
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+  console.log('[Maywood] Testing Supabase connection...')
+  console.log('[Maywood] VITE_SUPABASE_URL:', url || undefined)
+  console.log('[Maywood] VITE_SUPABASE_ANON_KEY set:', Boolean(key))
+  if (!url || !key) {
+    console.error(
+      '[Maywood] Missing Supabase env vars. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel → Settings → Environment Variables for all environments, then redeploy.',
+    )
+    return false
+  }
+  const { data, error } = await supabase.from('quote_requests').select('id').limit(1)
+  if (error) {
+    logSupabaseError('(read quote_requests)', error)
+    return false
+  }
+  console.log('[Maywood] Supabase connection OK (quote_requests readable). Sample:', data)
+  return true
+}
+
+function buildQuoteInsertRow(data) {
+  const scope = Array.isArray(data.scope) ? data.scope.map((s) => String(s)) : []
+  const low = data.estimateLow != null ? Number(data.estimateLow) : null
+  const high = data.estimateHigh != null ? Number(data.estimateHigh) : null
+  return {
+    name: data.name != null ? String(data.name) : null,
+    phone: data.phone != null ? String(data.phone) : null,
+    email: data.email != null ? String(data.email) : null,
+    property_type: data.propertyType != null ? String(data.propertyType) : null,
+    scope,
+    area: data.area != null ? String(data.area) : null,
+    area_unit: data.areaUnit != null ? String(data.areaUnit) : null,
+    location: data.location != null ? String(data.location) : null,
+    estimate_low: Number.isFinite(low) ? low : null,
+    estimate_high: Number.isFinite(high) ? high : null,
+    source: data.source != null && String(data.source).trim() !== '' ? String(data.source) : 'instant-quote',
+  }
+}
+
 /** Dispatched after lead mutations so open admin tabs can refetch (same-tab + custom event). */
 export const LEADS_UPDATED_EVENT = 'maywood-leads-updated'
 
@@ -125,47 +170,38 @@ export async function getAllLeads() {
 }
 
 export async function saveQuoteRequest(data) {
-  const row = {
-    name: data.name,
-    phone: data.phone,
-    email: data.email,
-    property_type: data.propertyType,
-    scope: data.scope,
-    area: data.area,
-    area_unit: data.areaUnit,
-    location: data.location,
-    estimate_low: data.estimateLow,
-    estimate_high: data.estimateHigh,
-    source: data.source || 'instant-quote',
-    contacted: false,
-  }
-  const { error } = await supabase.from('quote_requests').insert([row])
+  const row = buildQuoteInsertRow(data)
+  console.log('[Maywood] Attempting to save quote request:', row)
+  const { data: result, error } = await supabase.from('quote_requests').insert([row]).select()
   if (error) {
-    console.error('Quote save error:', error)
+    logSupabaseError('saving quote', error)
     throw error
   }
+  console.log('[Maywood] Quote saved successfully:', result)
   notifyLeadsChanged()
+  return { success: true, data: result }
 }
 
 export async function saveConsultationBooking(data) {
   const row = {
-    name: data.name,
-    phone: data.phone,
-    email: data.email,
-    preferred_date: data.preferredDate,
-    time_slot: data.timeSlot,
-    preferred_center: data.preferredCenter,
-    project_note: data.projectNote,
-    status: 'pending',
+    name: data.name != null ? String(data.name) : null,
+    phone: data.phone != null ? String(data.phone) : null,
+    email: data.email != null ? String(data.email) : null,
+    preferred_date: data.preferredDate != null ? String(data.preferredDate) : null,
+    time_slot: data.timeSlot != null ? String(data.timeSlot) : null,
+    preferred_center: data.preferredCenter != null ? String(data.preferredCenter) : null,
+    project_note: data.projectNote != null ? String(data.projectNote) : null,
     source: 'consultation-modal',
-    contacted: false,
   }
-  const { error } = await supabase.from('consultation_bookings').insert([row])
+  console.log('[Maywood] Attempting to save consultation booking:', row)
+  const { data: result, error } = await supabase.from('consultation_bookings').insert([row]).select()
   if (error) {
-    console.error('Consultation save error:', error)
+    logSupabaseError('saving consultation', error)
     throw error
   }
+  console.log('[Maywood] Consultation saved successfully:', result)
   notifyLeadsChanged()
+  return { success: true, data: result }
 }
 
 export async function saveCalculatorLead(data) {
@@ -174,40 +210,45 @@ export async function saveCalculatorLead(data) {
       ? 'finance-calculator'
       : data.source === 'homepage-calculator'
         ? 'homepage-calculator'
-        : data.source || 'calculator'
+        : data.source != null && String(data.source).trim() !== ''
+          ? String(data.source)
+          : 'calculator'
   const row = {
-    name: data.name,
-    phone: data.phone,
-    email: data.email,
+    name: data.name != null ? String(data.name) : null,
+    phone: data.phone != null ? String(data.phone) : null,
+    email: data.email != null ? String(data.email) : null,
     source: dbSource,
-    contacted: false,
   }
-  const { error } = await supabase.from('calculator_leads').insert([row])
+  console.log('[Maywood] Attempting to save calculator lead:', row)
+  const { data: result, error } = await supabase.from('calculator_leads').insert([row]).select()
   if (error) {
-    console.error('Calculator lead save error:', error)
+    logSupabaseError('saving calculator lead', error)
     throw error
   }
+  console.log('[Maywood] Calculator lead saved successfully:', result)
   notifyLeadsChanged()
+  return { success: true, data: result }
 }
 
 export async function savePartnerApplication(data) {
   const row = {
-    name: data.fullName ?? data.name,
-    company: data.company,
-    partner_type: data.partnerType,
-    phone: data.phone,
-    email: data.email,
-    city: data.city,
-    about: data.about,
-    status: 'new',
-    contacted: false,
+    name: String(data.fullName ?? data.name ?? '').trim() || null,
+    company: data.company != null ? String(data.company) : null,
+    partner_type: data.partnerType != null ? String(data.partnerType) : null,
+    phone: data.phone != null ? String(data.phone) : null,
+    email: data.email != null ? String(data.email) : null,
+    city: data.city != null ? String(data.city) : null,
+    about: data.about != null ? String(data.about) : null,
   }
-  const { error } = await supabase.from('partner_applications').insert([row])
+  console.log('[Maywood] Attempting to save partner application:', row)
+  const { data: result, error } = await supabase.from('partner_applications').insert([row]).select()
   if (error) {
-    console.error('Partner save error:', error)
+    logSupabaseError('saving partner application', error)
     throw error
   }
+  console.log('[Maywood] Partner application saved successfully:', result)
   notifyLeadsChanged()
+  return { success: true, data: result }
 }
 
 export async function updateLeadStatus(table, id, updates) {

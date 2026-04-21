@@ -2,15 +2,6 @@ import { supabase } from './supabaseClient'
 
 export const PORTFOLIO_UPDATED_EVENT = 'maywood-portfolio-updated'
 
-export const PORTFOLIO_CATEGORIES = [
-  'Home Interiors',
-  'Corporate & Office Spaces',
-  'Spas & Salons',
-  'Retail Spaces',
-  'Hospitality',
-  'Others',
-]
-
 export function notifyPortfolioChanged() {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(PORTFOLIO_UPDATED_EVENT))
@@ -42,21 +33,26 @@ export async function fetchPortfolioProjects() {
     console.error('portfolio_projects:', error)
     return []
   }
-  return (data || []).map(mapDbRowToProject)
+  return (data || []).map(mapDbRowToProject).filter(Boolean)
 }
 
-export async function fetchFeaturedPortfolioProjects(limit = 5) {
+/** Public /portfolio: rows with a usable image URL, newest first. */
+export async function fetchPortfolioGalleryImages() {
   const { data, error } = await supabase
     .from('portfolio_projects')
-    .select('*')
-    .eq('featured', true)
+    .select('id, image_url, created_at')
+    .not('image_url', 'is', null)
     .order('created_at', { ascending: false })
-    .limit(limit)
   if (error) {
-    console.error('portfolio_projects featured:', error)
+    console.error('portfolio_projects gallery:', error)
     return []
   }
-  return (data || []).map(mapDbRowToProject)
+  return (data || [])
+    .map((r) => ({
+      id: r.id,
+      src: r.image_url,
+    }))
+    .filter((r) => r.id && r.src && String(r.src).trim() !== '')
 }
 
 function slugFileBase(name) {
@@ -67,10 +63,13 @@ function slugFileBase(name) {
     .slice(0, 72) || 'project'
 }
 
-export async function uploadPortfolioImage(file, projectName) {
+/** @param {File} file @param {string} [nameHint] original filename stem for readability */
+export async function uploadPortfolioImage(file, nameHint) {
+  const stem = String(nameHint || file.name || 'image').replace(/\.[^.]+$/i, '')
   const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
   const safeExt = ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? ext : 'jpg'
-  const fileName = `${Date.now()}-${slugFileBase(projectName)}.${safeExt}`
+  const unique = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+  const fileName = `${unique}-${slugFileBase(stem)}.${safeExt}`
   const { error } = await supabase.storage.from('portfolio-images').upload(fileName, file, {
     cacheControl: '3600',
     upsert: false,
@@ -86,10 +85,16 @@ export async function removePortfolioStorageObjects(paths) {
   await supabase.storage.from('portfolio-images').remove(list)
 }
 
-export async function insertPortfolioProject(payload) {
-  const { error } = await supabase.from('portfolio_projects').insert([payload])
+/**
+ * @param {Record<string, unknown>} payload row (e.g. image_url + storage_path only)
+ * @param {{ skipNotify?: boolean }} [options]
+ */
+export async function insertPortfolioProject(payload, options = {}) {
+  const { skipNotify = false } = options
+  const { data, error } = await supabase.from('portfolio_projects').insert([payload]).select().single()
   if (error) throw error
-  notifyPortfolioChanged()
+  if (!skipNotify) notifyPortfolioChanged()
+  return mapDbRowToProject(data)
 }
 
 export async function updatePortfolioProject(id, patch) {

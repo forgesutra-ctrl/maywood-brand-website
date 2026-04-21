@@ -3,6 +3,130 @@ import { createPortal } from 'react-dom'
 import { Loader2, X } from 'lucide-react'
 import { getAllLeads, LEADS_UPDATED_EVENT } from '../../utils/adminDataStore'
 import { getSourceLabels } from '../../utils/adminSettingsStore'
+import { supabase } from '../../utils/supabaseClient'
+
+function formatSupabaseError(error) {
+  if (!error) return 'Unknown error'
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    const parts = [error.message, error.details, error.hint].filter(Boolean)
+    return parts.length ? parts.join(' — ') : String(error)
+  }
+  return String(error)
+}
+
+function AdminConnectionStatusBar() {
+  const [phase, setPhase] = useState('running')
+  const [supabaseOk, setSupabaseOk] = useState(false)
+  const [supabaseError, setSupabaseError] = useState('')
+  const [envOk, setEnvOk] = useState(false)
+  const [tableOk, setTableOk] = useState(false)
+  const [tableError, setTableError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function run() {
+      const envLoaded = import.meta.env.VITE_SUPABASE_URL !== undefined
+      if (!cancelled) setEnvOk(envLoaded)
+
+      let readErr = null
+      try {
+        const { error } = await supabase.from('quote_requests').select('id').limit(1)
+        readErr = error
+      } catch (e) {
+        readErr = e
+      }
+      if (!cancelled) {
+        if (readErr) {
+          setSupabaseOk(false)
+          setSupabaseError(formatSupabaseError(readErr))
+        } else {
+          setSupabaseOk(true)
+          setSupabaseError('')
+        }
+      }
+
+      const testRow = {
+        name: 'CONNECTION_TEST',
+        phone: '0000000000',
+        email: 'test@test.com',
+        source: 'admin-test',
+      }
+      let insertedId = null
+      let insErr = null
+      try {
+        const { data, error } = await supabase.from('calculator_leads').insert([testRow]).select('id')
+        insErr = error
+        insertedId = data?.[0]?.id ?? null
+      } catch (e) {
+        insErr = e
+      }
+
+      if (insertedId) {
+        try {
+          await supabase.from('calculator_leads').delete().eq('id', insertedId)
+        } catch {
+          /* best-effort cleanup */
+        }
+      }
+
+      if (!cancelled) {
+        if (insErr) {
+          setTableOk(false)
+          setTableError(formatSupabaseError(insErr))
+        } else {
+          setTableOk(true)
+          setTableError('')
+        }
+        setPhase('done')
+      }
+    }
+
+    run()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const pillOk = 'inline-flex rounded-full bg-emerald-100 px-3 py-1 font-body text-[11px] font-semibold uppercase tracking-[0.06em] text-emerald-900'
+  const pillBad = 'inline-flex rounded-full bg-red-100 px-3 py-1 font-body text-[11px] font-semibold uppercase tracking-[0.06em] text-red-900'
+
+  return (
+    <section
+      className="rounded-lg border border-brand-brass-pale/35 bg-brand-ivory-deep/80 px-4 py-4 shadow-sm md:px-5"
+      aria-label="Connection status"
+    >
+      {phase === 'running' ? (
+        <div className="flex items-center gap-2 font-body text-[13px] text-brand-mist">
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-brand-brass" aria-hidden />
+          Running connection checks…
+        </div>
+      ) : (
+        <ul className="space-y-4">
+          <li>
+            <span className={supabaseOk ? pillOk : pillBad}>{supabaseOk ? 'Supabase Connected' : 'Supabase NOT Connected'}</span>
+            {!supabaseOk && supabaseError ? (
+              <p className="mt-2 font-mono text-[11px] leading-relaxed text-red-800">{supabaseError}</p>
+            ) : null}
+          </li>
+          <li>
+            <span className={envOk ? pillOk : pillBad}>
+              {envOk ? 'ENV vars loaded' : 'ENV vars MISSING — add to Vercel settings'}
+            </span>
+          </li>
+          <li>
+            <span className={tableOk ? pillOk : pillBad}>
+              {tableOk ? 'Tables accessible' : 'Table insert blocked — check RLS policies'}
+            </span>
+            {!tableOk && tableError ? (
+              <p className="mt-2 font-mono text-[11px] leading-relaxed text-red-800">{tableError}</p>
+            ) : null}
+          </li>
+        </ul>
+      )}
+    </section>
+  )
+}
 
 const SOURCE_KEY_IDS = [
   'instant-quote',
@@ -279,24 +403,6 @@ export default function AdminDashboard() {
 
   const recentTen = useMemo(() => leads.slice(0, 10), [leads])
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[320px] items-center justify-center rounded-lg border border-brand-brass-pale/40 bg-white shadow-sm">
-        <Loader2 className="h-10 w-10 animate-spin text-brand-brass" aria-label="Loading" />
-      </div>
-    )
-  }
-
-  if (leads.length === 0) {
-    return (
-      <div className="rounded-lg border border-brand-brass-pale/50 bg-white p-12 text-center shadow-sm">
-        <p className="font-body text-[15px] leading-relaxed text-brand-mist">
-          No leads yet. They&apos;ll appear here as customers interact with the site.
-        </p>
-      </div>
-    )
-  }
-
   const statCards = [
     { value: stats.total, label: 'Total Leads', trend: stats.trendTotal },
     { value: stats.quotes, label: 'Quote Requests', trend: stats.trendQuotes },
@@ -304,8 +410,18 @@ export default function AdminDashboard() {
     { value: stats.partners, label: 'Partner Applications', trend: stats.trendPartners },
   ]
 
-  return (
-    <div className="space-y-10">
+  const mainContent = loading ? (
+    <div className="flex min-h-[320px] items-center justify-center rounded-lg border border-brand-brass-pale/40 bg-white shadow-sm">
+      <Loader2 className="h-10 w-10 animate-spin text-brand-brass" aria-label="Loading" />
+    </div>
+  ) : leads.length === 0 ? (
+    <div className="rounded-lg border border-brand-brass-pale/50 bg-white p-12 text-center shadow-sm">
+      <p className="font-body text-[15px] leading-relaxed text-brand-mist">
+        No leads yet. They&apos;ll appear here as customers interact with the site.
+      </p>
+    </div>
+  ) : (
+    <>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {statCards.map((card) => (
           <div
@@ -402,7 +518,13 @@ export default function AdminDashboard() {
           </ul>
         </section>
       </div>
+    </>
+  )
 
+  return (
+    <div className="space-y-10">
+      <AdminConnectionStatusBar />
+      {mainContent}
       {drawerRecord ? <DetailDrawer record={drawerRecord} onClose={() => setDrawerRecord(null)} /> : null}
     </div>
   )

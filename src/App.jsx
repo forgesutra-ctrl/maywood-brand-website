@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { testSupabaseConnection } from './utils/adminDataStore'
 import ScrollToTop from './components/ScrollToTop'
 import RootLayout from './components/layout/RootLayout'
 import AdminAuthGuard from './pages/admin/AdminAuthGuard'
@@ -31,6 +33,10 @@ import HotelsCafes from './pages/products/HotelsCafes'
 import NotFound from './pages/NotFound'
 
 function App() {
+  useEffect(() => {
+    void testSupabaseConnection()
+  }, [])
+
   return (
     <BrowserRouter>
       <ScrollToTop />

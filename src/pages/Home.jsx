@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment } from 'react'
 import { motion } from 'framer-motion'
 import { Shield } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -13,7 +13,6 @@ import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
 import { IMAGES } from '../config/images'
-import { fetchFeaturedPortfolioProjects, PORTFOLIO_UPDATED_EVENT } from '../utils/portfolioProjectsStore'
 
 const MotionLink = motion(Link)
 
@@ -222,37 +221,7 @@ function HeroMarqueeRibbon() {
 }
 
 export default function Home() {
-  const [deliveredCards, setDeliveredCards] = useState(IMAGES.portfolio)
-
-  useEffect(() => {
-    const load = async () => {
-      const featured = await fetchFeaturedPortfolioProjects(5)
-      if (featured.length) {
-        setDeliveredCards(
-          featured.map((p) => ({
-            src: p.image_url,
-            tag: p.category,
-            title: p.name,
-            detail: [p.location, p.year].filter(Boolean).join(' · '),
-            alt: p.name || 'Portfolio project',
-          })),
-        )
-      } else {
-        setDeliveredCards(IMAGES.portfolio)
-      }
-    }
-    load()
-    const onPortfolio = () => load()
-    window.addEventListener(PORTFOLIO_UPDATED_EVENT, onPortfolio)
-    const onVis = () => {
-      if (document.visibilityState === 'visible') load()
-    }
-    document.addEventListener('visibilitychange', onVis)
-    return () => {
-      window.removeEventListener(PORTFOLIO_UPDATED_EVENT, onPortfolio)
-      document.removeEventListener('visibilitychange', onVis)
-    }
-  }, [])
+  const deliveredCards = IMAGES.portfolio
 
   return (
     <main className="flex-1 overflow-x-hidden">

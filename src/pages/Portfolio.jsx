@@ -5,36 +5,19 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
-import { projectImages as fallbackImages } from '../data/projectImages'
-import { PORTFOLIO_UPDATED_EVENT } from '../utils/portfolioProjectsStore'
-import { supabase } from '../utils/supabaseClient'
+import { fetchPortfolioGalleryImages, PORTFOLIO_UPDATED_EVENT } from '../utils/portfolioProjectsStore'
 
 const MotionLink = motion(Link)
 
 const tapTransition = { type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }
 
-async function fetchGalleryItems() {
-  const { data, error } = await supabase
-    .from('portfolio_projects')
-    .select('image_url')
-    .order('created_at', { ascending: false })
-  if (error) {
-    console.error('portfolio_projects:', error)
-    return { fromAdmin: false, items: fallbackImages }
-  }
-  if (data?.length) {
-    return { fromAdmin: true, items: data.map((p) => ({ src: p.image_url })) }
-  }
-  return { fromAdmin: false, items: fallbackImages }
-}
-
 export default function Portfolio() {
-  const [{ fromAdmin, items }, setGallery] = useState({ fromAdmin: false, items: fallbackImages })
+  const [items, setItems] = useState([])
   const [lightboxIndex, setLightboxIndex] = useState(null)
 
   useEffect(() => {
     const sync = async () => {
-      setGallery(await fetchGalleryItems())
+      setItems(await fetchPortfolioGalleryImages())
     }
     sync()
     const onPortfolio = () => {
@@ -51,8 +34,6 @@ export default function Portfolio() {
     }
   }, [])
 
-  const showComingSoon = !fromAdmin
-
   useEffect(() => {
     if (lightboxIndex === null) return
     const prevOverflow = document.body.style.overflow
@@ -63,7 +44,7 @@ export default function Portfolio() {
   }, [lightboxIndex])
 
   useEffect(() => {
-    if (lightboxIndex === null) return
+    if (lightboxIndex === null || !items.length) return
     const onKeyDown = (e) => {
       if (e.key === 'Escape') setLightboxIndex(null)
       if (e.key === 'ArrowLeft') {
@@ -97,26 +78,21 @@ export default function Portfolio() {
 
       <section className="bg-brand-ivory px-5 py-16 md:px-8 lg:px-10 lg:py-24">
         <div className="mx-auto max-w-[1400px]">
-          {showComingSoon ? (
-            <p className="mb-10 text-center font-body text-[15px] leading-relaxed text-brand-mist">
-              Portfolio coming soon. Check back shortly.
-            </p>
-          ) : null}
-          <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 lg:gap-5">
-            {items.map(({ src }, index) => (
+          <div className="columns-2 gap-4 md:columns-3 lg:columns-4 lg:gap-5">
+            {items.map(({ id, src }, index) => (
               <button
-                key={`${src}-${index}`}
+                key={id}
                 type="button"
                 onClick={() => openAt(index)}
                 className="mb-4 w-full break-inside-avoid rounded-[2px] border-0 bg-transparent p-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ivory"
               >
-                <div className="aspect-[4/5] w-full overflow-hidden rounded-[2px] bg-brand-ivory-deep">
+                <div className="aspect-square w-full overflow-hidden rounded-[2px] bg-brand-ivory-deep">
                   <img
                     src={src}
                     alt=""
                     loading="lazy"
                     decoding="async"
-                    className="block h-full w-full object-cover object-[center_28%]"
+                    className="block h-full w-full object-cover object-center"
                     onError={(e) => {
                       e.currentTarget.src = '/assets/images/fallback.jpg'
                     }}
@@ -149,12 +125,12 @@ export default function Portfolio() {
         </div>
       </section>
 
-      {lightboxIndex !== null && (
+      {lightboxIndex !== null && items.length > 0 && (
         <div
           className="fixed inset-0 z-[10050] flex items-center justify-center bg-brand-charcoal/95 px-4 py-16"
           role="dialog"
           aria-modal="true"
-          aria-label="Project image"
+          aria-label="Portfolio image"
           onClick={() => setLightboxIndex(null)}
         >
           <button
@@ -197,7 +173,7 @@ export default function Portfolio() {
             <img
               src={items[lightboxIndex].src}
               alt=""
-              className="block h-full max-h-[90vh] w-full max-w-full object-cover object-center"
+              className="block h-full max-h-[90vh] w-full max-w-full object-contain object-center"
               onError={(e) => {
                 e.currentTarget.src = '/assets/images/fallback.jpg'
               }}
