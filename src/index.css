@@ -86,3 +86,25 @@ body {
     animation: none;
   }
 }
+
+/* Maywood Process — PMS screenshot marquee (continuous, no hover pause) */
+@keyframes process-pms-marquee {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.process-pms-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: process-pms-marquee 45s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .process-pms-marquee-track {
+    animation: none;
+  }
+}

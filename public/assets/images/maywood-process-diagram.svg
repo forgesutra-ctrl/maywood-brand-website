@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" role="img" aria-labelledby="title desc">
+  <title id="title">Maywood project process cycle</title>
+  <desc id="desc">Circular flow from Marketing through Post-Installation. Replace this asset with the final process diagram when available.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a4a6e"/>
+      <stop offset="100%" stop-color="#0d2d44"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5ba3d4"/>
+      <stop offset="100%" stop-color="#2e6a9e"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="720" fill="url(#bg)"/>
+  <circle cx="360" cy="360" r="268" fill="none" stroke="url(#ring)" stroke-width="36" opacity="0.85"/>
+  <circle cx="360" cy="360" r="175" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+  <text x="360" y="348" text-anchor="middle" fill="#e8f2fa" font-family="Georgia, serif" font-size="22" font-weight="600">MAYWOOD</text>
+  <text x="360" y="378" text-anchor="middle" fill="#b8d4ec" font-family="system-ui, sans-serif" font-size="13" letter-spacing="0.08em">PROCESS</text>
+  <g fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">
+    <text x="360" y="88" transform="rotate(0 360 360)">Marketing</text>
+    <text x="360" y="88" transform="rotate(45 360 360)">Sales</text>
+    <text x="360" y="88" transform="rotate(90 360 360)">Design</text>
+    <text x="360" y="88" transform="rotate(135 360 360)">Pre-Production</text>
+    <text x="360" y="88" transform="rotate(180 360 360)">Production</text>
+    <text x="360" y="88" transform="rotate(225 360 360)">Post-Production</text>
+    <text x="360" y="88" transform="rotate(270 360 360)">Installation</text>
+    <text x="360" y="88" transform="rotate(315 360 360)">Post-Installation</text>
+  </g>
+  <g fill="#7eb8e5" font-family="system-ui, sans-serif" font-size="10" text-anchor="middle" opacity="0.9">
+    <circle cx="360" cy="92" r="5"/><circle cx="565" cy="205" r="5"/><circle cx="565" cy="515" r="5"/><circle cx="360" cy="628" r="5"/>
+    <circle cx="155" cy="515" r="5"/><circle cx="155" cy="205" r="5"/><circle cx="292" cy="118" r="5"/><circle cx="428" cy="118" r="5"/>
+  </g>
+</svg>

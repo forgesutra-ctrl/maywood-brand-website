@@ -73,7 +73,8 @@ function App() {
           <Route path="manufacturing" element={<MaywoodManufacturing />} />
           <Route path="maywood-manufacturing" element={<Navigate to="/manufacturing" replace />} />
           <Route path="maywood-plys" element={<MaywoodPlys />} />
-          <Route path="project-studio" element={<ProjectStudio />} />
+          <Route path="maywood-process" element={<ProjectStudio />} />
+          <Route path="project-studio" element={<Navigate to="/maywood-process" replace />} />
           <Route path="partners" element={<PartnerProgram />} />
           <Route path="partner-program" element={<Navigate to="/partners" replace />} />
           <Route path="about" element={<AboutUs />} />

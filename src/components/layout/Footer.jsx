@@ -12,7 +12,7 @@ const solutionsLinks = [
 ]
 
 const companyLinks = [
-  { label: 'Maywood Project Studio', to: '/project-studio' },
+  { label: 'Maywood Process', to: '/maywood-process' },
   { label: 'Manufacturing', to: '/manufacturing' },
   { label: 'Maywood Ply', to: '/maywood-plys' },
   { label: 'Maywood Finance', to: '/finance' },
