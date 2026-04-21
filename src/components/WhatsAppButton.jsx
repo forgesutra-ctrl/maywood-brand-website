@@ -18,7 +18,7 @@ export default function WhatsAppButton() {
           aria-hidden
         />
         <a
-          href="https://wa.me/919606977677?text=Hi%20Maywood%20Interiors!%20%F0%9F%91%8B%0A%0AI%20came%20across%20your%20website%20and%20I%27m%20interested%20in%20discussing%20an%20interior%20project.%0A%0ALooking%20forward%20to%20connecting!"
+          href="https://wa.me/919606977677"
           target="_blank"
           rel="noopener noreferrer"
           className="absolute inset-0 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-md transition-transform duration-200 hover:scale-110 hover:shadow-[0_4px_28px_rgba(37,211,102,0.5)]"

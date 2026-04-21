@@ -55,9 +55,9 @@ export default function ConsultationBookingModal({ isOpen, onClose, prefillName,
     }
   }, [isOpen])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    saveConsultationBooking({
+    await saveConsultationBooking({
       name: consult.fullName.trim(),
       phone: consult.phone.trim(),
       email: consult.email.trim(),

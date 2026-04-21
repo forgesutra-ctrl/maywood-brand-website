@@ -1,16 +1,12 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp, Inbox, Phone, Trash2, UserCheck } from 'lucide-react'
+import { ChevronDown, ChevronUp, Inbox, Loader2, Phone, Trash2, UserCheck } from 'lucide-react'
 import { buttonClasses } from '../../lib/buttonStyles'
 import {
-  ADMIN_CONTACTED_IDS_KEY,
-  ADMIN_LEADS_STORAGE_KEY,
-  ADMIN_PARTNER_STATUS_KEY,
   cyclePartnerStatus,
-  deleteLeadById,
+  deleteLead,
   exportToCSV,
   getAllLeads,
-  getContactedLeadIds,
-  getPartnerStatusForId,
+  LEADS_UPDATED_EVENT,
   markLeadContacted,
 } from '../../utils/adminDataStore'
 import {
@@ -46,9 +42,8 @@ const STATUS_LABEL = {
 }
 
 export default function AdminPartnerApplications() {
-  const [leads, setLeads] = useState(() => getAllLeads().filter((r) => r.type === 'partner'))
-  const [contactedRev, setContactedRev] = useState(0)
-  const [statusRev, setStatusRev] = useState(0)
+  const [leads, setLeads] = useState([])
+  const [loading, setLoading] = useState(true)
   const [dateFilter, setDateFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -56,48 +51,36 @@ export default function AdminPartnerApplications() {
   const [toast, setToast] = useState(null)
   const toastTimerRef = useRef(null)
 
-  const contactedIds = useMemo(() => {
-    void contactedRev
-    void leads.length
-    return getContactedLeadIds()
-  }, [leads, contactedRev])
-
   const getStatus = useCallback(
-    (id) => {
-      void statusRev
-      return getPartnerStatusForId(id)
-    },
-    [statusRev],
+    (id) => leads.find((l) => l.id === id)?.partnerStatus ?? 'new',
+    [leads],
   )
 
-  const refresh = useCallback(() => {
-    setLeads(getAllLeads().filter((r) => r.type === 'partner'))
-    setContactedRev((r) => r + 1)
-    setStatusRev((r) => r + 1)
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    try {
+      const all = await getAllLeads()
+      setLeads(all.filter((r) => r.type === 'partner'))
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => {
-    const onStorage = (e) => {
-      if (
-        e.key === ADMIN_LEADS_STORAGE_KEY ||
-        e.key === ADMIN_CONTACTED_IDS_KEY ||
-        e.key === ADMIN_PARTNER_STATUS_KEY ||
-        e.key === null
-      ) {
-        refresh()
-      }
+    refresh()
+  }, [refresh])
+
+  useEffect(() => {
+    const onLeads = () => {
+      refresh()
     }
-    window.addEventListener('storage', onStorage)
+    window.addEventListener(LEADS_UPDATED_EVENT, onLeads)
     const onVis = () => {
-      if (document.visibilityState === 'visible') {
-        setLeads(getAllLeads().filter((r) => r.type === 'partner'))
-        setContactedRev((r) => r + 1)
-        setStatusRev((r) => r + 1)
-      }
+      if (document.visibilityState === 'visible') refresh()
     }
     document.addEventListener('visibilitychange', onVis)
     return () => {
-      window.removeEventListener('storage', onStorage)
+      window.removeEventListener(LEADS_UPDATED_EVENT, onLeads)
       document.removeEventListener('visibilitychange', onVis)
     }
   }, [refresh])
@@ -129,9 +112,10 @@ export default function AdminPartnerApplications() {
     toastTimerRef.current = window.setTimeout(() => setToast(null), 2800)
   }
 
-  const handleExport = () => {
+  const handleExport = async () => {
+    const all = await getAllLeads()
     exportToCSV(
-      getAllLeads().filter((r) => r.type === 'partner'),
+      all.filter((r) => r.type === 'partner'),
       `maywood-partner-applications-${Date.now()}.csv`,
     )
   }
@@ -140,26 +124,24 @@ export default function AdminPartnerApplications() {
     setExpandedId((prev) => (prev === id ? null : id))
   }
 
-  const handleStatusClick = (e, id) => {
+  const handleStatusClick = async (e, row) => {
     e.stopPropagation()
-    cyclePartnerStatus(id)
-    setStatusRev((r) => r + 1)
+    await cyclePartnerStatus(row)
+    await refresh()
   }
 
-  const handleMarkContacted = (e, id) => {
+  const handleMarkContacted = async (e, row) => {
     e.stopPropagation()
-    markLeadContacted(id)
-    setContactedRev((r) => r + 1)
+    await markLeadContacted(row.table, row.id)
+    await refresh()
   }
 
-  const handleDelete = (e, id) => {
+  const handleDelete = async (e, row) => {
     e.stopPropagation()
     if (!window.confirm('Remove this application from storage? This cannot be undone.')) return
-    deleteLeadById(id)
-    setExpandedId((prev) => (prev === id ? null : prev))
-    setLeads(getAllLeads().filter((r) => r.type === 'partner'))
-    setContactedRev((r) => r + 1)
-    setStatusRev((r) => r + 1)
+    await deleteLead(row.table, row.id)
+    setExpandedId((prev) => (prev === row.id ? null : prev))
+    await refresh()
   }
 
   const handleCopyPhone = async (e, phone) => {
@@ -175,6 +157,14 @@ export default function AdminPartnerApplications() {
     } catch {
       showToast('Could not copy')
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[420px] items-center justify-center rounded-lg border border-brand-brass-pale/40 bg-white shadow-sm">
+        <Loader2 className="h-10 w-10 animate-spin text-brand-brass" aria-label="Loading" />
+      </div>
+    )
   }
 
   if (leads.length === 0) {
@@ -278,7 +268,7 @@ export default function AdminPartnerApplications() {
             <tbody>
               {pageSlice.map((row, i) => {
                 const isExpanded = expandedId === row.id
-                const contacted = contactedIds.has(row.id)
+                const contacted = row.contacted
                 const phone = displayPhone(row)
                 const num = globalIndexStart + i + 1
                 const st = getStatus(row.id)
@@ -327,7 +317,7 @@ export default function AdminPartnerApplications() {
                       <td className="px-3 py-3">
                         <button
                           type="button"
-                          onClick={(e) => handleStatusClick(e, row.id)}
+                          onClick={(e) => handleStatusClick(e, row)}
                           className={[
                             'rounded-full border px-2.5 py-1 font-body text-[10px] font-semibold uppercase tracking-[0.06em] transition-opacity hover:opacity-90',
                             STATUS_CLASS[st] || STATUS_CLASS.new,
@@ -359,7 +349,7 @@ export default function AdminPartnerApplications() {
                           {!contacted ? (
                             <button
                               type="button"
-                              onClick={(e) => handleMarkContacted(e, row.id)}
+                              onClick={(e) => handleMarkContacted(e, row)}
                               className="inline-flex items-center gap-1 rounded-sm border border-green-200 bg-green-50 px-2 py-1 font-body text-[10px] font-medium text-green-800 transition-colors hover:bg-green-100"
                             >
                               <UserCheck className="h-3 w-3 shrink-0" aria-hidden />
@@ -376,7 +366,7 @@ export default function AdminPartnerApplications() {
                           </button>
                           <button
                             type="button"
-                            onClick={(e) => handleDelete(e, row.id)}
+                            onClick={(e) => handleDelete(e, row)}
                             className="inline-flex items-center gap-1 rounded-sm border border-red-200 bg-red-50 px-2 py-1 font-body text-[10px] text-red-800 transition-colors hover:bg-red-100"
                           >
                             <Trash2 className="h-3 w-3 shrink-0" aria-hidden />

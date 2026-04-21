@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import BrandLogo from '../../components/ui/BrandLogo'
 import { buttonClasses } from '../../lib/buttonStyles'
-import { ADMIN_LEADS_STORAGE_KEY, exportToCSV, getAllLeads } from '../../utils/adminDataStore'
+import { exportToCSV, getAllLeads, LEADS_UPDATED_EVENT } from '../../utils/adminDataStore'
 import {
   ensureAdminInstallDate,
   getNotifyPreference,
@@ -19,6 +19,7 @@ const NAV = [
   { to: '/admin/consultations', label: 'Consultations', icon: '📅' },
   { to: '/admin/partners', label: 'Partner Applications', icon: '🤝' },
   { to: '/admin/analytics', label: 'Analytics', icon: '📈' },
+  { to: '/admin/portfolio', label: 'Portfolio Manager', icon: '🖼️' },
   { to: '/admin/settings', label: 'Settings', icon: '⚙️' },
 ]
 
@@ -29,6 +30,7 @@ const PATH_TITLES = {
   '/admin/consultations': 'Consultations',
   '/admin/partners': 'Partner Applications',
   '/admin/analytics': 'Analytics',
+  '/admin/portfolio': 'Portfolio Manager',
   '/admin/settings': 'Settings',
 }
 
@@ -47,29 +49,40 @@ export default function AdminLayout() {
   }, [])
 
   useEffect(() => {
-    const last = { n: getAllLeads().length }
-    const tick = () => {
-      const next = getAllLeads().length
-      if (next > last.n) {
-        if (getNotifyPreference() && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-          try {
-            new Notification('Maywood Interiors', { body: 'A new lead was captured.' })
-          } catch {
-            /* ignore */
+    const last = { n: 0 }
+    const tick = async () => {
+      try {
+        const list = await getAllLeads()
+        const next = list.length
+        if (next > last.n) {
+          if (getNotifyPreference() && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            try {
+              new Notification('Maywood Interiors', { body: 'A new lead was captured.' })
+            } catch {
+              /* ignore */
+            }
           }
+          if (getSoundPreference()) playNotificationBeep()
         }
-        if (getSoundPreference()) playNotificationBeep()
+        last.n = next
+      } catch {
+        /* ignore */
       }
-      last.n = next
     }
+    tick()
     const id = setInterval(tick, 3000)
-    const onStorage = (e) => {
-      if (e.key === ADMIN_LEADS_STORAGE_KEY || e.key === null) tick()
+    const onLeads = () => {
+      tick()
     }
-    window.addEventListener('storage', onStorage)
+    window.addEventListener(LEADS_UPDATED_EVENT, onLeads)
+    const onVis = () => {
+      if (document.visibilityState === 'visible') tick()
+    }
+    document.addEventListener('visibilitychange', onVis)
     return () => {
       clearInterval(id)
-      window.removeEventListener('storage', onStorage)
+      window.removeEventListener(LEADS_UPDATED_EVENT, onLeads)
+      document.removeEventListener('visibilitychange', onVis)
     }
   }, [])
 
@@ -95,8 +108,9 @@ export default function AdminLayout() {
     navigate('/admin/login', { replace: true })
   }
 
-  const handleExportCsv = () => {
-    exportToCSV(getAllLeads(), `maywood-leads-${Date.now()}.csv`)
+  const handleExportCsv = async () => {
+    const rows = await getAllLeads()
+    exportToCSV(rows, `maywood-leads-${Date.now()}.csv`)
   }
 
   const showExport = ['/admin/dashboard', '/admin/leads', '/admin/quotes', '/admin/consultations', '/admin/partners'].includes(
@@ -109,6 +123,7 @@ export default function AdminLayout() {
     '/admin/consultations',
     '/admin/partners',
     '/admin/analytics',
+    '/admin/portfolio',
     '/admin/settings',
   ].includes(location.pathname)
 

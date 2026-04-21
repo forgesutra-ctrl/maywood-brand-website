@@ -282,7 +282,7 @@ export default function AboutUs() {
         </div>
       </section>
 
-      <section className="bg-[#f5f0eb]">
+      <section id="awards" className="scroll-mt-28 bg-[#f5f0eb]">
         <div className="mx-auto max-w-[1400px] px-6 py-24 lg:px-24">
           <SectionLabel>Recognition</SectionLabel>
           <h2 className="mt-6 max-w-[900px] font-display text-[clamp(30px,4vw,48px)] font-light leading-[1.08] text-brand-charcoal">

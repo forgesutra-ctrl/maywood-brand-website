@@ -1,14 +1,12 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ChevronDown, ChevronUp, Inbox, Trash2, Phone, UserCheck } from 'lucide-react'
+import { ChevronDown, ChevronUp, Inbox, Loader2, Trash2, Phone, UserCheck } from 'lucide-react'
 import { buttonClasses } from '../../lib/buttonStyles'
 import {
-  ADMIN_CONTACTED_IDS_KEY,
-  ADMIN_LEADS_STORAGE_KEY,
-  deleteLeadById,
+  deleteLead,
   exportToCSV,
   getAllLeads,
-  getContactedLeadIds,
+  LEADS_UPDATED_EVENT,
   markLeadContacted,
 } from '../../utils/adminDataStore'
 
@@ -140,8 +138,8 @@ export default function AdminLeads() {
   const [searchParams, setSearchParams] = useSearchParams()
   const uncontactedOnly = searchParams.get('uncontacted') === '1'
 
-  const [leads, setLeads] = useState(() => getAllLeads())
-  const [contactedRev, setContactedRev] = useState(0)
+  const [leads, setLeads] = useState([])
+  const [loading, setLoading] = useState(true)
   const [sourceFilter, setSourceFilter] = useState('all')
   const [dateFilter, setDateFilter] = useState('all')
   const [search, setSearch] = useState('')
@@ -149,39 +147,32 @@ export default function AdminLeads() {
   const [expandedId, setExpandedId] = useState(null)
   const [toast, setToast] = useState(null)
 
-  const contactedIds = useMemo(() => {
-    void contactedRev
-    void leads.length
-    return getContactedLeadIds()
-  }, [leads, contactedRev])
-
-  const refresh = useCallback(() => {
-    setLeads(getAllLeads())
-    setContactedRev((r) => r + 1)
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    try {
+      setLeads(await getAllLeads())
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   const toastTimerRef = useRef(null)
 
   useEffect(() => {
-    const onStorage = (e) => {
-      if (
-        e.key === ADMIN_LEADS_STORAGE_KEY ||
-        e.key === ADMIN_CONTACTED_IDS_KEY ||
-        e.key === null
-      ) {
-        refresh()
-      }
+    refresh()
+  }, [refresh])
+
+  useEffect(() => {
+    const onLeads = () => {
+      refresh()
     }
-    window.addEventListener('storage', onStorage)
+    window.addEventListener(LEADS_UPDATED_EVENT, onLeads)
     const onVis = () => {
-      if (document.visibilityState === 'visible') {
-        setLeads(getAllLeads())
-        setContactedRev((r) => r + 1)
-      }
+      if (document.visibilityState === 'visible') refresh()
     }
     document.addEventListener('visibilitychange', onVis)
     return () => {
-      window.removeEventListener('storage', onStorage)
+      window.removeEventListener(LEADS_UPDATED_EVENT, onLeads)
       document.removeEventListener('visibilitychange', onVis)
     }
   }, [refresh])
@@ -189,10 +180,10 @@ export default function AdminLeads() {
   const filtered = useMemo(() => {
     const matcher = SOURCE_FILTERS.find((f) => f.id === sourceFilter)?.match ?? (() => true)
     return leads.filter((r) => {
-      if (uncontactedOnly && contactedIds.has(r.id)) return false
+      if (uncontactedOnly && r.contacted) return false
       return matcher(r) && matchesDateFilter(r, dateFilter) && matchesSearch(r, search)
     })
-  }, [leads, sourceFilter, dateFilter, search, uncontactedOnly, contactedIds])
+  }, [leads, sourceFilter, dateFilter, search, uncontactedOnly])
 
   useEffect(() => {
     setPage(1)
@@ -217,27 +208,27 @@ export default function AdminLeads() {
     toastTimerRef.current = window.setTimeout(() => setToast(null), 2800)
   }
 
-  const handleExport = () => {
-    exportToCSV(getAllLeads(), `maywood-leads-${Date.now()}.csv`)
+  const handleExport = async () => {
+    const rows = await getAllLeads()
+    exportToCSV(rows, `maywood-leads-${Date.now()}.csv`)
   }
 
   const handleRowClick = (id) => {
     setExpandedId((prev) => (prev === id ? null : id))
   }
 
-  const handleMarkContacted = (e, id) => {
+  const handleMarkContacted = async (e, row) => {
     e.stopPropagation()
-    markLeadContacted(id)
-    setContactedRev((r) => r + 1)
+    await markLeadContacted(row.table, row.id)
+    await refresh()
   }
 
-  const handleDelete = (e, id) => {
+  const handleDelete = async (e, row) => {
     e.stopPropagation()
     if (!window.confirm('Remove this lead from storage? This cannot be undone.')) return
-    deleteLeadById(id)
-    setExpandedId((prev) => (prev === id ? null : prev))
-    setLeads(getAllLeads())
-    setContactedRev((r) => r + 1)
+    await deleteLead(row.table, row.id)
+    setExpandedId((prev) => (prev === row.id ? null : prev))
+    await refresh()
   }
 
   const handleCopyPhone = async (e, phone) => {
@@ -253,6 +244,14 @@ export default function AdminLeads() {
     } catch {
       showToast('Could not copy')
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[420px] items-center justify-center rounded-lg border border-brand-brass-pale/40 bg-white shadow-sm">
+        <Loader2 className="h-10 w-10 animate-spin text-brand-brass" aria-label="Loading" />
+      </div>
+    )
   }
 
   if (leads.length === 0) {
@@ -380,7 +379,7 @@ export default function AdminLeads() {
               {pageSlice.map((row, i) => {
                 const badge = BADGE_BY_TYPE[row.type] || BADGE_BY_TYPE.calculator
                 const isExpanded = expandedId === row.id
-                const contacted = contactedIds.has(row.id)
+                const contacted = row.contacted
                 const phone = displayPhone(row)
                 const num = globalIndexStart + i + 1
 
@@ -449,7 +448,7 @@ export default function AdminLeads() {
                           {!contacted ? (
                             <button
                               type="button"
-                              onClick={(e) => handleMarkContacted(e, row.id)}
+                              onClick={(e) => handleMarkContacted(e, row)}
                               className="inline-flex items-center gap-1 rounded-sm border border-green-200 bg-green-50 px-2 py-1 font-body text-[11px] font-medium text-green-800 transition-colors hover:bg-green-100"
                             >
                               <UserCheck className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -466,7 +465,7 @@ export default function AdminLeads() {
                           </button>
                           <button
                             type="button"
-                            onClick={(e) => handleDelete(e, row.id)}
+                            onClick={(e) => handleDelete(e, row)}
                             className="inline-flex items-center gap-1 rounded-sm border border-red-200 bg-red-50 px-2 py-1 font-body text-[11px] text-red-800 transition-colors hover:bg-red-100"
                             title="Delete"
                           >

@@ -156,7 +156,7 @@ export default function InstantQuote() {
     setEstimateLow(totalMin)
     setEstimateHigh(totalMax)
 
-    saveQuoteRequest({
+    void saveQuoteRequest({
       name: fullName.trim(),
       phone: phoneFull,
       email: email.trim(),

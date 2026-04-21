@@ -5,14 +5,53 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
-import { projectImages as images } from '../data/projectImages'
+import { projectImages as fallbackImages } from '../data/projectImages'
+import { PORTFOLIO_UPDATED_EVENT } from '../utils/portfolioProjectsStore'
+import { supabase } from '../utils/supabaseClient'
 
 const MotionLink = motion(Link)
 
 const tapTransition = { type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }
 
+async function fetchGalleryItems() {
+  const { data, error } = await supabase
+    .from('portfolio_projects')
+    .select('image_url')
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.error('portfolio_projects:', error)
+    return { fromAdmin: false, items: fallbackImages }
+  }
+  if (data?.length) {
+    return { fromAdmin: true, items: data.map((p) => ({ src: p.image_url })) }
+  }
+  return { fromAdmin: false, items: fallbackImages }
+}
+
 export default function Portfolio() {
+  const [{ fromAdmin, items }, setGallery] = useState({ fromAdmin: false, items: fallbackImages })
   const [lightboxIndex, setLightboxIndex] = useState(null)
+
+  useEffect(() => {
+    const sync = async () => {
+      setGallery(await fetchGalleryItems())
+    }
+    sync()
+    const onPortfolio = () => {
+      sync()
+    }
+    window.addEventListener(PORTFOLIO_UPDATED_EVENT, onPortfolio)
+    const onVis = () => {
+      if (document.visibilityState === 'visible') sync()
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      window.removeEventListener(PORTFOLIO_UPDATED_EVENT, onPortfolio)
+      document.removeEventListener('visibilitychange', onVis)
+    }
+  }, [])
+
+  const showComingSoon = !fromAdmin
 
   useEffect(() => {
     if (lightboxIndex === null) return
@@ -28,20 +67,19 @@ export default function Portfolio() {
     const onKeyDown = (e) => {
       if (e.key === 'Escape') setLightboxIndex(null)
       if (e.key === 'ArrowLeft') {
-        setLightboxIndex((i) => (i - 1 + images.length) % images.length)
+        setLightboxIndex((i) => (i - 1 + items.length) % items.length)
       }
       if (e.key === 'ArrowRight') {
-        setLightboxIndex((i) => (i + 1) % images.length)
+        setLightboxIndex((i) => (i + 1) % items.length)
       }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [lightboxIndex])
+  }, [lightboxIndex, items.length])
 
   const openAt = (index) => setLightboxIndex(index)
-  const goPrev = () =>
-    setLightboxIndex((i) => (i - 1 + images.length) % images.length)
-  const goNext = () => setLightboxIndex((i) => (i + 1) % images.length)
+  const goPrev = () => setLightboxIndex((i) => (i - 1 + items.length) % items.length)
+  const goNext = () => setLightboxIndex((i) => (i + 1) % items.length)
 
   return (
     <main className="flex-1">
@@ -59,10 +97,15 @@ export default function Portfolio() {
 
       <section className="bg-brand-ivory px-5 py-16 md:px-8 lg:px-10 lg:py-24">
         <div className="mx-auto max-w-[1400px]">
+          {showComingSoon ? (
+            <p className="mb-10 text-center font-body text-[15px] leading-relaxed text-brand-mist">
+              Portfolio coming soon. Check back shortly.
+            </p>
+          ) : null}
           <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 lg:gap-5">
-            {images.map(({ src }, index) => (
+            {items.map(({ src }, index) => (
               <button
-                key={src}
+                key={`${src}-${index}`}
                 type="button"
                 onClick={() => openAt(index)}
                 className="mb-4 w-full break-inside-avoid rounded-[2px] border-0 bg-transparent p-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ivory"
@@ -73,7 +116,7 @@ export default function Portfolio() {
                     alt=""
                     loading="lazy"
                     decoding="async"
-                    className="w-full h-full object-cover object-[center_28%] block"
+                    className="block h-full w-full object-cover object-[center_28%]"
                     onError={(e) => {
                       e.currentTarget.src = '/assets/images/fallback.jpg'
                     }}
@@ -152,9 +195,9 @@ export default function Portfolio() {
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={images[lightboxIndex].src}
+              src={items[lightboxIndex].src}
               alt=""
-              className="w-full h-full max-h-[90vh] max-w-full object-cover object-center block"
+              className="block h-full max-h-[90vh] w-full max-w-full object-cover object-center"
               onError={(e) => {
                 e.currentTarget.src = '/assets/images/fallback.jpg'
               }}

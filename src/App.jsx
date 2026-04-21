@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import ScrollToTop from './components/ScrollToTop'
 import RootLayout from './components/layout/RootLayout'
 import AdminAuthGuard from './pages/admin/AdminAuthGuard'
 import AdminLayout from './pages/admin/AdminLayout'
@@ -9,8 +10,8 @@ import AdminLeads from './pages/admin/AdminLeads'
 import AdminPartnerApplications from './pages/admin/AdminPartnerApplications'
 import AdminQuotes from './pages/admin/AdminQuotes'
 import AdminAnalytics from './pages/admin/AdminAnalytics'
+import AdminPortfolio from './pages/admin/AdminPortfolio'
 import AdminSettings from './pages/admin/AdminSettings'
-import AdminPlaceholderPage from './pages/admin/AdminPlaceholderPage'
 import AboutUs from './pages/AboutUs'
 import ExperienceCenters from './pages/ExperienceCenters'
 import Home from './pages/Home'
@@ -27,10 +28,12 @@ import CorporateSpaces from './pages/products/CorporateSpaces'
 import SpasSalons from './pages/products/SpasSalons'
 import RetailSpaces from './pages/products/RetailSpaces'
 import HotelsCafes from './pages/products/HotelsCafes'
+import NotFound from './pages/NotFound'
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="admin/login" element={<AdminLogin />} />
         <Route path="admin" element={<AdminAuthGuard />}>
@@ -42,12 +45,15 @@ function App() {
             <Route path="consultations" element={<AdminConsultations />} />
             <Route path="partners" element={<AdminPartnerApplications />} />
             <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="portfolio" element={<AdminPortfolio />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
           </Route>
         </Route>
         <Route element={<RootLayout />}>
           <Route index element={<Home />} />
           <Route path="instant-quote" element={<InstantQuote />} />
+          <Route path="solutions" element={<Navigate to="/products" replace />} />
           <Route path="products" element={<Products />} />
           <Route path="products/home-interiors" element={<HomeInteriors />} />
           <Route path="products/corporate-spaces" element={<CorporateSpaces />} />
@@ -66,7 +72,7 @@ function App() {
           <Route path="partner-program" element={<Navigate to="/partners" replace />} />
           <Route path="about" element={<AboutUs />} />
           <Route path="about-us" element={<Navigate to="/about" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </BrowserRouter>

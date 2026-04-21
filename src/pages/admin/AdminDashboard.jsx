@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { X } from 'lucide-react'
-import { ADMIN_LEADS_STORAGE_KEY, getAllLeads } from '../../utils/adminDataStore'
+import { Loader2, X } from 'lucide-react'
+import { getAllLeads, LEADS_UPDATED_EVENT } from '../../utils/adminDataStore'
 import { getSourceLabels } from '../../utils/adminSettingsStore'
 
 const SOURCE_KEY_IDS = [
@@ -170,7 +170,8 @@ function DetailDrawer({ record, onClose }) {
 }
 
 export default function AdminDashboard() {
-  const [leads, setLeads] = useState(() => getAllLeads())
+  const [leads, setLeads] = useState([])
+  const [loading, setLoading] = useState(true)
   const [drawerRecord, setDrawerRecord] = useState(null)
   const [labelTick, setLabelTick] = useState(0)
 
@@ -182,8 +183,14 @@ export default function AdminDashboard() {
 
   const sourceLabels = useMemo(() => getSourceLabels(), [labelTick])
 
-  const refresh = useCallback(() => {
-    setLeads(getAllLeads())
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    try {
+      const rows = await getAllLeads()
+      setLeads(rows)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -191,16 +198,16 @@ export default function AdminDashboard() {
   }, [refresh])
 
   useEffect(() => {
-    const onStorage = (e) => {
-      if (e.key === ADMIN_LEADS_STORAGE_KEY || e.key === null) refresh()
+    const onLeads = () => {
+      refresh()
     }
-    window.addEventListener('storage', onStorage)
+    window.addEventListener(LEADS_UPDATED_EVENT, onLeads)
     const onVis = () => {
       if (document.visibilityState === 'visible') refresh()
     }
     document.addEventListener('visibilitychange', onVis)
     return () => {
-      window.removeEventListener('storage', onStorage)
+      window.removeEventListener(LEADS_UPDATED_EVENT, onLeads)
       document.removeEventListener('visibilitychange', onVis)
     }
   }, [refresh])
@@ -271,6 +278,14 @@ export default function AdminDashboard() {
   }, [leads, todayStr, sourceLabels])
 
   const recentTen = useMemo(() => leads.slice(0, 10), [leads])
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[320px] items-center justify-center rounded-lg border border-brand-brass-pale/40 bg-white shadow-sm">
+        <Loader2 className="h-10 w-10 animate-spin text-brand-brass" aria-label="Loading" />
+      </div>
+    )
+  }
 
   if (leads.length === 0) {
     return (

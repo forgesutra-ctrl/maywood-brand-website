@@ -5,7 +5,6 @@ import { Loader2, Shield, Star } from 'lucide-react'
 import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
-import { supabase } from '../lib/supabase'
 import { savePartnerApplication } from '../utils/adminDataStore'
 
 const motionEase = [0.16, 1, 0.3, 1]
@@ -247,17 +246,7 @@ export default function PartnerProgram() {
     setSubmitError('')
     try {
       setIsSubmitting(true)
-      const { error } = await supabase.from('partner_applications').insert({
-        full_name: form.fullName.trim(),
-        company_name: form.company.trim(),
-        partner_type: form.partnerType,
-        phone: form.phone.trim(),
-        email: form.email.trim(),
-        city: form.city.trim(),
-        business_description: form.about.trim(),
-      })
-      if (error) throw error
-      savePartnerApplication({
+      await savePartnerApplication({
         fullName: form.fullName.trim(),
         company: form.company.trim(),
         partnerType: form.partnerType,

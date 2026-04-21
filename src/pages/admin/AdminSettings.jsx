@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { buttonClasses } from '../../lib/buttonStyles'
-import { exportToCSV, getAllLeads } from '../../utils/adminDataStore'
+import { clearAllCapturedLeads, exportToCSV, getAllLeads } from '../../utils/adminDataStore'
 import {
   ADMIN_INSTALL_DATE_KEY,
   DEFAULT_SOURCE_LABELS,
@@ -18,7 +19,7 @@ import {
 } from '../../utils/adminSettingsStore'
 
 const SITE_NAME = 'Maywood Interiors'
-const LIVE_URL = 'https://maywood-brand-website.vercel.app'
+const LIVE_URL = 'https://maywood.in'
 
 const AUTH_KEY = 'maywood_admin_auth'
 
@@ -30,6 +31,7 @@ const inputClass =
 const labelClass = 'mb-2 block font-body text-[11px] font-semibold uppercase tracking-[0.1em] text-brand-mist'
 
 export default function AdminSettings() {
+  const navigate = useNavigate()
   const [currentPw, setCurrentPw] = useState('')
   const [newPw, setNewPw] = useState('')
   const [confirmPw, setConfirmPw] = useState('')
@@ -110,19 +112,20 @@ export default function AdminSettings() {
     setLabelMsg('Labels saved.')
   }
 
-  const handleExportAll = () => {
-    exportToCSV(getAllLeads(), `maywood-all-leads-${Date.now()}.csv`)
+  const handleExportAll = async () => {
+    const rows = await getAllLeads()
+    exportToCSV(rows, `maywood-all-leads-${Date.now()}.csv`)
   }
 
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
     if (clearInput.trim().toUpperCase() !== 'DELETE') return
     try {
-      localStorage.clear()
+      await clearAllCapturedLeads()
     } catch {
       /* ignore */
     }
     sessionStorage.removeItem(AUTH_KEY)
-    window.location.href = '/admin/login'
+    navigate('/admin/login', { replace: true })
   }
 
   return (
@@ -257,9 +260,9 @@ export default function AdminSettings() {
         <div className="mt-8 border-t border-red-200/60 pt-6">
           <p className="font-body text-[14px] font-medium text-red-900">Clear all data</p>
           <p className="mt-2 font-body text-[13px] leading-relaxed text-red-800/90">
-            This cannot be undone. All captured leads will be permanently deleted. Your browser&apos;s localStorage for
-            this site will be wiped and you will be signed out. Type <span className="font-semibold">DELETE</span> to
-            enable the button.
+            This cannot be undone. All lead rows in Supabase (quotes, consultations, calculator leads, and partner
+            applications) will be permanently deleted and you will be signed out. Admin preferences stored in this
+            browser are kept. Type <span className="font-semibold">DELETE</span> to enable the button.
           </p>
           <input
             type="text"

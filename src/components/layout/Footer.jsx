@@ -18,6 +18,7 @@ const companyLinks = [
   { label: 'Maywood Finance', to: '/finance' },
   { label: 'Partner Program', to: '/partners' },
   { label: 'Experience Centers', to: '/experience-centers' },
+  { label: 'Portfolio', to: '/portfolio' },
   { label: 'About Us', to: '/about' },
 ]
 

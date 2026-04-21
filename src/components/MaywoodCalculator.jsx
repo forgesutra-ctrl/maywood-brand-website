@@ -230,11 +230,11 @@ export default function MaywoodCalculator({
   const gateValid =
     gateName.trim().length > 0 && gatePhoneDigits.length === 10 && isValidEmail(gateEmail)
 
-  const handleGateSubmit = (e) => {
+  const handleGateSubmit = async (e) => {
     e.preventDefault()
     if (!gateValid) return
     if (calculatorLeadSource) {
-      saveCalculatorLead({
+      await saveCalculatorLead({
         name: gateName.trim(),
         phone: `+91${gatePhoneDigits}`,
         email: gateEmail.trim(),

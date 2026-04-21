@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Loader2 } from 'lucide-react'
 import { buttonClasses } from '../../lib/buttonStyles'
-import { getAllLeads, getContactedLeadIds } from '../../utils/adminDataStore'
+import { getAllLeads, LEADS_UPDATED_EVENT } from '../../utils/adminDataStore'
 import { startOfWeekMonday } from '../../utils/adminPageUtils'
 import { getSourceLabels } from '../../utils/adminSettingsStore'
 
@@ -213,6 +214,8 @@ function DonutChart({ contactedPct, insufficient }) {
 export default function AdminAnalytics() {
   const [rangeId, setRangeId] = useState('30d')
   const [labelTick, setLabelTick] = useState(0)
+  const [allLeads, setAllLeads] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const onLabels = () => setLabelTick((t) => t + 1)
@@ -220,10 +223,32 @@ export default function AdminAnalytics() {
     return () => window.removeEventListener('maywood-admin-settings-changed', onLabels)
   }, [])
 
-  const sourceLabels = useMemo(() => getSourceLabels(), [labelTick])
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setLoading(true)
+      try {
+        const rows = await getAllLeads()
+        if (!cancelled) setAllLeads(rows)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    const onLeads = () => load()
+    window.addEventListener(LEADS_UPDATED_EVENT, onLeads)
+    const onVis = () => {
+      if (document.visibilityState === 'visible') load()
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      cancelled = true
+      window.removeEventListener(LEADS_UPDATED_EVENT, onLeads)
+      document.removeEventListener('visibilitychange', onVis)
+    }
+  }, [])
 
-  const allLeads = getAllLeads()
-  const contactedIds = getContactedLeadIds()
+  const sourceLabels = useMemo(() => getSourceLabels(), [labelTick])
 
   const { start, end } = useMemo(() => getAnalyticsRange(rangeId), [rangeId])
 
@@ -315,13 +340,21 @@ export default function AdminAnalytics() {
 
   const response = useMemo(() => {
     const total = leadsInRange.length
-    const contacted = leadsInRange.filter((r) => contactedIds.has(r.id)).length
+    const contacted = leadsInRange.filter((r) => r.contacted).length
     const pending = total - contacted
     const pct = total === 0 ? 0 : (contacted / total) * 100
     return { total, contacted, pending, pct }
-  }, [leadsInRange, contactedIds])
+  }, [leadsInRange])
 
   const insufficientResponse = leadsInRange.length === 0
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center rounded-lg border border-brand-brass-pale/40 bg-white shadow-sm">
+        <Loader2 className="h-10 w-10 animate-spin text-brand-brass" aria-label="Loading" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-10">

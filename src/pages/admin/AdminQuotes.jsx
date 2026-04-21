@@ -1,14 +1,12 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp, Inbox, Phone, Trash2, UserCheck } from 'lucide-react'
+import { ChevronDown, ChevronUp, Inbox, Loader2, Phone, Trash2, UserCheck } from 'lucide-react'
 import { emiMonthly, formatInr, formatInrRange } from '../../lib/maywoodEstimate'
 import { buttonClasses } from '../../lib/buttonStyles'
 import {
-  ADMIN_CONTACTED_IDS_KEY,
-  ADMIN_LEADS_STORAGE_KEY,
-  deleteLeadById,
+  deleteLead,
   exportToCSV,
   getAllLeads,
-  getContactedLeadIds,
+  LEADS_UPDATED_EVENT,
   markLeadContacted,
 } from '../../utils/adminDataStore'
 import {
@@ -46,8 +44,8 @@ function formatEstimate(row) {
 }
 
 export default function AdminQuotes() {
-  const [leads, setLeads] = useState(() => getAllLeads().filter((r) => r.type === 'quote'))
-  const [contactedRev, setContactedRev] = useState(0)
+  const [leads, setLeads] = useState([])
+  const [loading, setLoading] = useState(true)
   const [dateFilter, setDateFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -55,33 +53,31 @@ export default function AdminQuotes() {
   const [toast, setToast] = useState(null)
   const toastTimerRef = useRef(null)
 
-  const contactedIds = useMemo(() => {
-    void contactedRev
-    void leads.length
-    return getContactedLeadIds()
-  }, [leads, contactedRev])
-
-  const refresh = useCallback(() => {
-    setLeads(getAllLeads().filter((r) => r.type === 'quote'))
-    setContactedRev((r) => r + 1)
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    try {
+      const all = await getAllLeads()
+      setLeads(all.filter((r) => r.type === 'quote'))
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => {
-    const onStorage = (e) => {
-      if (e.key === ADMIN_LEADS_STORAGE_KEY || e.key === ADMIN_CONTACTED_IDS_KEY || e.key === null) {
-        refresh()
-      }
+    refresh()
+  }, [refresh])
+
+  useEffect(() => {
+    const onLeads = () => {
+      refresh()
     }
-    window.addEventListener('storage', onStorage)
+    window.addEventListener(LEADS_UPDATED_EVENT, onLeads)
     const onVis = () => {
-      if (document.visibilityState === 'visible') {
-        setLeads(getAllLeads().filter((r) => r.type === 'quote'))
-        setContactedRev((r) => r + 1)
-      }
+      if (document.visibilityState === 'visible') refresh()
     }
     document.addEventListener('visibilitychange', onVis)
     return () => {
-      window.removeEventListener('storage', onStorage)
+      window.removeEventListener(LEADS_UPDATED_EVENT, onLeads)
       document.removeEventListener('visibilitychange', onVis)
     }
   }, [refresh])
@@ -113,9 +109,10 @@ export default function AdminQuotes() {
     toastTimerRef.current = window.setTimeout(() => setToast(null), 2800)
   }
 
-  const handleExport = () => {
+  const handleExport = async () => {
+    const all = await getAllLeads()
     exportToCSV(
-      getAllLeads().filter((r) => r.type === 'quote'),
+      all.filter((r) => r.type === 'quote'),
       `maywood-quote-requests-${Date.now()}.csv`,
     )
   }
@@ -124,19 +121,18 @@ export default function AdminQuotes() {
     setExpandedId((prev) => (prev === id ? null : id))
   }
 
-  const handleMarkContacted = (e, id) => {
+  const handleMarkContacted = async (e, row) => {
     e.stopPropagation()
-    markLeadContacted(id)
-    setContactedRev((r) => r + 1)
+    await markLeadContacted(row.table, row.id)
+    await refresh()
   }
 
-  const handleDelete = (e, id) => {
+  const handleDelete = async (e, row) => {
     e.stopPropagation()
     if (!window.confirm('Remove this quote from storage? This cannot be undone.')) return
-    deleteLeadById(id)
-    setExpandedId((prev) => (prev === id ? null : prev))
-    setLeads(getAllLeads().filter((r) => r.type === 'quote'))
-    setContactedRev((r) => r + 1)
+    await deleteLead(row.table, row.id)
+    setExpandedId((prev) => (prev === row.id ? null : prev))
+    await refresh()
   }
 
   const handleCopyPhone = async (e, phone) => {
@@ -152,6 +148,14 @@ export default function AdminQuotes() {
     } catch {
       showToast('Could not copy')
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[420px] items-center justify-center rounded-lg border border-brand-brass-pale/40 bg-white shadow-sm">
+        <Loader2 className="h-10 w-10 animate-spin text-brand-brass" aria-label="Loading" />
+      </div>
+    )
   }
 
   if (leads.length === 0) {
@@ -258,7 +262,7 @@ export default function AdminQuotes() {
             <tbody>
               {pageSlice.map((row, i) => {
                 const isExpanded = expandedId === row.id
-                const contacted = contactedIds.has(row.id)
+                const contacted = row.contacted
                 const phone = displayPhone(row)
                 const num = globalIndexStart + i + 1
                 const mid =
@@ -333,7 +337,7 @@ export default function AdminQuotes() {
                           {!contacted ? (
                             <button
                               type="button"
-                              onClick={(e) => handleMarkContacted(e, row.id)}
+                              onClick={(e) => handleMarkContacted(e, row)}
                               className="inline-flex items-center gap-1 rounded-sm border border-green-200 bg-green-50 px-2 py-1 font-body text-[10px] font-medium text-green-800 transition-colors hover:bg-green-100"
                             >
                               <UserCheck className="h-3 w-3 shrink-0" aria-hidden />
@@ -350,7 +354,7 @@ export default function AdminQuotes() {
                           </button>
                           <button
                             type="button"
-                            onClick={(e) => handleDelete(e, row.id)}
+                            onClick={(e) => handleDelete(e, row)}
                             className="inline-flex items-center gap-1 rounded-sm border border-red-200 bg-red-50 px-2 py-1 font-body text-[10px] text-red-800 transition-colors hover:bg-red-100"
                           >
                             <Trash2 className="h-3 w-3 shrink-0" aria-hidden />
