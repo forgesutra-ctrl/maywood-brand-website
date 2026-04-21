@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { ChevronDown, X } from 'lucide-react'
 import {
   AnimatePresence,
   motion,
@@ -274,12 +275,20 @@ const STUDIO_TEAM = [
   },
 ]
 
-const MOBILE_TABS = [
-  { id: 'leadership', label: 'Leadership' },
-  { id: 'design', label: 'Design' },
-  { id: 'operations', label: 'Operations' },
-  { id: 'factory', label: 'Factory' },
-  { id: 'crm', label: 'CRM & Marketing' },
+/** @type {{ key: string; label: string; zone: StudioZone }[]} */
+const MOBILE_DEPT_ACCORDION = [
+  { key: 'directors', label: "Directors' Corner", zone: 'directors' },
+  { key: 'design', label: 'Design Studio', zone: 'design' },
+  { key: 'operations', label: 'Operations Hub', zone: 'operations' },
+  { key: 'lounge', label: 'Client Lounge', zone: 'lounge' },
+  { key: 'factory', label: 'Factory Floor', zone: 'factory' },
+]
+
+const TEAM_STATS_MOBILE = [
+  { value: '16', label: 'Team Members' },
+  { value: '4', label: 'Departments' },
+  { value: '9', label: 'Years' },
+  { value: '1', label: 'Vision' },
 ]
 
 const TICKER_TEXT =
@@ -388,6 +397,7 @@ function GoldGlowFilter({ id }) {
  * @param {{
  *   label: string
  *   zoneClassName?: string
+ *   cellClassName?: string
  *   viewBox: string
  *   glowId: string
  *   zone: StudioZone
@@ -396,13 +406,15 @@ function GoldGlowFilter({ id }) {
  *   hoveredId: string | null
  *   selectedId: string | null
  *   setHoveredId: (id: string | null) => void
- *   setActive: (id: string) => void
+ *   selectPerson: (id: string) => void
+ *   clearRoomSelection: () => void
  *   children?: import('react').ReactNode
  * }} props
  */
 function RoomZoneCell({
   label,
   zoneClassName = '',
+  cellClassName = '',
   viewBox,
   glowId,
   zone,
@@ -411,7 +423,8 @@ function RoomZoneCell({
   hoveredId,
   selectedId,
   setHoveredId,
-  setActive,
+  selectPerson,
+  clearRoomSelection,
   children,
 }) {
   const people = STUDIO_TEAM.filter((p) => p.zone === zone)
@@ -420,7 +433,10 @@ function RoomZoneCell({
       className={[
         'relative flex min-h-[280px] flex-col border border-[rgba(184,150,90,0.2)] p-6',
         zoneClassName,
-      ].join(' ')}
+        cellClassName,
+      ]
+        .filter(Boolean)
+        .join(' ')}
     >
       <p className="relative z-[2] mb-2 shrink-0 font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-[#B8965A]">
         {label}
@@ -430,6 +446,7 @@ function RoomZoneCell({
         className="relative z-[1] h-full min-h-[200px] w-full flex-1 touch-manipulation"
         preserveAspectRatio="xMidYMid meet"
         role="presentation"
+        onClick={clearRoomSelection}
       >
         <defs>
           <GoldGlowFilter id={glowId} />
@@ -446,7 +463,7 @@ function RoomZoneCell({
               reduceMotion={reduceMotion}
               filterId={glowId}
               onHover={(v) => setHoveredId(v ? person.id : null)}
-              onPick={() => setActive(person.id)}
+              onPick={() => selectPerson(person.id)}
             />
           )
         })}
@@ -462,8 +479,8 @@ export default function TeamStudioRoom() {
   const [lightsOn, setLightsOn] = useState(false)
   const [hoveredId, setHoveredId] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
-  const [mobileTab, setMobileTab] = useState(/** @type {MobileDept} */ ('leadership'))
-  const [mobileOpenId, setMobileOpenId] = useState(/** @type {string | null} */ (null))
+  const [mobileOpenDeptKey, setMobileOpenDeptKey] = useState(/** @type {string | null} */ ('directors'))
+  const [sheetPerson, setSheetPerson] = useState(/** @type {StudioPerson | null} */ (null))
   const titleId = useId()
   const rootId = useId().replace(/:/g, '')
   const glow = useMemo(
@@ -492,14 +509,30 @@ export default function TeamStudioRoom() {
     return STUDIO_TEAM.find((p) => p.id === id) ?? null
   }, [hoveredId, selectedId])
 
-  const setActive = useCallback((id) => {
-    setSelectedId((prev) => (prev === id ? null : id))
+  const selectPerson = useCallback((id) => {
+    setSelectedId(id)
   }, [])
 
-  const mobileList = useMemo(
-    () => STUDIO_TEAM.filter((p) => p.mobileDept === mobileTab),
-    [mobileTab],
-  )
+  const clearRoomSelection = useCallback(() => {
+    setSelectedId(null)
+    setHoveredId(null)
+  }, [])
+
+  const closeSheet = useCallback(() => setSheetPerson(null), [])
+
+  useEffect(() => {
+    if (!sheetPerson) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (e) => {
+      if (e.key === 'Escape') closeSheet()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prev
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [sheetPerson, closeSheet])
 
   return (
     <section
@@ -533,7 +566,7 @@ export default function TeamStudioRoom() {
           Step inside the Maywood studio.
         </motion.p>
 
-        {/* Desktop / tablet: interactive room */}
+        {/* Tablet + desktop: interactive room (desktop grid unchanged at lg+) */}
         <div className="mt-14 hidden md:block">
           <motion.div
             className="relative w-full overflow-hidden rounded-[12px] border border-[rgba(184,150,90,0.3)] bg-[#f5f0eb] shadow-[0_40px_80px_-40px_rgba(26,22,18,0.45)]"
@@ -547,14 +580,16 @@ export default function TeamStudioRoom() {
               transition={{ duration: reduceMotion ? 0 : 1.15, ease: [0.22, 1, 0.36, 1] }}
             />
             <div className="relative z-[1] grid grid-cols-1 lg:grid-cols-[1fr_min(380px,34%)]">
-              <div
-                className="min-w-0 p-3"
-                role="img"
-                aria-label="Floor plan of the Maywood studio: five zones with team members"
-              >
-                <div className="grid min-h-0 grid-cols-3 grid-rows-[minmax(280px,auto)_minmax(280px,auto)] gap-3">
+              <div className="min-w-0 p-3">
+                {/* Tablet 768–1023: 2-column floor plan */}
+                <div
+                  className="grid grid-cols-2 gap-3 lg:hidden"
+                  role="img"
+                  aria-label="Floor plan of the Maywood studio: five zones with team members"
+                >
                   <RoomZoneCell
                     label="Directors' Corner"
+                    cellClassName="col-span-2"
                     zoneClassName="bg-[#f5f0eb]"
                     viewBox="0 0 200 200"
                     glowId={glow.directors}
@@ -564,7 +599,8 @@ export default function TeamStudioRoom() {
                     hoveredId={hoveredId}
                     selectedId={selectedId}
                     setHoveredId={setHoveredId}
-                    setActive={setActive}
+                    selectPerson={selectPerson}
+                    clearRoomSelection={clearRoomSelection}
                   >
                     <rect width="200" height="200" fill={ROOM_COLORS.floor} />
                     <circle cx="34" cy="46" r="14" fill={ROOM_COLORS.furniture} opacity="0.22" />
@@ -583,7 +619,8 @@ export default function TeamStudioRoom() {
                     hoveredId={hoveredId}
                     selectedId={selectedId}
                     setHoveredId={setHoveredId}
-                    setActive={setActive}
+                    selectPerson={selectPerson}
+                    clearRoomSelection={clearRoomSelection}
                   >
                     <rect width="200" height="200" fill={ROOM_COLORS.floor} />
                     <rect x="136" y="40" width="46" height="56" rx="2" fill={ROOM_COLORS.furniture} opacity="0.35" />
@@ -603,7 +640,8 @@ export default function TeamStudioRoom() {
                     hoveredId={hoveredId}
                     selectedId={selectedId}
                     setHoveredId={setHoveredId}
-                    setActive={setActive}
+                    selectPerson={selectPerson}
+                    clearRoomSelection={clearRoomSelection}
                   >
                     <rect width="200" height="200" fill={ROOM_COLORS.floor} />
                     <rect x="20" y="38" width="62" height="36" rx="2" fill={ROOM_COLORS.furniture} opacity="0.45" />
@@ -613,7 +651,7 @@ export default function TeamStudioRoom() {
 
                   <RoomZoneCell
                     label="Factory Floor"
-                    zoneClassName="col-span-2 bg-[#d6d6d4]"
+                    zoneClassName="bg-[#d6d6d4]"
                     viewBox="0 0 400 200"
                     glowId={glow.factory}
                     zone="factory"
@@ -622,7 +660,8 @@ export default function TeamStudioRoom() {
                     hoveredId={hoveredId}
                     selectedId={selectedId}
                     setHoveredId={setHoveredId}
-                    setActive={setActive}
+                    selectPerson={selectPerson}
+                    clearRoomSelection={clearRoomSelection}
                   >
                     <rect width="400" height="200" fill={ROOM_COLORS.concrete} opacity="0.35" />
                     <path
@@ -650,7 +689,126 @@ export default function TeamStudioRoom() {
                     hoveredId={hoveredId}
                     selectedId={selectedId}
                     setHoveredId={setHoveredId}
-                    setActive={setActive}
+                    selectPerson={selectPerson}
+                    clearRoomSelection={clearRoomSelection}
+                  >
+                    <rect width="200" height="200" fill={ROOM_COLORS.wall} opacity="0.45" />
+                    <ellipse cx="56" cy="156" rx="34" ry="18" fill={ROOM_COLORS.furniture} opacity="0.3" />
+                    <ellipse cx="144" cy="156" rx="34" ry="18" fill={ROOM_COLORS.furniture} opacity="0.3" />
+                    <rect x="86" y="122" width="28" height="18" rx="2" fill={ROOM_COLORS.furnitureLight} opacity="0.38" />
+                  </RoomZoneCell>
+                </div>
+
+                {/* Desktop 1024+: original 3-column grid */}
+                <div
+                  className="hidden min-h-0 grid-cols-3 grid-rows-[minmax(280px,auto)_minmax(280px,auto)] gap-3 lg:grid"
+                  role="img"
+                  aria-label="Floor plan of the Maywood studio: five zones with team members"
+                >
+                  <RoomZoneCell
+                    label="Directors' Corner"
+                    zoneClassName="bg-[#f5f0eb]"
+                    viewBox="0 0 200 200"
+                    glowId={glow.directors}
+                    zone="directors"
+                    lightsOn={lightsOn}
+                    reduceMotion={reduceMotion}
+                    hoveredId={hoveredId}
+                    selectedId={selectedId}
+                    setHoveredId={setHoveredId}
+                    selectPerson={selectPerson}
+                    clearRoomSelection={clearRoomSelection}
+                  >
+                    <rect width="200" height="200" fill={ROOM_COLORS.floor} />
+                    <circle cx="34" cy="46" r="14" fill={ROOM_COLORS.furniture} opacity="0.22" />
+                    <rect x="146" y="36" width="38" height="92" rx="2" fill={ROOM_COLORS.furnitureLight} opacity="0.38" />
+                    <rect x="38" y="116" width="124" height="36" rx="3" fill={ROOM_COLORS.furniture} opacity="0.5" />
+                  </RoomZoneCell>
+
+                  <RoomZoneCell
+                    label="Design Studio"
+                    zoneClassName="bg-[#f5f0eb]"
+                    viewBox="0 0 200 200"
+                    glowId={glow.design}
+                    zone="design"
+                    lightsOn={lightsOn}
+                    reduceMotion={reduceMotion}
+                    hoveredId={hoveredId}
+                    selectedId={selectedId}
+                    setHoveredId={setHoveredId}
+                    selectPerson={selectPerson}
+                    clearRoomSelection={clearRoomSelection}
+                  >
+                    <rect width="200" height="200" fill={ROOM_COLORS.floor} />
+                    <rect x="136" y="40" width="46" height="56" rx="2" fill={ROOM_COLORS.furniture} opacity="0.35" />
+                    <rect x="32" y="104" width="136" height="44" rx="2" fill={ROOM_COLORS.furniture} opacity="0.42" />
+                    <rect x="46" y="114" width="36" height="22" rx="1" fill={ROOM_COLORS.gold} opacity="0.18" />
+                    <rect x="92" y="112" width="40" height="20" rx="1" fill="#2D6A6A" opacity="0.16" />
+                  </RoomZoneCell>
+
+                  <RoomZoneCell
+                    label="Operations Hub"
+                    zoneClassName="bg-[#f5f0eb]"
+                    viewBox="0 0 200 200"
+                    glowId={glow.operations}
+                    zone="operations"
+                    lightsOn={lightsOn}
+                    reduceMotion={reduceMotion}
+                    hoveredId={hoveredId}
+                    selectedId={selectedId}
+                    setHoveredId={setHoveredId}
+                    selectPerson={selectPerson}
+                    clearRoomSelection={clearRoomSelection}
+                  >
+                    <rect width="200" height="200" fill={ROOM_COLORS.floor} />
+                    <rect x="20" y="38" width="62" height="36" rx="2" fill={ROOM_COLORS.furniture} opacity="0.45" />
+                    <rect x="118" y="38" width="62" height="36" rx="2" fill={ROOM_COLORS.furniture} opacity="0.45" />
+                    <rect x="26" y="90" width="148" height="10" rx="2" fill={ROOM_COLORS.furnitureLight} opacity="0.4" />
+                  </RoomZoneCell>
+
+                  <RoomZoneCell
+                    label="Factory Floor"
+                    cellClassName="col-span-2"
+                    zoneClassName="bg-[#d6d6d4]"
+                    viewBox="0 0 400 200"
+                    glowId={glow.factory}
+                    zone="factory"
+                    lightsOn={lightsOn}
+                    reduceMotion={reduceMotion}
+                    hoveredId={hoveredId}
+                    selectedId={selectedId}
+                    setHoveredId={setHoveredId}
+                    selectPerson={selectPerson}
+                    clearRoomSelection={clearRoomSelection}
+                  >
+                    <rect width="400" height="200" fill={ROOM_COLORS.concrete} opacity="0.35" />
+                    <path
+                      d="M0 0 H400 V200 H0 Z"
+                      fill="none"
+                      stroke={ROOM_COLORS.concreteDark}
+                      strokeWidth="1.5"
+                      strokeDasharray="5 5"
+                      opacity="0.35"
+                    />
+                    <rect x="24" y="36" width="108" height="30" rx="2" fill={ROOM_COLORS.furniture} opacity="0.4" />
+                    <rect x="268" y="36" width="108" height="30" rx="2" fill={ROOM_COLORS.furniture} opacity="0.4" />
+                    <rect x="176" y="34" width="48" height="34" rx="2" fill={ROOM_COLORS.furnitureLight} opacity="0.42" />
+                    <rect x="118" y="118" width="164" height="22" rx="2" fill={ROOM_COLORS.furniture} opacity="0.36" />
+                  </RoomZoneCell>
+
+                  <RoomZoneCell
+                    label="Client Lounge"
+                    zoneClassName="bg-[#ede8e0]"
+                    viewBox="0 0 200 200"
+                    glowId={glow.lounge}
+                    zone="lounge"
+                    lightsOn={lightsOn}
+                    reduceMotion={reduceMotion}
+                    hoveredId={hoveredId}
+                    selectedId={selectedId}
+                    setHoveredId={setHoveredId}
+                    selectPerson={selectPerson}
+                    clearRoomSelection={clearRoomSelection}
                   >
                     <rect width="200" height="200" fill={ROOM_COLORS.wall} opacity="0.45" />
                     <ellipse cx="56" cy="156" rx="34" ry="18" fill={ROOM_COLORS.furniture} opacity="0.3" />
@@ -731,76 +889,155 @@ export default function TeamStudioRoom() {
           </motion.div>
         </div>
 
-        {/* Mobile */}
+        {/* Mobile: department accordion + stats (< md) */}
         <div className="mt-12 md:hidden">
-          <div className="flex gap-2 overflow-x-auto pb-2 [-webkit-overflow-scrolling:touch]">
-            {MOBILE_TABS.map((tab) => {
-              const on = mobileTab === tab.id
+          <div className="space-y-0">
+            {MOBILE_DEPT_ACCORDION.map((dept) => {
+              const expanded = mobileOpenDeptKey === dept.key
+              const people = STUDIO_TEAM.filter((p) => p.zone === dept.zone)
               return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => {
-                    setMobileTab(tab.id)
-                    setMobileOpenId(null)
-                  }}
-                  className={[
-                    'shrink-0 snap-start rounded-full border px-4 py-2 font-body text-[10px] font-semibold uppercase tracking-[0.12em]',
-                    on
-                      ? 'border-[#B8965A] bg-[#B8965A]/15 text-brand-charcoal'
-                      : 'border-[#d9d0c4] bg-white/90 text-brand-mist',
-                  ].join(' ')}
-                >
-                  {tab.label}
-                </button>
-              )
-            })}
-          </div>
-          <ul className="mt-6 space-y-3">
-            {mobileList.map((person) => {
-              const open = mobileOpenId === person.id
-              return (
-                <li key={person.id} className="overflow-hidden rounded-md border border-[#e0d8ce] bg-white shadow-sm">
+                <div key={dept.key}>
                   <button
                     type="button"
-                    onClick={() => setMobileOpenId(open ? null : person.id)}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left"
-                    aria-expanded={open}
+                    onClick={() => setMobileOpenDeptKey(expanded ? null : dept.key)}
+                    className="flex w-full items-center justify-between gap-3 border-b border-[rgba(184,150,90,0.35)] py-4 text-left"
+                    aria-expanded={expanded}
                   >
-                    <span className="relative flex h-8 w-8 shrink-0 items-center justify-center">
-                      <span className="absolute h-2 w-2 rounded-full bg-[#B8965A] shadow-[0_0_12px_rgba(184,150,90,0.85)]" />
+                    <span className="font-body text-[12px] font-semibold uppercase tracking-[0.16em] text-[#B8965A]">
+                      {dept.label}
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-body text-[15px] font-semibold text-brand-charcoal">{person.name}</span>
-                      <span className="mt-0.5 block font-body text-[10px] font-semibold uppercase tracking-[0.14em] text-[#B8965A]">
-                        {person.role}
-                      </span>
-                    </span>
-                    <span className="text-brand-mist">{open ? '−' : '+'}</span>
+                    <ChevronDown
+                      className={[
+                        'h-5 w-5 shrink-0 text-[#B8965A] transition-transform duration-300',
+                        expanded ? 'rotate-180' : '',
+                      ].join(' ')}
+                      strokeWidth={1.75}
+                      aria-hidden
+                    />
                   </button>
                   <AnimatePresence initial={false}>
-                    {open ? (
+                    {expanded ? (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: reduceMotion ? 0 : 0.32, ease: [0.22, 1, 0.36, 1] }}
-                        className="border-t border-[#efe8df] bg-[#fbf9f5] px-4 pb-4 pt-3"
+                        className="overflow-hidden"
                       >
-                        <span className="inline-block rounded-full border border-[#B8965A]/35 bg-[#B8965A]/10 px-2.5 py-0.5 font-body text-[9px] font-semibold uppercase tracking-[0.1em] text-[#6B4E0F]">
-                          {person.deptLabel}
-                        </span>
-                        <p className="mt-3 font-body text-[14px] italic leading-relaxed text-brand-mist">
-                          &ldquo;{person.quote}&rdquo;
-                        </p>
+                        <div className="flex gap-3 overflow-x-auto pb-5 pt-1 [-webkit-overflow-scrolling:touch]">
+                          {people.map((person) => (
+                            <button
+                              key={person.id}
+                              type="button"
+                              onClick={() => setSheetPerson(person)}
+                              className="flex w-[140px] shrink-0 flex-col items-center text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8965A] focus-visible:ring-offset-2"
+                            >
+                              <img
+                                src={person.avatarSrc}
+                                alt={person.name}
+                                className="h-20 w-20 rounded-full border-2 border-[#B8965A] object-cover object-[center_top]"
+                              />
+                              <span className="mt-3 font-body text-[13px] font-bold leading-snug text-brand-charcoal">
+                                {person.name}
+                              </span>
+                              <span className="mt-1 font-body text-[11px] font-semibold uppercase leading-snug tracking-[0.1em] text-[#B8965A]">
+                                {person.role}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
                       </motion.div>
                     ) : null}
                   </AnimatePresence>
-                </li>
+                </div>
               )
             })}
-          </ul>
+          </div>
+
+          <div className="mt-10 rounded-sm bg-[#1a1612] px-5 py-10">
+            <div className="grid grid-cols-2 gap-8">
+              {TEAM_STATS_MOBILE.map(({ value, label }) => (
+                <div key={label} className="text-center">
+                  <p className="font-display text-[clamp(36px,10vw,48px)] font-light leading-none text-[#B8965A]">
+                    {value}
+                  </p>
+                  <p className="mt-3 font-body text-[10px] font-medium uppercase tracking-[0.16em] text-brand-mist-light">
+                    {label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
+
+        <AnimatePresence>
+          {sheetPerson ? (
+            <>
+              <motion.button
+                type="button"
+                key="sheet-overlay"
+                className="fixed inset-0 z-[60] cursor-default border-0 bg-black/50 p-0"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: reduceMotion ? 0 : 0.25 }}
+                aria-label="Close profile"
+                onClick={closeSheet}
+              />
+              <motion.div
+                key="sheet"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="team-sheet-title"
+                className="fixed bottom-0 left-0 right-0 z-[61] flex max-h-[60vh] flex-col rounded-t-[20px] bg-[#f5f0eb] px-6 pb-8 pt-3 shadow-[0_-12px_40px_rgba(0,0,0,0.18)]"
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'tween', duration: reduceMotion ? 0 : 0.36, ease: [0.22, 1, 0.36, 1] }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 120 }}
+                dragElastic={0.15}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 72 || info.velocity.y > 450) closeSheet()
+                }}
+              >
+                <div className="mx-auto mb-2 h-1.5 w-10 shrink-0 rounded-full bg-brand-charcoal/15" aria-hidden />
+                <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain py-8">
+                  <button
+                    type="button"
+                    onClick={closeSheet}
+                    className="absolute right-0 top-2 rounded p-1 text-brand-mist hover:text-brand-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8965A]"
+                    aria-label="Close"
+                  >
+                    <X className="h-5 w-5" strokeWidth={1.5} />
+                  </button>
+                  <div className="flex flex-col items-center px-2 text-center">
+                    <img
+                      src={sheetPerson.avatarSrc}
+                      alt={sheetPerson.name}
+                      className="h-[100px] w-[100px] shrink-0 rounded-full border-[3px] border-[#B8965A] object-cover object-[center_top]"
+                    />
+                    <h3
+                      id="team-sheet-title"
+                      className="mt-5 font-display text-[26px] font-light leading-tight text-[#B8965A]"
+                    >
+                      {sheetPerson.name}
+                    </h3>
+                    <p className="mt-2 font-body text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-charcoal">
+                      {sheetPerson.role}
+                    </p>
+                    <span className="mt-3 inline-block rounded-full border border-[#B8965A]/40 bg-[#B8965A]/10 px-3 py-1 font-body text-[9px] font-semibold uppercase tracking-[0.12em] text-[#6B4E0F]">
+                      {sheetPerson.deptLabel}
+                    </span>
+                    <p className="mt-6 max-w-md border-l-2 border-[#B8965A] pl-4 text-left font-body text-[14px] font-normal italic leading-relaxed text-brand-mist">
+                      &ldquo;{sheetPerson.quote}&rdquo;
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          ) : null}
+        </AnimatePresence>
 
         {/* Ticker */}
         <div className="relative mt-14 overflow-hidden rounded-sm bg-[#1a1612] py-4">
@@ -847,10 +1084,14 @@ function StudioPersonMarker({ person, isHot, lightsOn, reduceMotion, filterId, o
       onMouseLeave={() => onHover(false)}
       onFocus={() => onHover(true)}
       onBlur={() => onHover(false)}
-      onClick={onPick}
+      onClick={(e) => {
+        e.stopPropagation()
+        onPick()
+      }}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
+          e.stopPropagation()
           onPick()
         }
       }}
