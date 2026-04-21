@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { Facebook, Instagram, Linkedin, Loader2, Mail, MapPin, Phone, Youtube } from 'lucide-react'
 import SectionLabel from '../components/ui/SectionLabel'
@@ -16,20 +17,14 @@ const STATS = [
   { value: '3', label: 'Business Verticals' },
 ]
 
-const RECOGNITION_CERTS = [
+const ISO_CERTIFICATE_DISPLAY = [
   {
-    title: 'ISO 9001:2015',
-    subtitle: 'Quality Management System',
-    description:
-      'Our design, manufacturing, and delivery processes are certified to international quality standards — audited annually by an independent third-party body.',
-    issuedBy: 'Bureau Veritas / TÜV / IAF Accredited Body',
+    imgSrc: '/assets/certificates/iso-9001.png',
+    alt: 'ISO 9001:2015 Certificate — Maywood Interiors',
   },
   {
-    title: 'ISO 45001:2018',
-    subtitle: 'Occupational Health & Safety',
-    description:
-      'Every Maywood worksite and factory floor meets international health and safety standards. Our team goes home safe. Every day.',
-    issuedBy: 'Bureau Veritas / TÜV / IAF Accredited Body',
+    imgSrc: '/assets/certificates/iso-45001.png',
+    alt: 'ISO 45001:2018 Certificate — Maywood Interiors',
   },
 ]
 
@@ -66,19 +61,6 @@ const TIMELINE_MILESTONES = [
   },
 ]
 
-function GoldShieldIcon({ className = 'h-12 w-12 text-brand-brass' }) {
-  return (
-    <svg className={className} viewBox="0 0 48 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-      <path
-        d="M24 4L6 12v16c0 11.5 7.2 22.2 18 26 10.8-3.8 18-14.5 18-26V12L24 4z"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
 const fieldClassDark =
   'w-full border-b border-white/25 bg-transparent py-2 font-body text-[15px] text-brand-ivory outline-none transition-colors placeholder:text-brand-mist-light/50 focus:border-brand-brass'
 
@@ -96,6 +78,33 @@ export default function AboutUs() {
   const [sent, setSent] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [certLightbox, setCertLightbox] = useState(null)
+  const [certLightboxVisible, setCertLightboxVisible] = useState(false)
+
+  useEffect(() => {
+    if (!certLightbox) {
+      setCertLightboxVisible(false)
+      return
+    }
+    setCertLightboxVisible(false)
+    const id = window.setTimeout(() => setCertLightboxVisible(true), 16)
+    return () => window.clearTimeout(id)
+  }, [certLightbox])
+
+  useEffect(() => {
+    if (!certLightbox) return
+    const onKey = (e) => {
+      if (e.key === 'Escape') setCertLightbox(null)
+    }
+    window.addEventListener('keydown', onKey)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [certLightbox])
+
   const handleContactSubmit = async (e) => {
     e.preventDefault()
     setSubmitError('')
@@ -214,28 +223,33 @@ export default function AboutUs() {
 
       <section id="awards" className="scroll-mt-28 bg-[#f5f0eb]">
         <div className="mx-auto max-w-[1400px] px-6 py-24 lg:px-24">
-          <SectionLabel>Recognition</SectionLabel>
-          <h2 className="mt-6 max-w-[900px] font-display text-[clamp(30px,4vw,48px)] font-light leading-[1.08] text-brand-charcoal">
-            Standards that hold. Work that speaks.
+          <p className="text-center font-body text-[11px] font-medium uppercase tracking-[0.22em] text-[#c9a465]">
+            TRUST &amp; COMPLIANCE
+          </p>
+          <h2 className="mt-5 text-center font-display text-[clamp(30px,4vw,48px)] font-light leading-[1.08] text-brand-charcoal">
+            Awards &amp; Certifications
           </h2>
-          <p className="mt-4 max-w-[640px] font-body text-[15px] font-normal leading-relaxed text-brand-mist">
-            Independently verified quality — in our processes, our materials, and our people.
+          <p className="mx-auto mt-5 max-w-2xl text-center font-body text-[15px] font-normal leading-relaxed text-brand-mist">
+            Maywood Interiors is independently certified for quality and workplace safety — audited and verified by accredited
+            bodies.
           </p>
 
-          <div className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
-            {RECOGNITION_CERTS.map((c) => (
-              <article
-                key={c.title}
-                className="rounded-sm border border-[rgba(184,150,90,0.4)] bg-[#f5f0eb] p-10"
-              >
-                <GoldShieldIcon className="mb-8 shrink-0" />
-                <h3 className="font-display text-[26px] font-normal leading-snug text-brand-charcoal">{c.title}</h3>
-                <p className="mt-2 font-body text-[14px] font-medium text-brand-brass">{c.subtitle}</p>
-                <p className="mt-5 font-body text-[13px] font-normal leading-[1.85] text-brand-mist">{c.description}</p>
-                <p className="mt-6 border-t border-[rgba(184,150,90,0.25)] pt-5 font-body text-[12px] font-normal leading-relaxed text-brand-mist">
-                  <span className="font-semibold text-brand-charcoal">Issued by:</span> {c.issuedBy}
-                </p>
-              </article>
+          <div className="mx-auto mt-14 grid max-w-4xl grid-cols-1 gap-8 lg:grid-cols-2">
+            {ISO_CERTIFICATE_DISPLAY.map((c) => (
+              <div key={c.imgSrc} className="flex flex-col items-center">
+                <button
+                  type="button"
+                  onClick={() => setCertLightbox({ src: c.imgSrc, alt: c.alt })}
+                  className="w-full border-0 bg-transparent p-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a465] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f5f0eb]"
+                >
+                  <img
+                    src={c.imgSrc}
+                    alt={c.alt}
+                    loading="lazy"
+                    className="w-full cursor-zoom-in rounded-xl object-contain shadow-lg transition-all duration-300 hover:scale-105 hover:brightness-105"
+                  />
+                </button>
+              </div>
             ))}
           </div>
         </div>
@@ -454,6 +468,39 @@ export default function AboutUs() {
           </div>
         </div>
       </section>
+
+      {certLightbox
+        ? createPortal(
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={certLightbox.alt}
+              className={`fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 transition-opacity duration-300 ease-out ${
+                certLightboxVisible ? 'opacity-100' : 'opacity-0'
+              }`}
+              onClick={() => setCertLightbox(null)}
+            >
+              <button
+                type="button"
+                aria-label="Close certificate preview"
+                className="absolute right-4 top-4 z-[1] cursor-pointer border-0 bg-transparent p-2 text-3xl leading-none text-white"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCertLightbox(null)
+                }}
+              >
+                ×
+              </button>
+              <img
+                src={certLightbox.src}
+                alt={certLightbox.alt}
+                className="max-h-[90vh] max-w-[90vw] object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>,
+            document.body,
+          )
+        : null}
     </main>
   )
 }
