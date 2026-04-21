@@ -39,6 +39,7 @@ const MAYWOOD_HANDLES = [
 ]
 
 const PARTNER_HANDLES = [
+  'Customer Experience & Satisfaction',
   'Local Lead Gen & Networking',
   'Run the Experience Center',
   'Consult, Quote, Design and Close',

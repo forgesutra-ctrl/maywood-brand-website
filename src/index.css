@@ -19,22 +19,31 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Custom SVG cursor (house / room icon) — desktop only; hero carousel uses system cursor */
 @media (min-width: 768px) {
-  body.custom-cursor-on {
-    cursor: none;
+  body {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='none'%3E%3Cg stroke='%23B8965A' stroke-width='1.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 14.5 16 5.5 27 14.5V26H5z'/%3E%3Cpath d='M12 26V18.5h8V26'/%3E%3Cpath d='M8 22.5h7'/%3E%3Cpath d='M8 22.5v2h7v-2'/%3E%3Cpath d='M7 24.5h9'/%3E%3Cpath d='M22.5 25.5V17'/%3E%3Cpath d='M20 17h5l-1.2-2.4h-2.6z'/%3E%3C/g%3E%3C/svg%3E")
+        16 16,
+      auto;
   }
 
-  body.custom-cursor-on a,
-  body.custom-cursor-on button,
-  body.custom-cursor-on [role='button'],
-  body.custom-cursor-on input[type='submit'] {
-    cursor: none;
+  body a[href],
+  body button,
+  body input[type='submit'],
+  body input[type='button'],
+  body [role='button'],
+  body label[for],
+  body select,
+  body summary,
+  body [data-cursor-hover] {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 32 32' fill='none'%3E%3Cg stroke='%23B8965A' stroke-width='1.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 14.5 16 5.5 27 14.5V26H5z'/%3E%3Cpath d='M12 26V18.5h8V26'/%3E%3Cpath d='M8 22.5h7'/%3E%3Cpath d='M8 22.5v2h7v-2'/%3E%3Cpath d='M7 24.5h9'/%3E%3Cpath d='M22.5 25.5V17'/%3E%3Cpath d='M20 17h5l-1.2-2.4h-2.6z'/%3E%3C/g%3E%3C/svg%3E")
+        13 13,
+      pointer;
   }
 
-  /* Hero image carousel: show normal cursor; CustomCursor hides ring/dot via JS */
-  body.custom-cursor-on [data-hide-custom-cursor],
-  body.custom-cursor-on [data-hide-custom-cursor] * {
-    cursor: default !important;
+  body [data-hide-custom-cursor],
+  body [data-hide-custom-cursor] * {
+    cursor: auto !important;
   }
 }
 

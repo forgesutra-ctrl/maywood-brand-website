@@ -43,7 +43,7 @@ const dropdownLinkClass = (isActive) =>
 
 const topLinkClass = (isActive) =>
   [
-    'flex items-center gap-1 font-body text-[10px] uppercase tracking-[0.08em] transition-colors duration-200 xl:text-[11px] xl:tracking-[0.1em]',
+    'flex items-center gap-1 whitespace-nowrap font-body text-[12px] uppercase tracking-[0.08em] transition-colors duration-200 xl:tracking-[0.1em]',
     isActive ? 'text-brand-brass' : 'text-brand-mist hover:text-brand-brass',
   ].join(' ')
 
@@ -144,11 +144,11 @@ export default function Navbar() {
         <BrandLogo to="/" variant="navbar" />
 
         <nav
-          className="absolute left-1/2 top-1/2 hidden min-w-0 max-w-[min(100%,920px)] -translate-x-1/2 -translate-y-1/2 lg:block xl:max-w-[min(100%,1080px)]"
+          className="absolute left-1/2 top-1/2 hidden min-w-0 max-w-[min(100%,calc(100vw-220px))] -translate-x-1/2 -translate-y-1/2 lg:block lg:max-w-[min(100%,1040px)] xl:max-w-[min(100%,1220px)]"
           aria-label="Primary"
           onMouseLeave={scheduleCloseDesktop}
         >
-          <ul className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 xl:gap-x-3">
+          <ul className="flex flex-nowrap items-center justify-center gap-x-7">
             <li
               className="relative"
               onMouseEnter={() => openDesktop('solutions')}

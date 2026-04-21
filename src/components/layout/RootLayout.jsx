@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { AnimatePresence, motion as motionPrim } from 'framer-motion'
 import { Outlet, useLocation } from 'react-router-dom'
-import CustomCursor from './CustomCursor'
 import Footer from './Footer'
 import GrainOverlay from './GrainOverlay'
 import Navbar from './Navbar'
@@ -35,7 +34,6 @@ export default function RootLayout() {
     <div className="flex min-h-screen flex-col font-body text-brand-charcoal">
       <GrainOverlay />
       <ScrollProgress />
-      <CustomCursor />
       <Navbar />
       <SocialSidebar />
       <WhatsAppButton />

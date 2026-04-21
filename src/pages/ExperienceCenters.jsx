@@ -7,7 +7,6 @@ import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
 import { supabase } from '../lib/supabase'
-import { IMAGES } from '../config/images'
 
 const MotionLink = motion(Link)
 const tapTransition = { type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }
@@ -174,8 +173,8 @@ export default function ExperienceCenters() {
     <main className="flex-1">
       <section className="relative flex min-h-[65vh] flex-col justify-center overflow-hidden px-6 py-32 lg:px-24">
         <img
-          src={IMAGES.livingRooms.wide}
-          alt="Living and dining interior — Maywood Interiors Bangalore"
+          src="/assets/images/experience-center/ec-showroom-hero.png"
+          alt="Maywood Interiors experience center showroom — reception, seating, and display area"
           loading="eager"
           className="absolute inset-0 w-full h-full object-cover object-center block"
           onError={(e) => {
@@ -317,7 +316,7 @@ export default function ExperienceCenters() {
 
       <section className="relative w-full overflow-hidden bg-brand-charcoal px-6 py-28 lg:px-24">
         <img
-          src="/assets/images/experience-center/gallery-02.png"
+          src="/assets/images/experience-center/ec-showroom-hero.png"
           alt=""
           loading="lazy"
           className="absolute inset-0 z-0 block h-full w-full object-cover object-center"

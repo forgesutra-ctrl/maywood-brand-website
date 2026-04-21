@@ -29,7 +29,7 @@ const HERO_STATS = [
 
 const HERO_RIBBON_ITEMS = [
   'BANGALORE-BASED',
-  '500+ PROJECTS',
+  '100+ PROJECTS',
   '10 YEAR WARRANTY',
   'IN-HOUSE PLYWOOD',
   'OWN MANUFACTURING FACILITY',
@@ -57,15 +57,15 @@ const MAYWOOD_ADVANTAGE_GRID_CARDS = [
     category: 'FINANCE',
     title: 'Start now, pay smart',
     description: 'Flexible EMI options and low interest rates for easier decisions',
-    imageSrc: '/assets/images/generated/home-living-room-hero.png',
-    imageAlt: 'Premium living room interior — Maywood Interiors Bangalore',
+    imageSrc: '/assets/images/advantage-finance.jpg',
+    imageAlt: 'Couple at ease in their finished Bangalore home — peace of mind, warm interiors — Maywood Interiors',
   },
   {
     category: 'EXECUTION',
     title: 'End-to-end, professionally managed',
     description: 'From design to delivery under one system',
-    imageSrc: '/assets/images/generated/corporate-office-open.png',
-    imageAlt: 'Corporate office interior — Maywood Interiors Bangalore',
+    imageSrc: '/assets/images/advantage-execution.jpg',
+    imageAlt: 'Professional Maywood installation team fitting a modular kitchen in Bangalore — Maywood Interiors',
   },
 ]
 

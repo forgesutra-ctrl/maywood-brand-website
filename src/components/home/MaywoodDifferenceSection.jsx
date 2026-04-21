@@ -75,8 +75,8 @@ export default function MaywoodDifferenceSection({ differentiators }) {
             </div>
 
             <h2 className="mt-6 font-display text-[clamp(28px,3.6vw,44px)] font-light leading-[1.08] text-brand-ivory">
-              Built different. <span className="italic">Priced better.</span>{' '}
-              <span className="italic">Delivered faster.</span>
+              Built better. <span className="italic">Priced better.</span>{' '}
+              <span className="italic">Delivered better.</span>
             </h2>
 
             <div className="mt-10">
