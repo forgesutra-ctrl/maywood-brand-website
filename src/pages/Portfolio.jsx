@@ -79,6 +79,16 @@ export default function Portfolio() {
 
       <section className="bg-brand-ivory px-5 py-16 md:px-8 lg:px-10 lg:py-24">
         <div className="mx-auto max-w-[1400px]">
+          <p className="mx-auto mb-12 max-w-[900px] font-body text-[15px] font-normal leading-[1.85] text-brand-mist lg:mb-16">
+            This gallery is a living record of the spaces we have designed, manufactured, and finished across Bangalore —
+            from compact apartments and full-home renovations to office floors, showrooms, and hospitality venues. Every
+            image reflects the same in-house pipeline: material selection built on our own plywood, precision cutting and
+            assembly on our factory floor, and installation teams that stay accountable through handover. It is
+            practical proof of how a vertically integrated interior company keeps colour, joinery, and hardware aligned
+            when timelines tighten. If you are comparing approaches for your own brief, use these shots as a starting point
+            for finish quality and spatial rhythm, then move to an estimate or a showroom visit to translate the idea into
+            your plan.
+          </p>
           <div className="columns-2 gap-4 md:columns-3 lg:columns-4 lg:gap-5">
             {items.map(({ id, src }, index) => (
               <button

@@ -13,6 +13,7 @@ const solutionsLinks = [
 ]
 
 const companyLinks = [
+  { label: 'Products & Services', to: '/products' },
   { label: 'Maywood Process', to: '/maywood-process' },
   { label: 'The Team', to: '/team' },
   { label: 'Awards & Certifications', to: '/awards-certifications' },

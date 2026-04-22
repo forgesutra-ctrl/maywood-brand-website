@@ -41,7 +41,7 @@ export default function AdminLogin() {
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-brand-charcoal px-6 py-16">
       <a
-        href="https://maywood.in"
+        href="https://www.maywood.in/"
         className="absolute left-6 top-8 font-body text-[13px] uppercase tracking-[0.12em] text-[rgba(184,150,90,0.7)] transition-colors duration-200 hover:text-[#B8965A]"
       >
         ← Back to Website

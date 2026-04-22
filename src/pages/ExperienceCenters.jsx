@@ -30,7 +30,7 @@ const heroStripItems = [
 
 const RR_NAGAR = {
   mapEmbedSrc:
-    'https://maps.google.com/maps?q=34+4th+Cross+Rd+Uttarahalli+Main+Rd+Vaddara+Palya+Kodipur+Bengaluru+Karnataka+560061&output=embed',
+    'https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s34+4th+Cross+Rd+Uttarahalli+Main+Rd+Vaddara+Palya+Kodipur+Bengaluru+Karnataka+560061',
 }
 
 const LIVE_EXPERIENCE_CENTER = {
@@ -38,7 +38,7 @@ const LIVE_EXPERIENCE_CENTER = {
   address:
     '34, 4th Cross Rd, RR Nagar via Uttarahalli Main Rd, Vaddara Palya, Kodipur, Bengaluru – 560061',
   phone: '+91 96069 77677',
-  directionsUrl: 'https://maps.google.com/?q=Maywood+Interiors+Kodipur+Bengaluru',
+  directionsUrl: 'https://www.google.com/maps/search/?api=1&query=Maywood+Interiors+Kodipur+Bengaluru',
   bookTo: '/instant-quote',
 }
 

@@ -72,6 +72,16 @@ export default function AboutUs() {
                 the final coat of polish. That&apos;s the difference.
               </p>
               <p className="mt-6">
+                See how that scope maps to homes, offices, and hospitality on our{' '}
+                <Link
+                  to="/products"
+                  className="text-brand-brass underline-offset-2 transition-colors hover:text-brand-charcoal hover:underline"
+                >
+                  products and services hub
+                </Link>
+                .
+              </p>
+              <p className="mt-6">
                 Meet the{' '}
                 <Link to="/team" className="text-brand-brass underline-offset-2 transition-colors hover:text-brand-charcoal hover:underline">
                   people and leadership

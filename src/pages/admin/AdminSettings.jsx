@@ -19,7 +19,7 @@ import {
 } from '../../utils/adminSettingsStore'
 
 const SITE_NAME = 'Maywood Interiors'
-const LIVE_URL = 'https://maywood.in'
+const LIVE_URL = 'https://www.maywood.in'
 
 const AUTH_KEY = 'maywood_admin_auth'
 
