@@ -5,6 +5,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import BrandLogo from '../ui/BrandLogo'
 import { useScrolled } from '../../hooks/useScrolled'
 import { buttonClasses } from '../../lib/buttonStyles'
+import { track } from '../../utils/tracking'
 
 const MotionLink = motion(Link)
 
@@ -19,10 +20,10 @@ const SOLUTIONS_ITEMS = [
 const ABOUT_ITEMS = [
   { label: 'Experience Centers', to: '/experience-centers' },
   { label: 'Maywood Process', to: '/maywood-process' },
-  { label: 'The Team', to: '/about#team' },
-  { label: 'Awards & Certifications', to: '/about#awards' },
+  { label: 'The Team', to: '/team' },
+  { label: 'Awards & Certifications', to: '/awards-certifications' },
   { label: 'Portfolio', to: '/portfolio' },
-  { label: 'Contact', to: '/about#contact' },
+  { label: 'Contact', to: '/contact' },
 ]
 
 const DIRECT_NAV = [
@@ -60,6 +61,9 @@ function isSolutionsActive(pathname) {
 function isAboutParentActive(pathname) {
   return (
     pathname === '/about' ||
+    pathname === '/contact' ||
+    pathname === '/team' ||
+    pathname === '/awards-certifications' ||
     pathname === '/experience-centers' ||
     pathname === '/maywood-process' ||
     pathname === '/project-studio' ||
@@ -253,6 +257,7 @@ export default function Navbar() {
         <div className="flex shrink-0 items-center gap-1 md:gap-3">
           <MotionLink
             to="/instant-quote"
+            onClick={() => track.quoteClick()}
             className={buttonClasses('ctaPrimary', 'hidden whitespace-nowrap lg:inline-flex focus-visible:ring-offset-[#F7F3ED]')}
             whileTap={{ scale: 0.98 }}
             transition={{ type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
@@ -404,7 +409,10 @@ export default function Navbar() {
                   className={buttonClasses('ctaPrimary', 'w-full justify-center focus-visible:ring-offset-[#1a1612]')}
                   whileTap={{ scale: 0.98 }}
                   transition={{ type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={() => {
+                    track.quoteClick()
+                    setMobileOpen(false)
+                  }}
                 >
                   INSTANT QUOTE
                 </MotionLink>

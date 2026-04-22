@@ -7,6 +7,11 @@ import Navbar from './Navbar'
 import ScrollProgress from './ScrollProgress'
 import SocialSidebar from './SocialSidebar'
 import WhatsAppButton from '../WhatsAppButton'
+import ScrollTracker from '../ScrollTracker'
+import CookieBanner from '../CookieBanner'
+import ExitIntentPopup from '../ExitIntentPopup'
+import WhatsAppAutoPrompt from '../WhatsAppAutoPrompt'
+import { LegalModalsProvider } from '../legal/LegalLinks'
 
 const MotionDiv = motionPrim.div
 
@@ -31,25 +36,31 @@ export default function RootLayout() {
   }, [location.pathname])
 
   return (
-    <div className="flex min-h-screen flex-col font-body text-brand-charcoal">
-      <GrainOverlay />
-      <ScrollProgress />
-      <Navbar />
-      <SocialSidebar />
-      <WhatsAppButton />
-      <AnimatePresence mode="wait">
-        <MotionDiv
-          key={location.pathname}
-          className="flex min-h-0 flex-1 flex-col"
-          variants={pageVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-        >
-          <Outlet />
-        </MotionDiv>
-      </AnimatePresence>
-      <Footer />
-    </div>
+    <LegalModalsProvider>
+      <div className="flex min-h-screen flex-col font-body text-brand-charcoal">
+        <GrainOverlay />
+        <ScrollProgress />
+        <Navbar />
+        <SocialSidebar />
+        <WhatsAppButton />
+        <AnimatePresence mode="wait">
+          <MotionDiv
+            key={location.pathname}
+            className="flex min-h-0 flex-1 flex-col"
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <Outlet />
+          </MotionDiv>
+        </AnimatePresence>
+        <ScrollTracker />
+        <CookieBanner />
+        <ExitIntentPopup />
+        <WhatsAppAutoPrompt />
+        <Footer />
+      </div>
+    </LegalModalsProvider>
   )
 }

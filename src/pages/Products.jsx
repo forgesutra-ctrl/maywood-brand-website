@@ -6,6 +6,7 @@ import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
 import { ProductsBrassCta } from '../components/products/ProductSubPage'
 import { IMAGES } from '../config/images'
+import { track } from '../utils/tracking'
 
 const MotionLink = motion(Link)
 
@@ -98,6 +99,7 @@ export default function Products() {
           <div className="mt-12 flex w-full max-w-xl flex-col gap-4 sm:max-w-none sm:flex-row sm:items-center">
             <MotionLink
               to="/instant-quote"
+              onClick={() => track.quoteClick()}
               className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaPrimary', 'focus-visible:ring-offset-[#1C1915]')].join(' ')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
@@ -105,7 +107,8 @@ export default function Products() {
               Get Instant Quote
             </MotionLink>
             <MotionLink
-              to="/experience-centers"
+              to="/instant-quote"
+              onClick={() => track.quoteClick()}
               className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaSecondary', 'focus-visible:ring-offset-[#1C1915]')].join(' ')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}

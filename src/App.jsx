@@ -15,6 +15,9 @@ import AdminAnalytics from './pages/admin/AdminAnalytics'
 import AdminPortfolio from './pages/admin/AdminPortfolio'
 import AdminSettings from './pages/admin/AdminSettings'
 import AboutUs from './pages/AboutUs'
+import Contact from './pages/Contact'
+import Team from './pages/Team'
+import AwardsCertifications from './pages/AwardsCertifications'
 import ExperienceCenters from './pages/ExperienceCenters'
 import Home from './pages/Home'
 import InstantQuote from './pages/InstantQuote'
@@ -78,6 +81,9 @@ function App() {
           <Route path="partners" element={<PartnerProgram />} />
           <Route path="partner-program" element={<Navigate to="/partners" replace />} />
           <Route path="about" element={<AboutUs />} />
+          <Route path="contact" element={<Contact />} />
+          <Route path="team" element={<Team />} />
+          <Route path="awards-certifications" element={<AwardsCertifications />} />
           <Route path="about-us" element={<Navigate to="/about" replace />} />
           <Route path="*" element={<NotFound />} />
         </Route>

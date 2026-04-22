@@ -13,6 +13,8 @@ import {
 } from '../lib/maywoodEstimate'
 import { buttonBaseClass, buttonClasses } from '../lib/buttonStyles'
 import { saveQuoteRequest } from '../utils/adminDataStore'
+import { isValidEmail } from '../lib/validation'
+import { track } from '../utils/tracking'
 
 const STEP_LABELS = [
   'Your Details',
@@ -80,10 +82,6 @@ function applyAreaPill(pill, areaUnit, setAreaInput) {
   }
 }
 
-function isValidEmail(s) {
-  return /^\S+@\S+\.\S+$/.test(String(s).trim())
-}
-
 const inputClass =
   'w-full border-0 border-b border-brand-charcoal-soft/30 bg-transparent py-3 font-body text-[16px] text-brand-charcoal outline-none transition-colors placeholder:text-brand-mist/55 focus:border-brand-brass'
 
@@ -103,6 +101,8 @@ export default function InstantQuote() {
   const [estimateLow, setEstimateLow] = useState(0)
   const [estimateHigh, setEstimateHigh] = useState(0)
   const [breakdown, setBreakdown] = useState([])
+
+  const [quoteSubmitError, setQuoteSubmitError] = useState('')
 
   const [consultationModalOpen, setConsultationModalOpen] = useState(false)
   const [consultationModalKey, setConsultationModalKey] = useState(0)
@@ -147,29 +147,35 @@ export default function InstantQuote() {
     setStep(3)
   }
 
-  const handleStep5Submit = (e) => {
+  const handleStep5Submit = async (e) => {
     e.preventDefault()
     if (!location.trim() || !propertyType || !areaSqft || scope.length === 0) return
 
+    setQuoteSubmitError('')
+
     const { breakdown: bd, totalMin, totalMax } = computeEstimate(propertyType, scope, areaSqft)
-    setBreakdown(bd)
-    setEstimateLow(totalMin)
-    setEstimateHigh(totalMax)
 
-    void saveQuoteRequest({
-      name: fullName.trim(),
-      phone: phoneFull,
-      email: email.trim(),
-      propertyType,
-      scope: [...scope],
-      area: areaInput.trim(),
-      areaUnit,
-      location: location.trim(),
-      estimateLow: Math.round(totalMin),
-      estimateHigh: Math.round(totalMax),
-    })
-
-    setStep(6)
+    try {
+      await saveQuoteRequest({
+        name: fullName.trim(),
+        phone: phoneFull,
+        email: email.trim(),
+        propertyType,
+        scope: [...scope],
+        area: areaInput.trim(),
+        areaUnit,
+        location: location.trim(),
+        estimateLow: Math.round(totalMin),
+        estimateHigh: Math.round(totalMax),
+      })
+      track.formSubmit('instant_quote')
+      setBreakdown(bd)
+      setEstimateLow(totalMin)
+      setEstimateHigh(totalMax)
+      setStep(6)
+    } catch {
+      setQuoteSubmitError('We could not save your request. Check your connection and try again.')
+    }
   }
 
   const goBack = () => {
@@ -281,9 +287,9 @@ export default function InstantQuote() {
             transition={{ duration: 0.3 }}
             className="mx-auto max-w-[900px]"
           >
-            <h2 className="text-center font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
+            <h1 className="text-center font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
               What type of space are you designing?
-            </h2>
+            </h1>
             <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
               {PROPERTY_CARDS.map(({ type, emoji, label }) => (
                 <button
@@ -311,9 +317,9 @@ export default function InstantQuote() {
             transition={{ duration: 0.3 }}
             className="mx-auto max-w-[720px]"
           >
-            <h2 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
+            <h1 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
               What are you looking to do?
-            </h2>
+            </h1>
             <p className="mt-3 font-body text-[14px] font-normal text-brand-mist">Select all that apply</p>
             <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {SCOPE_BY_PROPERTY[propertyType].map((item) => {
@@ -368,9 +374,9 @@ export default function InstantQuote() {
             transition={{ duration: 0.3 }}
             className="mx-auto max-w-[520px] text-center"
           >
-            <h2 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
+            <h1 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
               How large is your space?
-            </h2>
+            </h1>
             <p className="mt-3 font-body text-[14px] font-normal text-brand-mist">
               An approximate size helps us give a better estimate
             </p>
@@ -447,16 +453,19 @@ export default function InstantQuote() {
             transition={{ duration: 0.3 }}
             className="mx-auto max-w-[480px]"
           >
-            <h2 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
+            <h1 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
               Which area in Bangalore?
-            </h2>
+            </h1>
             <form onSubmit={handleStep5Submit} className="mt-10 space-y-10">
               <div>
                 <label className={labelClass}>Location</label>
                 <input
                   type="text"
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  onChange={(e) => {
+                    setLocation(e.target.value)
+                    setQuoteSubmitError('')
+                  }}
                   className={inputClass}
                   placeholder="e.g. Whitefield, Koramangala, HSR Layout"
                   required
@@ -474,6 +483,9 @@ export default function InstantQuote() {
                 SHOW MY ESTIMATE
                 <ChevronRight className="h-4 w-4" strokeWidth={2} aria-hidden />
               </button>
+              {quoteSubmitError ? (
+                <p className="font-body text-[13px] font-normal text-red-600">{quoteSubmitError}</p>
+              ) : null}
             </form>
           </motion.div>
         )
@@ -490,9 +502,9 @@ export default function InstantQuote() {
             <p className="font-body text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-brass">
               YOUR PERSONALISED ESTIMATE
             </p>
-            <p className="mt-6 font-display text-[clamp(32px,5vw,48px)] font-light leading-[1.08] text-brand-charcoal">
+            <h1 className="mt-6 font-display text-[clamp(32px,5vw,48px)] font-light leading-[1.08] text-brand-charcoal">
               {formatInrRange(estimateLow, estimateHigh)}
-            </p>
+            </h1>
             <p className="mt-4 font-body text-[14px] font-normal leading-relaxed text-brand-mist">
               Based on your inputs — mid-range materials and finishes
             </p>
@@ -522,6 +534,7 @@ export default function InstantQuote() {
                 href="https://wa.me/919606977677"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => track.whatsappClick()}
                 className={[
                   buttonBaseClass,
                   'inline-flex w-full items-center justify-center rounded-[2px] border border-brand-charcoal/35 bg-transparent px-9 py-[14px] font-body text-[12px] font-medium uppercase tracking-[0.12em] text-brand-charcoal transition-colors hover:border-brand-brass hover:text-brand-brass sm:flex-1',

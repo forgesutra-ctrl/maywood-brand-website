@@ -1,3 +1,5 @@
+import { track } from '../utils/tracking';
+
 export default function WhatsAppButton() {
   return (
     <div className="group pointer-events-auto fixed bottom-[24px] right-[24px] z-50">
@@ -21,6 +23,7 @@ export default function WhatsAppButton() {
           href="https://wa.me/919606977677"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => track.whatsappClick()}
           className="absolute inset-0 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-md transition-transform duration-200 hover:scale-110 hover:shadow-[0_4px_28px_rgba(37,211,102,0.5)]"
           aria-label="Chat with us on WhatsApp"
         >

@@ -7,6 +7,7 @@ import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
 import { supabase } from '../lib/supabase'
+import { track } from '../utils/tracking'
 
 const MotionLink = motion(Link)
 const tapTransition = { type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }
@@ -28,24 +29,30 @@ const heroStripItems = [
 ]
 
 const RR_NAGAR = {
-  name: 'RR Nagar Experience Center',
-  addressLines: [
-    '34, 4th Cross Rd, RR Nagar via,',
-    'Uttarahalli Main Rd, Vaddara Palya,',
-    'Kodipur, Bengaluru, Karnataka 560061',
-  ],
-  hours: 'Monday – Saturday, 10am – 7pm | Sunday 11am – 5pm',
-  features: [
-    'Full wardrobe and kitchen live displays',
-    '300+ material and finish samples',
-    'Dedicated design consultation bays',
-    'ISO certified showroom',
-  ],
-  directionsUrl:
-    'https://maps.google.com/?q=34,4th+Cross+Rd,Uttarahalli+Main+Rd,Vaddara+Palya,Kodipur,Bengaluru,Karnataka+560061',
   mapEmbedSrc:
     'https://maps.google.com/maps?q=34+4th+Cross+Rd+Uttarahalli+Main+Rd+Vaddara+Palya+Kodipur+Bengaluru+Karnataka+560061&output=embed',
 }
+
+const LIVE_EXPERIENCE_CENTER = {
+  name: "Rajarajeshwari Nagar Experience Center",
+  address:
+    '34, 4th Cross Rd, RR Nagar via Uttarahalli Main Rd, Vaddara Palya, Kodipur, Bengaluru – 560061',
+  phone: '+91 96069 77677',
+  directionsUrl: 'https://maps.google.com/?q=Maywood+Interiors+Kodipur+Bengaluru',
+  bookTo: '/instant-quote',
+}
+
+const COMING_SOON_CENTERS = [
+  'Whitefield',
+  'Sarjapur',
+  'Electronic City',
+  'Hebbal',
+  'HRBR Layout',
+  'Bannerghatta Road',
+  'HSR / Bellandur',
+  'Hosur',
+  'Mysore',
+]
 
 const visitSteps = [
   {
@@ -160,6 +167,7 @@ export default function ExperienceCenters() {
         project_note: form.note.trim() || null,
       })
       if (error) throw error
+      track.formSubmit('showroom_visit')
       setBooked(true)
       setForm(initialVisitForm)
     } catch {
@@ -197,9 +205,13 @@ export default function ExperienceCenters() {
             before a single rupee is committed.
           </p>
 
-          <a href="#book-visit" className={['mt-12 inline-flex', buttonClasses('primary')].join(' ')}>
+          <Link
+            to="/instant-quote"
+            onClick={() => track.quoteClick()}
+            className={['mt-12 inline-flex', buttonClasses('primary')].join(' ')}
+          >
             Book a Showroom Visit
-          </a>
+          </Link>
 
           <div className="mt-16 border-y-[0.5px] border-[rgba(184,150,90,0.2)] py-5">
             <div className="grid grid-cols-1 divide-y divide-[rgba(184,150,90,0.35)] md:grid-cols-3 md:divide-x md:divide-y-0">
@@ -216,61 +228,91 @@ export default function ExperienceCenters() {
 
       <section className="bg-brand-ivory px-6 py-32 lg:px-24">
         <div className="mx-auto max-w-[1400px]">
-          <SectionLabel>Our Locations</SectionLabel>
+          <p className="text-center font-body text-[15px] font-normal leading-relaxed text-brand-charcoal md:text-[16px]">
+            Expanding to 10 experience centers across the region by mid-2026
+          </p>
+
+          <SectionLabel className="mt-12 md:mt-16">Our Locations</SectionLabel>
           <AnimatedText
             text="Visit us. See it in person."
             tag="h2"
             className="mt-6 max-w-[900px] font-display text-[clamp(30px,4vw,48px)] font-light leading-[1.08] text-brand-charcoal"
           />
+          <p className="mx-auto mt-6 max-w-[720px] text-center font-body text-[14px] font-normal leading-relaxed text-brand-mist">
+            Plan your visit knowing Maywood is recognised for execution and quality — explore our{' '}
+            <Link
+              to="/awards-certifications"
+              className="text-brand-brass underline-offset-2 transition-colors hover:text-brand-charcoal hover:underline"
+            >
+              awards and ISO certifications
+            </Link>
+            , and get to know the{' '}
+            <Link to="/team" className="text-brand-brass underline-offset-2 transition-colors hover:text-brand-charcoal hover:underline">
+              people who lead design and delivery
+            </Link>{' '}
+            before you walk through the door.
+          </p>
 
-          <article className="mx-auto mt-14 max-w-[min(100%,900px)] overflow-hidden rounded-sm bg-brand-ivory shadow-[0_20px_50px_-24px_rgba(28,25,21,0.12)] ring-1 ring-brand-brass-pale/60">
-            <div className="h-[min(52vw,320px)] overflow-hidden sm:h-[340px]">
-              <img
-                src="/assets/images/experience-center/ec-hero.jpg"
-                alt=""
-                loading="lazy"
-                className="block h-full w-full object-cover object-center"
-              />
-            </div>
-            <div className="p-8 sm:p-10">
-              <span className="inline-block rounded-[2px] border-[0.5px] border-brand-brass bg-[rgba(184,150,90,0.1)] px-3.5 py-1 font-body text-[10px] font-medium uppercase tracking-[0.18em] text-brand-brass">
-                Now Open
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:mt-12 md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-8">
+            <div className="flex flex-col rounded-[12px] border-[1.5px] border-[#B8965A] bg-white p-6 shadow-[0_12px_40px_-20px_rgba(28,25,21,0.2)] sm:p-7">
+              <span className="inline-flex w-fit rounded-sm bg-[#B8965A] px-3 py-1.5 font-body text-[10px] font-bold uppercase tracking-[0.2em] text-[#1a1612]">
+                Live
               </span>
-              <h3 className="mt-5 font-display text-[clamp(26px,3.5vw,32px)] font-normal leading-tight text-brand-charcoal">
-                {RR_NAGAR.name}
+              <h3 className="mt-4 font-display text-[clamp(22px,2.5vw,26px)] font-normal leading-snug text-brand-charcoal">
+                {LIVE_EXPERIENCE_CENTER.name}
               </h3>
-              <address className="mt-4 not-italic">
-                {RR_NAGAR.addressLines.map((line) => (
-                  <p key={line} className="font-body text-[14px] font-normal leading-[1.7] text-brand-mist">
-                    {line}
-                  </p>
-                ))}
-              </address>
-              <p className="mt-4 font-body text-[13px] font-normal leading-relaxed text-brand-mist">{RR_NAGAR.hours}</p>
-              <div className="my-6 h-px bg-brand-brass-pale" aria-hidden />
-              <ul className="space-y-3">
-                {RR_NAGAR.features.map((b) => (
-                  <li key={b} className="flex gap-3 font-body text-[13px] font-normal leading-relaxed text-brand-mist">
-                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-brass" aria-hidden />
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                <a href="#book-visit" className={buttonClasses('primary')}>
-                  Book a visit
-                </a>
+              <p className="mt-3 font-body text-[14px] font-normal leading-[1.65] text-brand-charcoal">
+                {LIVE_EXPERIENCE_CENTER.address}
+              </p>
+              <a
+                href={`tel:${LIVE_EXPERIENCE_CENTER.phone.replace(/\s/g, '')}`}
+                className="mt-3 font-body text-[15px] font-semibold text-brand-charcoal hover:text-[#B8965A]"
+              >
+                {LIVE_EXPERIENCE_CENTER.phone}
+              </a>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <a
-                  href={RR_NAGAR.directionsUrl}
+                  href={LIVE_EXPERIENCE_CENTER.directionsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-body text-[12px] font-medium uppercase tracking-[0.14em] text-brand-brass transition-opacity hover:opacity-80"
+                  className={['inline-flex text-center', buttonClasses('ctaSecondary')].join(' ')}
                 >
-                  Get Directions →
+                  Get Directions
                 </a>
+                <Link
+                  to={LIVE_EXPERIENCE_CENTER.bookTo}
+                  onClick={() => track.quoteClick()}
+                  className={['inline-flex text-center', buttonClasses('ctaPrimary')].join(' ')}
+                >
+                  Book a Visit
+                </Link>
               </div>
             </div>
-          </article>
+
+            {COMING_SOON_CENTERS.map((area) => (
+              <div
+                key={area}
+                className="relative flex flex-col rounded-[12px] border border-[rgba(184,150,90,0.35)] bg-brand-ivory-deep/80 p-6 sm:p-7"
+              >
+                <span className="absolute right-3 top-3 rounded-sm border border-[#B8965A] bg-[rgba(184,150,90,0.12)] px-2.5 py-1 font-body text-[9px] font-bold uppercase tracking-[0.16em] text-[#B8965A] sm:right-4 sm:top-4 sm:text-[10px] sm:tracking-[0.18em]">
+                  Coming Soon
+                </span>
+                <h3 className="pr-16 font-display text-[clamp(20px,2.2vw,24px)] font-normal leading-snug text-brand-charcoal sm:pr-20">
+                  {area} Experience Center
+                </h3>
+                <p className="mt-3 font-body text-[14px] italic leading-relaxed text-brand-mist">
+                  Coming Soon — Mid 2026
+                </p>
+                <Link
+                  to="/instant-quote"
+                  onClick={() => track.quoteClick()}
+                  className={['mt-6 inline-flex w-fit', buttonClasses('ctaSecondary')].join(' ')}
+                >
+                  Notify Me
+                </Link>
+              </div>
+            ))}
+          </div>
 
           <div className="mx-auto mt-20 max-w-[min(100%,1100px)]">
             <ExperienceCenterPhotoGallery />
@@ -285,31 +327,6 @@ export default function ExperienceCenters() {
               referrerPolicy="no-referrer-when-downgrade"
               allowFullScreen
             />
-          </div>
-
-          <div className="mx-auto mt-24 max-w-[1400px] rounded-sm bg-brand-charcoal px-6 py-16 sm:px-10 sm:py-20 lg:px-16">
-            <SectionLabel light>Expanding across Bangalore</SectionLabel>
-            <h2 className="mt-6 font-display text-[clamp(26px,3.5vw,40px)] font-light leading-[1.1] text-brand-ivory">
-              4 more centers coming soon.
-            </h2>
-            <p className="mt-4 max-w-xl font-body text-[14px] font-normal leading-relaxed text-white/70">
-              We&apos;re bringing Maywood closer to you — across every corner of Bangalore.
-            </p>
-            <div className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col items-center justify-center rounded-sm border border-dashed border-brand-brass/50 bg-brand-charcoal-mid/40 px-4 py-10 text-center sm:py-12"
-                >
-                  <span className="rounded-full border border-brand-brass/60 bg-brand-brass/10 px-5 py-2 font-body text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-brass-light">
-                    Coming soon
-                  </span>
-                  <p className="mt-4 font-body text-[12px] font-normal leading-snug text-white/60">
-                    New location — opening 2025-26
-                  </p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
@@ -429,7 +446,7 @@ export default function ExperienceCenters() {
                     required
                   >
                     <option value="">Select center</option>
-                    <option value="RR Nagar Experience Center">RR Nagar Experience Center</option>
+                    <option value="Rajarajeshwari Nagar Experience Center">Rajarajeshwari Nagar Experience Center</option>
                   </select>
                 </label>
                 <label className="block">
@@ -507,7 +524,8 @@ export default function ExperienceCenters() {
             Book a home visit and our designer will bring samples, lookbooks and a quote — right to your door.
           </p>
           <MotionLink
-            to="/#consultation"
+            to="/instant-quote"
+            onClick={() => track.quoteClick()}
             className={['mt-10 inline-flex', buttonClasses('dark')].join(' ')}
             whileTap={{ scale: 0.98 }}
             transition={tapTransition}

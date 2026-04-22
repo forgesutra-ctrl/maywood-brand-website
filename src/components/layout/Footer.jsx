@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Facebook, Instagram, Linkedin, Youtube } from 'lucide-react'
 import BrandLogo from '../ui/BrandLogo'
 import { SOCIAL } from '../../config/social'
+import { useLegal } from '../legal/LegalLinks'
 
 const solutionsLinks = [
   { label: 'Home Interiors', to: '/products/home-interiors' },
@@ -13,6 +14,8 @@ const solutionsLinks = [
 
 const companyLinks = [
   { label: 'Maywood Process', to: '/maywood-process' },
+  { label: 'The Team', to: '/team' },
+  { label: 'Awards & Certifications', to: '/awards-certifications' },
   { label: 'Manufacturing', to: '/manufacturing' },
   { label: 'Maywood Ply', to: '/maywood-plys' },
   { label: 'Maywood Finance', to: '/finance' },
@@ -32,11 +35,20 @@ const socialIconClass =
   'text-[#B8965A] transition-opacity duration-200 hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass focus-visible:ring-offset-2 focus-visible:ring-offset-brand-charcoal'
 
 export default function Footer() {
+  const { openTerms, openPrivacy, openRefund, openShipping, openPayment } = useLegal()
+  const legalItems = [
+    { label: 'Terms & Conditions', onOpen: openTerms },
+    { label: 'Privacy Policy', onOpen: openPrivacy },
+    { label: 'Refund Policy', onOpen: openRefund },
+    { label: 'Shipping Policy', onOpen: openShipping },
+    { label: 'Payment Terms', onOpen: openPayment },
+  ]
+
   return (
     <footer className="mt-auto bg-brand-charcoal">
       <div className="mx-auto max-w-[1400px] px-5 py-16 md:px-8 lg:px-10 lg:py-20">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-10 lg:gap-14">
-          <div className="md:col-span-5">
+          <div className="md:col-span-4">
             <BrandLogo to="/" variant="footer" />
             <p className="mt-8 max-w-md font-body text-[14px] font-normal leading-[1.65] text-brand-mist">
               Bangalore&apos;s integrated interior company. Design, manufacturing, materials and finance — under one
@@ -116,9 +128,31 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div className="md:col-span-3">
+          <div className="md:col-span-2">
+            <h3 className={columnTitleClass}>Legal</h3>
+            <ul className="space-y-3">
+              {legalItems.map(({ label, onOpen }) => (
+                <li key={label}>
+                  <button
+                    type="button"
+                    onClick={onOpen}
+                    className={[footerLinkClass, 'w-full text-left'].join(' ')}
+                  >
+                    {label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="md:col-span-2">
             <h3 className={columnTitleClass}>Contact</h3>
             <ul className="space-y-3">
+              <li>
+                <Link to="/contact" className={footerLinkClass}>
+                  Contact us
+                </Link>
+              </li>
               <li>
                 <a href="tel:+919606977677" className={footerLinkClass}>
                   +91 96069 77677
@@ -144,7 +178,7 @@ export default function Footer() {
       <div className="border-t border-[rgba(184,150,90,0.15)]">
         <div className="mx-auto flex max-w-[1400px] flex-col gap-2 px-5 py-6 md:px-8 lg:px-10">
           <p className="text-center font-body text-[12px] text-brand-mist md:text-left">
-            © {new Date().getFullYear()} Maywood Interiors. All rights reserved.
+            © 2026 Maywood Interiors Private Limited. All rights reserved. | GST: [ADD GST NUMBER]
           </p>
           <div className="flex justify-center md:justify-end">
             <Link

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { CheckCircle2, X } from 'lucide-react'
+import { CheckCircle2, Loader2, X } from 'lucide-react'
 import { saveConsultationBooking } from '../utils/adminDataStore'
+import { isValidEmail } from '../lib/validation'
+import { track } from '../utils/tracking'
 
 const TIME_SLOTS = [
   '10:00 AM – 11:00 AM',
@@ -25,9 +27,10 @@ const inputClass =
 const labelClass =
   'mb-2 block font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-brass'
 
-export default function ConsultationBookingModal({ isOpen, onClose, prefillName, prefillPhone, prefillEmail }) {
-  const [submitted, setSubmitted] = useState(false)
-  const [consult, setConsult] = useState(() => ({
+const submitErrorClass = 'font-body text-[13px] font-normal text-red-600'
+
+function buildConsultFromPrefill(prefillName, prefillPhone, prefillEmail) {
+  return {
     fullName: (prefillName || '').trim(),
     phone: (prefillPhone || '').trim(),
     email: (prefillEmail || '').trim(),
@@ -35,7 +38,14 @@ export default function ConsultationBookingModal({ isOpen, onClose, prefillName,
     timeSlot: '',
     center: '',
     note: '',
-  }))
+  }
+}
+
+export default function ConsultationBookingModal({ isOpen, onClose, prefillName, prefillPhone, prefillEmail }) {
+  const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [consult, setConsult] = useState(() => buildConsultFromPrefill(prefillName, prefillPhone, prefillEmail))
 
   useEffect(() => {
     if (!isOpen) return
@@ -55,18 +65,48 @@ export default function ConsultationBookingModal({ isOpen, onClose, prefillName,
     }
   }, [isOpen])
 
+  useEffect(() => {
+    if (!isOpen) return
+    setSubmitted(false)
+    setSubmitError('')
+    setIsSubmitting(false)
+    setConsult(buildConsultFromPrefill(prefillName, prefillPhone, prefillEmail))
+  }, [isOpen, prefillName, prefillPhone, prefillEmail])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    await saveConsultationBooking({
-      name: consult.fullName.trim(),
-      phone: consult.phone.trim(),
-      email: consult.email.trim(),
-      preferredDate: consult.date,
-      timeSlot: consult.timeSlot,
-      preferredCenter: consult.center,
-      projectNote: consult.note,
-    })
-    setSubmitted(true)
+    setSubmitError('')
+    if (!isValidEmail(consult.email)) {
+      setSubmitError('Please enter a valid email address.')
+      return
+    }
+    try {
+      setIsSubmitting(true)
+      await saveConsultationBooking({
+        name: consult.fullName.trim(),
+        phone: consult.phone.trim(),
+        email: consult.email.trim(),
+        preferredDate: consult.date,
+        timeSlot: consult.timeSlot,
+        preferredCenter: consult.center,
+        projectNote: consult.note,
+      })
+      track.formSubmit('consultation_booking')
+      setConsult({
+        fullName: '',
+        phone: '',
+        email: '',
+        date: '',
+        timeSlot: '',
+        center: '',
+        note: '',
+      })
+      setSubmitted(true)
+    } catch {
+      setSubmitError('Something went wrong. Please try again or call us.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return createPortal(
@@ -215,10 +255,19 @@ export default function ConsultationBookingModal({ isOpen, onClose, prefillName,
 
                   <button
                     type="submit"
-                    className="mt-2 w-full rounded-[2px] bg-[#B8965A] px-6 py-[14px] font-body text-[12px] font-medium uppercase tracking-[0.12em] text-[#1C1915] transition-opacity hover:opacity-90"
+                    disabled={isSubmitting}
+                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-[2px] bg-[#B8965A] px-6 py-[14px] font-body text-[12px] font-medium uppercase tracking-[0.12em] text-[#1C1915] transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
                   >
-                    Confirm consultation
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 shrink-0 animate-spin" strokeWidth={2} aria-hidden />
+                        Sending…
+                      </>
+                    ) : (
+                      'Confirm consultation'
+                    )}
                   </button>
+                  {submitError ? <p className={`mt-4 ${submitErrorClass}`}>{submitError}</p> : null}
                 </form>
               </>
             ) : (

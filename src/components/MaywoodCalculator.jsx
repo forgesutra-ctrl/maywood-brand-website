@@ -5,6 +5,8 @@ import SectionLabel from './ui/SectionLabel'
 import { computeEstimate, formatInr, formatInrRange } from '../lib/maywoodEstimate'
 import { buttonClasses } from '../lib/buttonStyles'
 import { saveCalculatorLead } from '../utils/adminDataStore'
+import { isValidEmail } from '../lib/validation'
+import { track } from '../utils/tracking'
 
 const TABS = [
   { id: 'budget', label: 'Budget Calculator' },
@@ -75,10 +77,6 @@ function totalPayable(emi, months) {
   return emi * months
 }
 
-function isValidEmail(s) {
-  return /^\S+@\S+\.\S+$/.test(String(s).trim())
-}
-
 const inputClass =
   'w-full border-0 border-b border-brand-charcoal-soft/40 bg-transparent py-3 font-body text-[15px] text-brand-charcoal outline-none transition-colors placeholder:text-brand-mist/50 focus:border-brand-brass'
 
@@ -134,6 +132,7 @@ export default function MaywoodCalculator({
   const [gateName, setGateName] = useState('')
   const [gatePhoneDigits, setGatePhoneDigits] = useState('')
   const [gateEmail, setGateEmail] = useState('')
+  const [gateError, setGateError] = useState('')
 
   const [tab, setTab] = useState('budget')
   const prevTabRef = useRef('budget')
@@ -233,15 +232,21 @@ export default function MaywoodCalculator({
   const handleGateSubmit = async (e) => {
     e.preventDefault()
     if (!gateValid) return
-    if (calculatorLeadSource) {
-      await saveCalculatorLead({
-        name: gateName.trim(),
-        phone: `+91${gatePhoneDigits}`,
-        email: gateEmail.trim(),
-        source: calculatorLeadSource,
-      })
+    setGateError('')
+    try {
+      if (calculatorLeadSource) {
+        await saveCalculatorLead({
+          name: gateName.trim(),
+          phone: `+91${gatePhoneDigits}`,
+          email: gateEmail.trim(),
+          source: calculatorLeadSource,
+        })
+      }
+      track.formSubmit('calculator_lead_gate')
+      setContactUnlocked(true)
+    } catch {
+      setGateError('Could not save your details. Please try again.')
     }
-    setContactUnlocked(true)
   }
 
   const outputCard = (children) => (
@@ -548,6 +553,7 @@ export default function MaywoodCalculator({
         <div className="mt-8 flex flex-col items-center">
           <Link
             to={resultCta.to}
+            onClick={() => track.quoteClick()}
             className={buttonClasses(
               'ctaPrimary',
               ['w-full max-w-md justify-center sm:w-auto', resultCta.ctaClassName].filter(Boolean).join(' '),
@@ -627,6 +633,7 @@ export default function MaywoodCalculator({
           >
             SHOW ME THE NUMBERS →
           </button>
+          {gateError ? <p className="font-body text-[13px] font-normal text-red-600">{gateError}</p> : null}
           <p className="text-center font-body text-[12px] font-normal text-brand-mist">
             No spam. No sales calls until you&apos;re ready.
           </p>

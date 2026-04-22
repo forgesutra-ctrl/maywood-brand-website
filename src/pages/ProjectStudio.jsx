@@ -292,9 +292,9 @@ export default function ProjectStudio() {
           <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '3.5rem', color: '#ffffff', lineHeight: 1.15, fontWeight: 300, marginBottom: '8px' }}>
             A Process You Can Trust.
           </h1>
-          <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '3.5rem', color: '#c9a465', lineHeight: 1.15, fontStyle: 'italic', fontWeight: 300, marginBottom: '24px' }}>
+          <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '3.5rem', color: '#c9a465', lineHeight: 1.15, fontStyle: 'italic', fontWeight: 300, marginBottom: '24px' }}>
             Powered by Technology.
-          </h1>
+          </h2>
           <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', lineHeight: 1.7, maxWidth: '380px' }}>
             Every Maywood project is managed through a structured process and AI-driven project management—ensuring transparency, speed, and complete control.
           </p>

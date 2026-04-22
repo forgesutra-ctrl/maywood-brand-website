@@ -13,6 +13,7 @@ import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
 import { IMAGES } from '../config/images'
+import { track } from '../utils/tracking'
 
 const MotionLink = motion(Link)
 
@@ -248,6 +249,7 @@ export default function Home() {
               <div className="flex w-full max-w-xl flex-col gap-4 pt-2 sm:max-w-none sm:flex-row sm:items-center sm:gap-4">
                 <MotionLink
                   to="/instant-quote"
+                  onClick={() => track.quoteClick()}
                   className={buttonClasses('ctaPrimary', 'w-full justify-center sm:w-auto focus-visible:ring-offset-[#1a1612]')}
                   whileTap={{ scale: 0.98 }}
                   transition={tapTransition}
@@ -255,7 +257,8 @@ export default function Home() {
                   Get Instant Quote
                 </MotionLink>
                 <Link
-                  to="/experience-centers"
+                  to="/instant-quote"
+                  onClick={() => track.quoteClick()}
                   className={buttonClasses('ctaSecondary', 'w-full justify-center sm:w-auto focus-visible:ring-offset-[#1a1612]')}
                 >
                   BOOK FREE CONSULTATION
@@ -581,7 +584,8 @@ export default function Home() {
                 Actual EMI calculated after consultation.
               </p>
               <MotionLink
-                to="#consultation"
+                to="/instant-quote"
+                onClick={() => track.quoteClick()}
                 className={['mt-8 flex w-full justify-center', buttonClasses('ctaSecondary', 'focus-visible:ring-offset-[#1e1a14]')].join(' ')}
                 whileTap={{ scale: 0.98 }}
                 transition={tapTransition}
@@ -679,6 +683,7 @@ export default function Home() {
           <div className="mx-auto mt-10 flex w-full max-w-md flex-col gap-4 sm:max-w-none sm:flex-row sm:items-center sm:justify-center">
             <MotionLink
               to="/instant-quote"
+              onClick={() => track.quoteClick()}
               className={buttonClasses('ctaPrimary', 'w-full justify-center sm:w-auto focus-visible:ring-offset-brand-brass')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
@@ -686,7 +691,8 @@ export default function Home() {
               Get Instant Quote
             </MotionLink>
             <MotionLink
-              to="/experience-centers"
+              to="/instant-quote"
+              onClick={() => track.quoteClick()}
               className={buttonClasses('ctaSecondary', 'w-full justify-center sm:w-auto focus-visible:ring-offset-brand-brass')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}

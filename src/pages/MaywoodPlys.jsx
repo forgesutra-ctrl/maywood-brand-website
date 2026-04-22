@@ -5,6 +5,7 @@ import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
 import { IMAGES } from '../config/images'
+import { track } from '../utils/tracking'
 
 /** Home section uses `/images/maywood-premium-plywood-label.png`; sheet JPG may live under assets */
 const PLYWOOD_SHEET_SRC_PRIMARY = '/assets/images/maywood-plys-sheet.jpg'
@@ -128,13 +129,15 @@ export default function MaywoodPlys() {
           </p>
           <div className="mt-10 flex w-full max-w-xl flex-col gap-4 sm:max-w-none sm:flex-row sm:items-center">
             <Link
-              to="/#consultation"
+              to="/instant-quote"
+              onClick={() => track.quoteClick()}
               className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('primary')].join(' ')}
             >
               Talk to a Materials Specialist
             </Link>
             <Link
-              to="/experience-centers"
+              to="/instant-quote"
+              onClick={() => track.quoteClick()}
               className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaSecondary', 'focus-visible:ring-offset-[#1a1612]')].join(' ')}
             >
               Book free consultation
@@ -279,12 +282,14 @@ export default function MaywoodPlys() {
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
             <Link
               to="/instant-quote"
+              onClick={() => track.quoteClick()}
               className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaPrimary', 'focus-visible:ring-offset-[#1a1612]')].join(' ')}
             >
               Get a free quote
             </Link>
             <Link
-              to="/experience-centers"
+              to="/instant-quote"
+              onClick={() => track.quoteClick()}
               className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaSecondary', 'focus-visible:ring-offset-[#1a1612]')].join(' ')}
             >
               Book free consultation

@@ -4,6 +4,7 @@ import ProcessSection from '../sections/ProcessSection'
 import SectionLabel from '../ui/SectionLabel'
 import AnimatedText from '../ui/AnimatedText'
 import { buttonClasses } from '../../lib/buttonStyles'
+import { track } from '../../utils/tracking'
 
 const MotionLink = motion(Link)
 
@@ -24,6 +25,7 @@ export function ProductsBrassCta() {
         <div className="mx-auto mt-10 flex w-full max-w-sm flex-col gap-4 sm:max-w-none sm:flex-row sm:justify-center">
           <MotionLink
             to="/instant-quote"
+            onClick={() => track.quoteClick()}
             className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaPrimary', 'focus-visible:ring-offset-brand-brass')].join(' ')}
             whileTap={{ scale: 0.98 }}
             transition={tapTransition}
@@ -31,7 +33,8 @@ export function ProductsBrassCta() {
             Get Instant Quote
           </MotionLink>
           <MotionLink
-            to="/experience-centers"
+            to="/instant-quote"
+            onClick={() => track.quoteClick()}
             className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaSecondary', 'focus-visible:ring-offset-brand-brass')].join(' ')}
             whileTap={{ scale: 0.98 }}
             transition={tapTransition}
@@ -104,6 +107,7 @@ export default function ProductSubPage({
           <div className="mt-10 flex w-full max-w-xl flex-col gap-4 sm:max-w-none sm:flex-row sm:items-center">
             <MotionLink
               to="/instant-quote"
+              onClick={() => track.quoteClick()}
               className={buttonClasses('ctaPrimary', 'w-full justify-center sm:w-auto focus-visible:ring-offset-[#1C1915]')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
@@ -111,7 +115,8 @@ export default function ProductSubPage({
               Get Instant Quote
             </MotionLink>
             <MotionLink
-              to="/experience-centers"
+              to="/instant-quote"
+              onClick={() => track.quoteClick()}
               className={buttonClasses('ctaSecondary', 'w-full justify-center sm:w-auto focus-visible:ring-offset-[#1C1915]')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}

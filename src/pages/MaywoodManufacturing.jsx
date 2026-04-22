@@ -6,6 +6,7 @@ import AnimatedText from '../components/ui/AnimatedText'
 import MaywoodPlysSection from '../components/MaywoodPlysSection'
 import { buttonClasses } from '../lib/buttonStyles'
 import { IMAGES } from '../config/images'
+import { track } from '../utils/tracking'
 
 const MotionLink = motion(Link)
 const tapTransition = { type: 'tween', duration: 0.15, ease: [0.16, 1, 0.3, 1] }
@@ -378,6 +379,7 @@ export default function MaywoodManufacturing() {
           <div className="mx-auto mt-10 flex w-full max-w-md flex-col gap-4 sm:max-w-none sm:flex-row sm:justify-center">
             <MotionLink
               to="/instant-quote"
+              onClick={() => track.quoteClick()}
               className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaPrimary', 'focus-visible:ring-offset-brand-brass')].join(' ')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
@@ -385,7 +387,8 @@ export default function MaywoodManufacturing() {
               Get Instant Quote
             </MotionLink>
             <MotionLink
-              to="/experience-centers"
+              to="/instant-quote"
+              onClick={() => track.quoteClick()}
               className={['inline-flex w-full justify-center sm:w-auto', buttonClasses('ctaSecondary', 'focus-visible:ring-offset-brand-brass')].join(' ')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}
@@ -394,7 +397,8 @@ export default function MaywoodManufacturing() {
             </MotionLink>
           </div>
           <MotionLink
-            to="/#consultation"
+            to="/instant-quote"
+            onClick={() => track.quoteClick()}
             className={['mt-8 inline-flex', buttonClasses('dark')].join(' ')}
             whileTap={{ scale: 0.98 }}
             transition={tapTransition}

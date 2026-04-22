@@ -5,6 +5,7 @@ import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import MaywoodCalculator from '../components/MaywoodCalculator'
 import { buttonClasses } from '../lib/buttonStyles'
+import { track } from '../utils/tracking'
 
 const MotionLink = motion(Link)
 
@@ -207,6 +208,7 @@ export default function MaywoodFinance() {
 
           <MotionLink
             to="/instant-quote"
+            onClick={() => track.eligibilityClick()}
             className={['mt-10 inline-flex', buttonClasses('dark')].join(' ')}
             whileTap={{ scale: 0.98 }}
             transition={tapTransition}

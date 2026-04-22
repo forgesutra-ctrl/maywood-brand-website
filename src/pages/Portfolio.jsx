@@ -6,6 +6,7 @@ import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
 import { fetchPortfolioGalleryImages, PORTFOLIO_UPDATED_EVENT } from '../utils/portfolioProjectsStore'
+import { track } from '../utils/tracking'
 
 const MotionLink = motion(Link)
 
@@ -115,6 +116,7 @@ export default function Portfolio() {
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <MotionLink
               to="/instant-quote"
+              onClick={() => track.quoteClick()}
               className={buttonClasses('ctaPrimary', 'focus-visible:ring-offset-brand-brass')}
               whileTap={{ scale: 0.98 }}
               transition={tapTransition}

@@ -6,6 +6,8 @@ import SectionLabel from '../components/ui/SectionLabel'
 import AnimatedText from '../components/ui/AnimatedText'
 import { buttonClasses } from '../lib/buttonStyles'
 import { savePartnerApplication } from '../utils/adminDataStore'
+import { isValidEmail } from '../lib/validation'
+import { track } from '../utils/tracking'
 
 const motionEase = [0.16, 1, 0.3, 1]
 
@@ -245,6 +247,10 @@ export default function PartnerProgram() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitError('')
+    if (!isValidEmail(form.email)) {
+      setSubmitError('Please enter a valid email address.')
+      return
+    }
     try {
       setIsSubmitting(true)
       await savePartnerApplication({
@@ -257,6 +263,7 @@ export default function PartnerProgram() {
         about: form.about.trim(),
         agreed: form.agreed,
       })
+      track.formSubmit('partner_application')
       setSubmitted(true)
       setForm(initialForm)
     } catch {
