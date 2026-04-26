@@ -36,6 +36,9 @@ function buildQuoteInsertRow(data) {
   const project_scope = Array.isArray(data.scope) ? data.scope.map((s) => String(s)) : []
   const low = data.estimateLow != null ? Number(data.estimateLow) : null
   const high = data.estimateHigh != null ? Number(data.estimateHigh) : null
+  const tierRaw = data.selected_tier ?? data.selectedTier
+  const selected_tier =
+    tierRaw != null && String(tierRaw).trim() !== '' ? String(tierRaw).trim() : null
   return {
     full_name: data.name != null ? String(data.name) : null,
     phone: data.phone != null ? String(data.phone) : null,
@@ -47,6 +50,7 @@ function buildQuoteInsertRow(data) {
     location: data.location != null ? String(data.location) : null,
     estimate_low: Number.isFinite(low) ? low : null,
     estimate_high: Number.isFinite(high) ? high : null,
+    selected_tier,
     source: data.source != null && String(data.source).trim() !== '' ? String(data.source) : 'instant-quote',
     status: 'new',
   }

@@ -71,6 +71,8 @@ create table if not exists portfolio_projects (
   storage_path text
 );
 
+alter table quote_requests add column if not exists selected_tier text default 'Comfort';
+
 -- Add missing columns if you created tables earlier without them:
 alter table consultation_bookings add column if not exists contacted boolean not null default false;
 alter table calculator_leads add column if not exists contacted boolean not null default false;

@@ -2,16 +2,18 @@ import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, ChevronRight } from 'lucide-react'
 import ConsultationBookingModal from '../components/ConsultationBookingModal'
-import MaywoodCalculator from '../components/MaywoodCalculator'
 import {
   computeEstimate,
+  bedroomCountFromBhk,
   emiMonthly,
   formatInr,
   formatInrRange,
+  formatLakh,
   parseAreaNumber,
   SQMT_TO_SQFT,
+  QUALITY_TIERS,
 } from '../lib/maywoodEstimate'
-import { buttonBaseClass, buttonClasses } from '../lib/buttonStyles'
+import { buttonClasses } from '../lib/buttonStyles'
 import { saveQuoteRequest } from '../utils/adminDataStore'
 import { isValidEmail } from '../lib/validation'
 import { track } from '../utils/tracking'
@@ -66,6 +68,8 @@ const AREA_PILLS = {
   Retail: [200, 500, 800, '1500+'],
 }
 
+const BHK_OPTIONS = ['1 BHK', '2 BHK', '3 BHK', '4 BHK', '4 BHK+']
+
 function pillToSqft(pill) {
   if (typeof pill === 'number') return pill
   const s = String(pill).replace('+', '')
@@ -97,12 +101,15 @@ export default function InstantQuote() {
   const [scope, setScope] = useState([])
   const [areaInput, setAreaInput] = useState('')
   const [areaUnit, setAreaUnit] = useState('sqft')
+  const [bhk, setBhk] = useState('2 BHK')
   const [location, setLocation] = useState('')
   const [estimateLow, setEstimateLow] = useState(0)
   const [estimateHigh, setEstimateHigh] = useState(0)
   const [breakdown, setBreakdown] = useState([])
 
   const [quoteSubmitError, setQuoteSubmitError] = useState('')
+
+  const [selectedTier, setSelectedTier] = useState('Comfort')
 
   const [consultationModalOpen, setConsultationModalOpen] = useState(false)
   const [consultationModalKey, setConsultationModalKey] = useState(0)
@@ -125,11 +132,7 @@ export default function InstantQuote() {
     [areaInput, areaUnit, propertyType],
   )
 
-  const estimateMid = useMemo(
-    () => (estimateLow + estimateHigh) / 2,
-    [estimateLow, estimateHigh],
-  )
-  const emiApprox = useMemo(() => emiMonthly(estimateMid, 0.12, 36), [estimateMid])
+  const bedroomCount = useMemo(() => bedroomCountFromBhk(bhk), [bhk])
 
   const toggleScope = (key) => {
     setScope((prev) => (prev.includes(key) ? prev.filter((s) => s !== key) : [...prev, key]))
@@ -153,7 +156,13 @@ export default function InstantQuote() {
 
     setQuoteSubmitError('')
 
-    const { breakdown: bd, totalMin, totalMax } = computeEstimate(propertyType, scope, areaSqft)
+    const { breakdown: bd, totalMin, totalMax } = computeEstimate(
+      propertyType,
+      scope,
+      areaSqft,
+      selectedTier,
+      bedroomCount,
+    )
 
     try {
       await saveQuoteRequest({
@@ -167,6 +176,8 @@ export default function InstantQuote() {
         location: location.trim(),
         estimateLow: Math.round(totalMin),
         estimateHigh: Math.round(totalMax),
+        selected_tier: selectedTier,
+        source: 'website',
       })
       track.formSubmit('instant_quote')
       setBreakdown(bd)
@@ -416,6 +427,28 @@ export default function InstantQuote() {
               autoComplete="off"
             />
             <p className="mt-2 font-body text-[12px] text-brand-mist">{areaUnit === 'sqft' ? 'Square feet' : 'Square metres'}</p>
+            <div className="mt-10">
+              <p className="mb-4 font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-brass">
+                Number of Bedrooms
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {BHK_OPTIONS.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setBhk(option)}
+                    className={[
+                      'rounded-full px-5 py-2 font-body text-[13px] font-medium transition-colors',
+                      bhk === option
+                        ? 'bg-brand-charcoal text-brand-ivory'
+                        : 'border border-brand-brass/50 bg-brand-ivory-deep/50 text-brand-charcoal hover:border-brand-brass hover:bg-brand-brass-pale/40',
+                    ].join(' ')}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="mt-10 flex flex-wrap justify-center gap-2">
               {AREA_PILLS[propertyType].map((pill) => (
                 <button
@@ -497,36 +530,107 @@ export default function InstantQuote() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.35 }}
-            className="mx-auto max-w-[640px]"
+            className="mx-auto max-w-[680px]"
           >
-            <p className="font-body text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-brass">
-              YOUR PERSONALISED ESTIMATE
-            </p>
-            <h1 className="mt-6 font-display text-[clamp(32px,5vw,48px)] font-light leading-[1.08] text-brand-charcoal">
-              {formatInrRange(estimateLow, estimateHigh)}
-            </h1>
-            <p className="mt-4 font-body text-[14px] font-normal leading-relaxed text-brand-mist">
-              Based on your inputs — mid-range materials and finishes
-            </p>
-            <div className="mt-10 rounded-sm border border-brand-brass-pale bg-brand-ivory-deep/50 px-6 py-8">
-              <ul className="space-y-4 border-b border-brand-ivory-deep/80 pb-6">
+            <div className="mb-8 grid grid-cols-3 gap-2 rounded-sm border border-brand-brass-pale p-1">
+              {Object.keys(QUALITY_TIERS).map((tier) => {
+                const { breakdown: bd, totalMin: tMin, totalMax: tMax } = computeEstimate(
+                  propertyType,
+                  scope,
+                  areaSqft,
+                  tier,
+                  bedroomCount,
+                )
+                return (
+                  <button
+                    key={tier}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTier(tier)
+                      setBreakdown(bd)
+                      setEstimateLow(tMin)
+                      setEstimateHigh(tMax)
+                    }}
+                    className={[
+                      'relative rounded-sm px-3 py-3 text-center font-body text-[12px] font-semibold uppercase tracking-[0.1em] transition-all',
+                      selectedTier === tier
+                        ? 'bg-brand-charcoal text-brand-ivory'
+                        : 'text-brand-mist hover:text-brand-charcoal',
+                    ].join(' ')}
+                  >
+                    {QUALITY_TIERS[tier].popular && (
+                      <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-brand-brass px-2 py-0.5 font-body text-[9px] font-semibold uppercase tracking-wider text-white">
+                        Popular
+                      </span>
+                    )}
+                    {tier}
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="mb-6">
+              <p className="font-body text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-brass">
+                YOUR PERSONALISED ESTIMATE
+              </p>
+              <h1 className="mt-3 font-display text-[clamp(32px,5vw,48px)] font-light leading-[1.08] text-brand-charcoal">
+                {formatInrRange(estimateLow, estimateHigh)}
+              </h1>
+              <p className="mt-2 font-body text-[13px] text-brand-mist">{QUALITY_TIERS[selectedTier].tagline}</p>
+            </div>
+
+            <div className="mb-6 rounded-sm border border-brand-brass-pale bg-brand-ivory-deep/40 px-6 py-6">
+              <ul className="mb-5 space-y-3 border-b border-brand-ivory-deep pb-5">
                 {breakdown.map((row) => (
                   <li key={row.label} className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
-                    <span className="font-body text-[14px] font-medium text-brand-charcoal">{row.label}</span>
-                    <span className="font-body text-[13px] text-brand-mist">{row.line}</span>
+                    <span className="font-body text-[13px] font-medium text-brand-charcoal">{row.label}</span>
+                    <span className="font-body text-[12px] text-brand-mist">{row.line}</span>
                   </li>
                 ))}
               </ul>
-              <p className="mt-6 font-body text-[15px] font-medium text-brand-brass">
-                As low as {formatInr(Math.round(emiApprox))} / month on 36-month plan
+              <p className="font-body text-[14px] font-medium text-brand-brass">
+                As low as {formatInr(Math.round(emiMonthly((estimateLow + estimateHigh) / 2, 0.12, 36)))} / month on
+                36-month plan
               </p>
             </div>
-            <MaywoodCalculator className="mt-10" contactGate={false} />
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+
+            <div className="mb-6 overflow-hidden rounded-sm border border-brand-brass-pale">
+              <div className="bg-brand-charcoal px-5 py-3">
+                <p className="font-body text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-brass">
+                  What&apos;s Included — {selectedTier} Tier
+                </p>
+              </div>
+              {[
+                ['Material', QUALITY_TIERS[selectedTier].material],
+                ['Finish', QUALITY_TIERS[selectedTier].finish],
+                ['Hardware', QUALITY_TIERS[selectedTier].hardware],
+                ['Warranty', QUALITY_TIERS[selectedTier].warranty],
+                ['Delivery', '35–45 Working Days'],
+                ['Installation', 'Included'],
+              ].map(([label, value], i) => (
+                <div
+                  key={label}
+                  className={[
+                    'flex items-center justify-between px-5 py-3 font-body text-[13px]',
+                    i % 2 === 0 ? 'bg-brand-ivory' : 'bg-brand-ivory-deep/40',
+                  ].join(' ')}
+                >
+                  <span className="text-brand-mist">{label}</span>
+                  <span className="font-medium text-brand-charcoal">{value}</span>
+                </div>
+              ))}
+            </div>
+
+            <p className="mb-8 font-body text-[11px] italic leading-relaxed text-brand-mist">
+              This is an approximate estimate based on your selections. Final pricing is confirmed after a site visit and
+              detailed scope discussion.
+            </p>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={openConsultationModal}
-                className={buttonClasses('ctaSecondary', 'w-full justify-center sm:flex-1 focus-visible:ring-offset-brand-ivory')}
+                className={buttonClasses('ctaSecondary', 'w-full justify-center sm:flex-1')}
               >
                 BOOK A FREE CONSULTATION
               </button>
@@ -535,17 +639,66 @@ export default function InstantQuote() {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => track.whatsappClick()}
-                className={[
-                  buttonBaseClass,
-                  'inline-flex w-full items-center justify-center rounded-[2px] border border-brand-charcoal/35 bg-transparent px-9 py-[14px] font-body text-[12px] font-medium uppercase tracking-[0.12em] text-brand-charcoal transition-colors hover:border-brand-brass hover:text-brand-brass sm:flex-1',
-                ].join(' ')}
+                className="sm:flex-1"
+                style={{
+                  position: 'relative',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  width: '100%',
+                  padding: '14px 24px',
+                  backgroundColor: '#25D366',
+                  color: '#ffffff',
+                  borderRadius: '4px',
+                  fontFamily: 'inherit',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  animation: 'whatsappPulse 2s ease-in-out infinite',
+                }}
               >
-                SPEAK TO A DESIGNER
+                <span
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: '4px',
+                    border: '2px solid #25D366',
+                    animation: 'rippleRing 2s ease-out infinite',
+                    pointerEvents: 'none',
+                  }}
+                  aria-hidden
+                />
+                <span
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: '4px',
+                    border: '2px solid #25D366',
+                    animation: 'rippleRing 2s ease-out infinite',
+                    animationDelay: '0.6s',
+                    pointerEvents: 'none',
+                  }}
+                  aria-hidden
+                />
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden
+                  style={{ position: 'relative', zIndex: 1 }}
+                >
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+                <span style={{ position: 'relative', zIndex: 1 }}>Speak to a Designer</span>
               </a>
             </div>
-            <p className="mt-10 font-body text-[12px] font-normal leading-relaxed text-brand-mist">
-              Estimates are indicative. Final pricing confirmed after site visit.
-            </p>
           </motion.div>
         )
       default:
