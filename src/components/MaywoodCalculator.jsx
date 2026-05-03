@@ -163,7 +163,7 @@ export default function MaywoodCalculator({
     const area = Math.max(1, parseFloat(String(areaSqft).replace(/,/g, '')) || 1)
     const internal = mapScopesToInternal(bucket, scopeSel)
     if (internal.length === 0) return null
-    const { totalMin, totalMax } = computeEstimate(bucket, internal, area, 'Comfort', 2)
+    const { totalMin, totalMax } = computeEstimate(bucket, internal, area, 'Premium Plus', 2)
     return {
       low: Math.round(totalMin),
       high: Math.round(totalMax),

@@ -9,6 +9,7 @@ import {
   formatInr,
   formatInrRange,
   formatLakh,
+  getMasterScopeKey,
   parseAreaNumber,
   SQMT_TO_SQFT,
   QUALITY_TIERS,
@@ -70,6 +71,15 @@ const AREA_PILLS = {
 
 const BHK_OPTIONS = ['1 BHK', '2 BHK', '3 BHK', '4 BHK', '4 BHK+']
 
+const MASTER_SCOPE_NOTE_BY_PROPERTY = {
+  Residential:
+    'Full Home Interiors includes kitchen, wardrobes, living, bedrooms and all spaces.',
+  Commercial:
+    'Full office fit-out includes workstations, cabins, reception, breakout areas and all spaces.',
+  Retail:
+    'Full store fit-out includes storefront, displays, trial rooms, checkout and back office.',
+}
+
 function pillToSqft(pill) {
   if (typeof pill === 'number') return pill
   const s = String(pill).replace('+', '')
@@ -109,7 +119,7 @@ export default function InstantQuote() {
 
   const [quoteSubmitError, setQuoteSubmitError] = useState('')
 
-  const [selectedTier, setSelectedTier] = useState('Comfort')
+  const [selectedTier, setSelectedTier] = useState('Premium Plus')
 
   const [consultationModalOpen, setConsultationModalOpen] = useState(false)
   const [consultationModalKey, setConsultationModalKey] = useState(0)
@@ -134,8 +144,23 @@ export default function InstantQuote() {
 
   const bedroomCount = useMemo(() => bedroomCountFromBhk(bhk), [bhk])
 
-  const toggleScope = (key) => {
-    setScope((prev) => (prev.includes(key) ? prev.filter((s) => s !== key) : [...prev, key]))
+  const handleScopeToggle = (item) => {
+    const master = getMasterScopeKey(propertyType)
+    if (!master) {
+      setScope((prev) => (prev.includes(item) ? prev.filter((s) => s !== item) : [...prev, item]))
+      return
+    }
+    if (item === master) {
+      setScope((prev) => (prev.includes(master) ? [] : [master]))
+      return
+    }
+    setScope((prev) => {
+      const withoutMaster = prev.filter((s) => s !== master)
+      if (withoutMaster.includes(item)) {
+        return withoutMaster.filter((s) => s !== item)
+      }
+      return [...withoutMaster, item]
+    })
   }
 
   const handleStep1Submit = (e) => {
@@ -318,7 +343,10 @@ export default function InstantQuote() {
             </div>
           </motion.div>
         )
-      case 3:
+      case 3: {
+        const scopeMasterKey = getMasterScopeKey(propertyType)
+        const masterScopeSelected = Boolean(scopeMasterKey && scope.includes(scopeMasterKey))
+
         return (
           <motion.div
             key="s3"
@@ -334,15 +362,20 @@ export default function InstantQuote() {
             <p className="mt-3 font-body text-[14px] font-normal text-brand-mist">Select all that apply</p>
             <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {SCOPE_BY_PROPERTY[propertyType].map((item) => {
-                const selected = scope.includes(item)
+                const isMasterRow = Boolean(scopeMasterKey && item === scopeMasterKey)
+                const visuallySelected =
+                  scope.includes(item) || (masterScopeSelected && !isMasterRow)
+                const disabledIndividual = masterScopeSelected && !isMasterRow
                 return (
                   <button
                     key={item}
                     type="button"
-                    onClick={() => toggleScope(item)}
+                    disabled={disabledIndividual}
+                    onClick={() => handleScopeToggle(item)}
                     className={[
                       'relative flex items-center gap-3 rounded-sm border px-4 py-4 text-left font-body text-[14px] transition-all',
-                      selected
+                      disabledIndividual ? 'cursor-not-allowed opacity-40' : '',
+                      visuallySelected
                         ? 'border-brand-brass bg-brand-brass-pale/50 text-brand-charcoal'
                         : 'border-brand-ivory-deep text-brand-charcoal hover:border-brand-brass/45',
                     ].join(' ')}
@@ -350,17 +383,24 @@ export default function InstantQuote() {
                     <span
                       className={[
                         'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border',
-                        selected ? 'border-brand-brass bg-brand-brass text-[#1C1915]' : 'border-brand-mist/40 bg-transparent',
+                        visuallySelected
+                          ? 'border-brand-brass bg-brand-brass text-[#1C1915]'
+                          : 'border-brand-mist/40 bg-transparent',
                       ].join(' ')}
                       aria-hidden
                     >
-                      {selected ? <Check className="h-3.5 w-3.5" strokeWidth={2.5} /> : null}
+                      {visuallySelected ? <Check className="h-3.5 w-3.5" strokeWidth={2.5} /> : null}
                     </span>
                     {item}
                   </button>
                 )
               })}
             </div>
+            {masterScopeSelected && MASTER_SCOPE_NOTE_BY_PROPERTY[propertyType] ? (
+              <p className="mt-2 font-body text-xs italic text-brand-mist">
+                {MASTER_SCOPE_NOTE_BY_PROPERTY[propertyType]}
+              </p>
+            ) : null}
             <button
               type="button"
               disabled={scope.length === 0}
@@ -375,6 +415,7 @@ export default function InstantQuote() {
             </button>
           </motion.div>
         )
+      }
       case 4:
         return (
           <motion.div
@@ -588,10 +629,67 @@ export default function InstantQuote() {
                   </li>
                 ))}
               </ul>
-              <p className="font-body text-[14px] font-medium text-brand-brass">
-                As low as {formatInr(Math.round(emiMonthly((estimateLow + estimateHigh) / 2, 0.12, 36)))} / month on
-                36-month plan
-              </p>
+              <div
+                style={{
+                  marginTop: '16px',
+                  background: 'linear-gradient(135deg, #1a1612 0%, #2c2420 100%)',
+                  borderRadius: '8px',
+                  padding: '20px 24px',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                }}
+              >
+                <div>
+                  <p
+                    style={{
+                      color: '#c9a465',
+                      fontSize: '10px',
+                      letterSpacing: '2px',
+                      textTransform: 'uppercase',
+                      margin: '0 0 4px 0',
+                    }}
+                  >
+                    MAYWOOD FINANCE — EMI OPTION
+                  </p>
+                  <p
+                    style={{
+                      color: '#ffffff',
+                      fontSize: '28px',
+                      fontFamily: 'Cormorant Garamond, serif',
+                      fontWeight: '300',
+                      margin: 0,
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    {formatInr(Math.round(emiMonthly((estimateLow + estimateHigh) / 2, 0.07, 36)))}
+                    <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', marginLeft: '6px' }}>/ month</span>
+                  </p>
+                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', margin: '4px 0 0 0' }}>
+                    Starting at 7% p.a. • 36-month plan • No hidden charges • Instant approval
+                  </p>
+                </div>
+                <a
+                  href="/finance"
+                  style={{
+                    backgroundColor: '#c9a465',
+                    color: '#ffffff',
+                    padding: '10px 20px',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Learn More →
+                </a>
+              </div>
             </div>
 
             <div className="mb-6 overflow-hidden rounded-sm border border-brand-brass-pale">

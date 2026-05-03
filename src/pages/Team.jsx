@@ -1,4 +1,5 @@
 import TeamStudioRoom from '../components/about/TeamStudioRoom'
+import Ticker from '../components/Ticker'
 
 export default function Team() {
   return (
@@ -22,6 +23,7 @@ export default function Team() {
         </div>
       </section>
       <TeamStudioRoom />
+      <Ticker type="team" />
       <div className="bg-[#f5f0eb] px-6 pb-10 pt-2">
         <div className="mx-auto max-w-2xl border-t border-b border-[#c9a465] py-10 text-center">
           <p className="font-display text-xl font-normal italic leading-relaxed text-brand-charcoal/80">

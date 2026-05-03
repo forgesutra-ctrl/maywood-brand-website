@@ -63,13 +63,19 @@ create table if not exists portfolio_projects (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
   name text,
-  category text,
+  category text default 'Other',
+  description text,
+  file_name text,
   location text,
   year integer,
   featured boolean not null default false,
   image_url text,
   storage_path text
 );
+
+alter table portfolio_projects add column if not exists category text default 'Other';
+alter table portfolio_projects add column if not exists file_name text;
+alter table portfolio_projects add column if not exists description text;
 
 alter table quote_requests add column if not exists selected_tier text default 'Comfort';
 

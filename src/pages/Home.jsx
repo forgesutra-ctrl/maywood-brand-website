@@ -1,7 +1,7 @@
-import { Fragment } from 'react'
 import { motion } from 'framer-motion'
 import { Shield } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import Ticker from '../components/Ticker'
 import HeroImageCarousel from '../components/home/HeroImageCarousel'
 import PortfolioCarouselMini from '../components/home/PortfolioCarouselMini'
 import MaywoodDifferenceSection from '../components/home/MaywoodDifferenceSection'
@@ -26,17 +26,6 @@ const HERO_STATS = [
   { value: '35 Days', label: 'AVERAGE DELIVERY' },
   { value: '10 Yr', label: 'WARRANTY' },
   { value: '4.8★', label: 'CLIENT SATISFACTION' },
-]
-
-const HERO_RIBBON_ITEMS = [
-  'BANGALORE-BASED',
-  '100+ PROJECTS',
-  '10 YEAR WARRANTY',
-  'IN-HOUSE PLYWOOD',
-  'OWN MANUFACTURING FACILITY',
-  'FLEXIBLE EMI',
-  'ISO 9001 & 45001',
-  'END-TO-END EXECUTION',
 ]
 
 const MAYWOOD_ADVANTAGE_GRID_CARDS = [
@@ -65,7 +54,7 @@ const MAYWOOD_ADVANTAGE_GRID_CARDS = [
     category: 'EXECUTION',
     title: 'End-to-end, professionally managed',
     description: 'From design to delivery under one system',
-    imageSrc: '/assets/images/advantage-execution.jpg',
+    imageSrc: '/assets/images/execution-maywood.jpg',
     imageAlt: 'Professional Maywood installation team fitting a modular kitchen in Bangalore — Maywood Interiors',
   },
 ]
@@ -193,34 +182,6 @@ function HeroStatsRow() {
   )
 }
 
-function HeroMarqueeRibbon() {
-  const row = (setKey) => (
-    <div className="flex shrink-0 items-center gap-5 px-8">
-      {HERO_RIBBON_ITEMS.map((label, i) => (
-        <Fragment key={`${setKey}-${label}-${i}`}>
-          <span className="whitespace-nowrap font-body text-[11px] font-medium uppercase tracking-[0.1em] text-[#B8965A]">
-            {label}
-          </span>
-          {i < HERO_RIBBON_ITEMS.length - 1 && (
-            <span className="mx-0.5 h-1 w-1 shrink-0 rounded-full bg-[#B8965A] opacity-70" aria-hidden />
-          )}
-        </Fragment>
-      ))}
-    </div>
-  )
-
-  return (
-    <div className="bg-[#1a1612]">
-      <div className="flex h-[40px] items-center overflow-hidden">
-        <div className="home-marquee-track flex">
-          {row('a')}
-          {row('b')}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function Home() {
   const deliveredCards = IMAGES.portfolio
 
@@ -284,9 +245,9 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-        <HeroMarqueeRibbon />
       </section>
+
+      <Ticker type="home" />
 
       <div id="consultation" className="h-0 scroll-mt-28" aria-hidden />
 

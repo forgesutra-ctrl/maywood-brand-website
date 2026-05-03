@@ -14,12 +14,14 @@ export function mapDbRowToProject(r) {
     id: r.id,
     name: r.name,
     category: r.category,
+    description: r.description,
     location: r.location,
     year: r.year,
     featured: Boolean(r.featured),
     image: r.image_url,
     image_url: r.image_url,
-    storage_path: r.storage_path,
+    file_name: r.file_name,
+    storage_path: r.storage_path ?? r.file_name,
     uploadedAt: r.created_at,
   }
 }
@@ -104,8 +106,9 @@ export async function updatePortfolioProject(id, patch) {
 }
 
 export async function deletePortfolioProject(row) {
-  if (row?.storage_path) {
-    await removePortfolioStorageObjects([row.storage_path])
+  const storageKey = row?.file_name || row?.storage_path
+  if (storageKey) {
+    await removePortfolioStorageObjects([storageKey])
   }
   const { error } = await supabase.from('portfolio_projects').delete().eq('id', row.id)
   if (error) throw error

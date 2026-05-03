@@ -15,8 +15,8 @@ const teamMembers = [
     department: "Directors' Corner",
     gender: 'male',
     quote: 'Every space we design is a reflection of our commitment to excellence.',
-    left: '21%',
-    top: '18%',
+    left: '18%',
+    top: '22%',
   },
   {
     id: 2,
@@ -25,8 +25,8 @@ const teamMembers = [
     department: "Directors' Corner",
     gender: 'female',
     quote: 'Leadership is about building systems that outlast individuals.',
-    left: '12%',
-    top: '17%',
+    left: '11%',
+    top: '24%',
   },
   {
     id: 3,
@@ -35,8 +35,8 @@ const teamMembers = [
     department: "Directors' Corner",
     gender: 'female',
     quote: 'Relationships are the foundation of every great business.',
-    left: '28%',
-    top: '17%',
+    left: '25%',
+    top: '23%',
   },
   {
     id: 4,
@@ -45,8 +45,8 @@ const teamMembers = [
     department: 'Design Studio',
     gender: 'male',
     quote: 'Good design begins with listening.',
-    left: '42%',
-    top: '17%',
+    left: '41%',
+    top: '21%',
   },
   {
     id: 5,
@@ -55,8 +55,8 @@ const teamMembers = [
     department: 'Design Studio',
     gender: 'female',
     quote: 'Design is where function meets feeling.',
-    left: '51%',
-    top: '16%',
+    left: '48%',
+    top: '20%',
   },
   {
     id: 6,
@@ -66,7 +66,7 @@ const teamMembers = [
     gender: 'male',
     quote: 'A project well planned is a project half delivered.',
     left: '68%',
-    top: '16%',
+    top: '20%',
   },
   {
     id: 7,
@@ -75,8 +75,8 @@ const teamMembers = [
     department: 'Operations Hub',
     gender: 'female',
     quote: 'Consistency in operations creates trust in outcomes.',
-    left: '78%',
-    top: '18%',
+    left: '76%',
+    top: '22%',
   },
   {
     id: 8,
@@ -85,7 +85,7 @@ const teamMembers = [
     department: 'Sales & Marketing',
     gender: 'male',
     quote: 'Every story we tell builds the brand.',
-    left: '47%',
+    left: '46%',
     top: '38%',
   },
   {
@@ -95,8 +95,8 @@ const teamMembers = [
     department: 'Sales & Marketing',
     gender: 'female',
     quote: 'Every client interaction is an opportunity to build trust.',
-    left: '55%',
-    top: '38%',
+    left: '53%',
+    top: '36%',
   },
   {
     id: 10,
@@ -115,8 +115,8 @@ const teamMembers = [
     department: 'Client Lounge',
     gender: 'female',
     quote: 'Operations excellence is the backbone of every great project.',
-    left: '19%',
-    top: '49%',
+    left: '18%',
+    top: '48%',
   },
   {
     id: 12,
@@ -125,8 +125,8 @@ const teamMembers = [
     department: 'Factory Floor',
     gender: 'male',
     quote: 'Precision on the factory floor defines quality in the final room.',
-    left: '13%',
-    top: '68%',
+    left: '12%',
+    top: '67%',
   },
   {
     id: 13,
@@ -135,7 +135,7 @@ const teamMembers = [
     department: 'Factory Floor',
     gender: 'male',
     quote: 'Craftsmanship is a skill built over years, not days.',
-    left: '34%',
+    left: '33%',
     top: '68%',
   },
   {
@@ -145,7 +145,7 @@ const teamMembers = [
     department: 'Factory Floor',
     gender: 'male',
     quote: 'Every cut matters. Every joint counts.',
-    left: '57%',
+    left: '56%',
     top: '62%',
   },
   {
@@ -155,8 +155,8 @@ const teamMembers = [
     department: 'Factory Floor',
     gender: 'male',
     quote: "No detail is too small when it's someone's home.",
-    left: '63%',
-    top: '72%',
+    left: '62%',
+    top: '70%',
   },
   {
     id: 16,
@@ -165,8 +165,30 @@ const teamMembers = [
     department: 'Factory Floor',
     gender: 'male',
     quote: 'Wood speaks when hands listen.',
-    left: '83%',
-    top: '62%',
+    left: '82%',
+    top: '64%',
+  },
+  {
+    id: 18,
+    name: 'Kumaravel',
+    role: 'Senior Carpenter',
+    department: 'Factory Floor',
+    gender: 'male',
+    quote: 'Precision in every cut. Pride in every finish.',
+    photo: '/assets/images/team/kumaravel.jpg',
+    left: '91%',
+    top: '57%',
+  },
+  {
+    id: 19,
+    name: 'Sitesh Kumar',
+    role: 'Junior Carpenter',
+    department: 'Factory Floor',
+    gender: 'male',
+    quote: 'Every piece of wood has a story. I help tell it.',
+    photo: '/assets/images/team/sitesh-kumar.jpg',
+    left: '38%',
+    top: '60%',
   },
 ]
 
@@ -188,6 +210,8 @@ const AVATAR_BY_MEMBER_ID = {
   14: '/assets/images/team/amarnath-barai.jpg',
   15: '/assets/images/team/sudip.jpg',
   16: '/assets/images/team/susanta-midya.jpg',
+  18: '/assets/images/team/kumaravel.jpg',
+  19: '/assets/images/team/sitesh-kumar.jpg',
 }
 
 /** @type {{ key: string; label: string }[]} */
@@ -207,8 +231,7 @@ const TEAM_STATS_MOBILE = [
   { value: '1', label: 'Vision' },
 ]
 
-const TICKER_TEXT =
-  '16 TEAM MEMBERS • 4 DEPARTMENTS • 9 YEARS • 500+ PROJECTS DELIVERED • 1 SHARED VISION •'
+
 
 /**
  * @param {typeof teamMembers[number]} member
@@ -629,22 +652,6 @@ export default function TeamStudioRoom() {
           ) : null}
         </AnimatePresence>
 
-        {/* Ticker */}
-        <div className="relative mt-14 overflow-hidden rounded-sm bg-[#1a1612] py-4">
-          {reduceMotion ? (
-            <p className="px-6 text-center font-body text-[11px] font-semibold uppercase tracking-[0.2em] text-[#B8965A]">
-              {TICKER_TEXT}
-            </p>
-          ) : (
-            <div
-              className="team-ticker-track font-body text-[11px] font-semibold uppercase tracking-[0.2em] text-[#B8965A]"
-              aria-hidden
-            >
-              <span className="pr-12">{TICKER_TEXT}</span>
-              <span className="pr-12">{TICKER_TEXT}</span>
-            </div>
-          )}
-        </div>
       </div>
     </section>
   )

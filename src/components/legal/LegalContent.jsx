@@ -573,7 +573,7 @@ export function PaymentTermsContent() {
         <li>Net Banking (NEFT / RTGS / IMPS)</li>
         <li>Credit Cards (Visa, Mastercard, RuPay, American Express)</li>
         <li>Debit Cards</li>
-        <li>EMI (via Maywood Finance — subject to eligibility)</li>
+        <li>EMI (via Maywood Finance — subject to eligibility; indicative rates starting at 7% per annum)</li>
         <li>Demand Draft / Cheque (subject to clearance)</li>
       </ul>
       <p className={sClass}>
