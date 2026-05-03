@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import ConsultationBookingModal from '../components/ConsultationBookingModal'
 import {
   computeEstimate,
@@ -34,33 +34,45 @@ const PROPERTY_CARDS = [
   { type: 'Retail', emoji: '🛍', label: 'Retail' },
 ]
 
-const SCOPE_BY_PROPERTY = {
+const INDIVIDUAL_SCOPE_BY_PROPERTY = {
   Residential: [
     'Modular Kitchen',
     'Wardrobes & Storage',
     'Living & Dining',
     'Bedrooms',
-    'Full Home Interiors',
     'Home Office',
     'Pooja Room',
     'Bathrooms',
+    'Balcony',
   ],
-  Commercial: [
-    'Full Office Fit-out',
-    'Open Workstations',
-    'Cabin & Conference',
-    'Reception & Lobby',
-    'Breakout Areas',
-    'IT & Server Room',
-  ],
-  Retail: [
-    'Full Store Fit-out',
-    'Storefront & Façade',
-    'Display Fixtures',
-    'Trial Rooms',
-    'Checkout & POS',
-    'Storage & Back Office',
-  ],
+  Commercial: ['Open Workstations', 'Cabin & Conference', 'Reception & Lobby', 'Breakout Areas', 'IT & Server Room'],
+  Retail: ['Storefront & Façade', 'Display Fixtures', 'Trial Rooms', 'Checkout & POS', 'Storage & Back Office'],
+}
+
+const MASTER_SCOPE_CARD_COPY = {
+  Residential: {
+    title: 'Full Home Interiors',
+    subtitle: 'Complete end-to-end home — kitchen, wardrobes, living, bedrooms & more',
+    includedNote: 'All spaces included in Full Home Interiors',
+  },
+  Commercial: {
+    title: 'Full Office Fit-out',
+    subtitle:
+      'Complete workspace — workstations, cabins, reception, breakout areas & more',
+    includedNote: 'All spaces included in Full Office Fit-out',
+  },
+  Retail: {
+    title: 'Full Store Fit-out',
+    subtitle:
+      'Complete store — façade, fixtures, trial rooms, checkout & back office',
+    includedNote: 'All spaces included in Full Store Fit-out',
+  },
+}
+
+const SCOPE_STEP_SUBTITLE = {
+  Residential: 'Choose Full Home Interiors for a complete estimate, or pick individual spaces.',
+  Commercial: 'Choose Full Office Fit-out for a complete estimate, or pick individual spaces.',
+  Retail: 'Choose Full Store Fit-out for a complete estimate, or pick individual spaces.',
 }
 
 const AREA_PILLS = {
@@ -70,15 +82,6 @@ const AREA_PILLS = {
 }
 
 const BHK_OPTIONS = ['1 BHK', '2 BHK', '3 BHK', '4 BHK', '4 BHK+']
-
-const MASTER_SCOPE_NOTE_BY_PROPERTY = {
-  Residential:
-    'Full Home Interiors includes kitchen, wardrobes, living, bedrooms and all spaces.',
-  Commercial:
-    'Full office fit-out includes workstations, cabins, reception, breakout areas and all spaces.',
-  Retail:
-    'Full store fit-out includes storefront, displays, trial rooms, checkout and back office.',
-}
 
 function pillToSqft(pill) {
   if (typeof pill === 'number') return pill
@@ -108,7 +111,7 @@ export default function InstantQuote() {
   const [phoneDigits, setPhoneDigits] = useState('')
   const [email, setEmail] = useState('')
   const [propertyType, setPropertyType] = useState(null)
-  const [scope, setScope] = useState([])
+  const [scope, setScope] = useState(() => new Set())
   const [areaInput, setAreaInput] = useState('')
   const [areaUnit, setAreaUnit] = useState('sqft')
   const [bhk, setBhk] = useState('2 BHK')
@@ -145,22 +148,27 @@ export default function InstantQuote() {
   const bedroomCount = useMemo(() => bedroomCountFromBhk(bhk), [bhk])
 
   const handleScopeToggle = (item) => {
-    const master = getMasterScopeKey(propertyType)
-    if (!master) {
-      setScope((prev) => (prev.includes(item) ? prev.filter((s) => s !== item) : [...prev, item]))
-      return
-    }
-    if (item === master) {
-      setScope((prev) => (prev.includes(master) ? [] : [master]))
-      return
-    }
-    setScope((prev) => {
-      const withoutMaster = prev.filter((s) => s !== master)
-      if (withoutMaster.includes(item)) {
-        return withoutMaster.filter((s) => s !== item)
+    const FULL_HOME = getMasterScopeKey(propertyType)
+    if (!FULL_HOME) return
+
+    const INDIVIDUAL_ITEMS = INDIVIDUAL_SCOPE_BY_PROPERTY[propertyType] ?? []
+
+    if (item === FULL_HOME) {
+      if (scope.has(FULL_HOME)) {
+        setScope(new Set())
+      } else {
+        setScope(new Set([FULL_HOME]))
       }
-      return [...withoutMaster, item]
-    })
+    } else if (INDIVIDUAL_ITEMS.includes(item)) {
+      const next = new Set(scope)
+      next.delete(FULL_HOME)
+      if (next.has(item)) {
+        next.delete(item)
+      } else {
+        next.add(item)
+      }
+      setScope(next)
+    }
   }
 
   const handleStep1Submit = (e) => {
@@ -171,19 +179,21 @@ export default function InstantQuote() {
 
   const selectProperty = (type) => {
     setPropertyType(type)
-    setScope([])
+    setScope(new Set())
     setStep(3)
   }
 
   const handleStep5Submit = async (e) => {
     e.preventDefault()
-    if (!location.trim() || !propertyType || !areaSqft || scope.length === 0) return
+    if (!location.trim() || !propertyType || !areaSqft || scope.size === 0) return
 
     setQuoteSubmitError('')
 
+    const scopeList = Array.from(scope)
+
     const { breakdown: bd, totalMin, totalMax } = computeEstimate(
       propertyType,
-      scope,
+      scopeList,
       areaSqft,
       selectedTier,
       bedroomCount,
@@ -195,7 +205,7 @@ export default function InstantQuote() {
         phone: phoneFull,
         email: email.trim(),
         propertyType,
-        scope: [...scope],
+        scope: scopeList,
         area: areaInput.trim(),
         areaUnit,
         location: location.trim(),
@@ -218,7 +228,7 @@ export default function InstantQuote() {
     if (step <= 1) return
     if (step === 3) {
       setStep(2)
-      setScope([])
+      setScope(new Set())
       return
     }
     if (step === 4) {
@@ -345,7 +355,9 @@ export default function InstantQuote() {
         )
       case 3: {
         const scopeMasterKey = getMasterScopeKey(propertyType)
-        const masterScopeSelected = Boolean(scopeMasterKey && scope.includes(scopeMasterKey))
+        const masterCopy = MASTER_SCOPE_CARD_COPY[propertyType]
+        const individuals = INDIVIDUAL_SCOPE_BY_PROPERTY[propertyType] ?? []
+        const masterScopeSelected = Boolean(scopeMasterKey && scope.has(scopeMasterKey))
 
         return (
           <motion.div
@@ -359,51 +371,164 @@ export default function InstantQuote() {
             <h1 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
               What are you looking to do?
             </h1>
-            <p className="mt-3 font-body text-[14px] font-normal text-brand-mist">Select all that apply</p>
-            <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {SCOPE_BY_PROPERTY[propertyType].map((item) => {
-                const isMasterRow = Boolean(scopeMasterKey && item === scopeMasterKey)
-                const visuallySelected =
-                  scope.includes(item) || (masterScopeSelected && !isMasterRow)
-                const disabledIndividual = masterScopeSelected && !isMasterRow
-                return (
-                  <button
-                    key={item}
-                    type="button"
-                    disabled={disabledIndividual}
-                    onClick={() => handleScopeToggle(item)}
-                    className={[
-                      'relative flex items-center gap-3 rounded-sm border px-4 py-4 text-left font-body text-[14px] transition-all',
-                      disabledIndividual ? 'cursor-not-allowed opacity-40' : '',
-                      visuallySelected
-                        ? 'border-brand-brass bg-brand-brass-pale/50 text-brand-charcoal'
-                        : 'border-brand-ivory-deep text-brand-charcoal hover:border-brand-brass/45',
-                    ].join(' ')}
-                  >
-                    <span
-                      className={[
-                        'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border',
-                        visuallySelected
-                          ? 'border-brand-brass bg-brand-brass text-[#1C1915]'
-                          : 'border-brand-mist/40 bg-transparent',
-                      ].join(' ')}
-                      aria-hidden
+            <p className="mt-3 font-body text-[14px] font-normal text-brand-mist">
+              {SCOPE_STEP_SUBTITLE[propertyType]}
+            </p>
+
+            <div className="mt-10">
+              {/* Section 1 — full property fit-out */}
+              <button
+                type="button"
+                onClick={() => scopeMasterKey && handleScopeToggle(scopeMasterKey)}
+                style={{
+                  border: masterScopeSelected ? '2px solid #c9a465' : '1.5px solid #d4cfc9',
+                  borderRadius: '8px',
+                  padding: '20px 24px',
+                  cursor: 'pointer',
+                  backgroundColor: masterScopeSelected ? '#faf6ef' : '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '24px',
+                  transition: 'all 0.2s',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  font: 'inherit',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      border: masterScopeSelected ? '2px solid #c9a465' : '2px solid #aaa',
+                      backgroundColor: masterScopeSelected ? '#c9a465' : 'transparent',
+                      flexShrink: 0,
+                    }}
+                  />
+                  <div>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontFamily: 'Cormorant Garamond, serif',
+                        fontSize: '20px',
+                        color: '#1a1612',
+                        fontWeight: 400,
+                      }}
                     >
-                      {visuallySelected ? <Check className="h-3.5 w-3.5" strokeWidth={2.5} /> : null}
-                    </span>
-                    {item}
-                  </button>
-                )
-              })}
+                      {masterCopy?.title}
+                    </p>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#888', fontFamily: 'inherit' }}>
+                      {masterCopy?.subtitle}
+                    </p>
+                  </div>
+                </div>
+                {masterScopeSelected ? (
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      color: '#c9a465',
+                      fontWeight: 600,
+                      letterSpacing: '1px',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    ✓ Selected
+                  </span>
+                ) : null}
+              </button>
+
+              {/* Divider */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '20px',
+                }}
+              >
+                <div style={{ flex: 1, height: '1px', backgroundColor: '#e0dbd4' }} />
+                <span
+                  style={{
+                    fontSize: '11px',
+                    color: '#aaa',
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  or choose individually
+                </span>
+                <div style={{ flex: 1, height: '1px', backgroundColor: '#e0dbd4' }} />
+              </div>
+
+              {/* Section 2 — à la carte */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  gap: '12px',
+                }}
+              >
+                {individuals.map((item) => {
+                  const visuallySelected = masterScopeSelected || scope.has(item)
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => handleScopeToggle(item)}
+                      style={{
+                        border: visuallySelected ? '2px solid #c9a465' : '1.5px solid #d4cfc9',
+                        borderRadius: '8px',
+                        padding: '16px 18px',
+                        cursor: masterScopeSelected ? 'default' : 'pointer',
+                        backgroundColor: visuallySelected ? '#faf6ef' : '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        transition: 'all 0.2s',
+                        textAlign: 'left',
+                        font: 'inherit',
+                        opacity: masterScopeSelected ? 0.5 : 1,
+                        pointerEvents: masterScopeSelected ? 'none' : 'auto',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '18px',
+                          height: '18px',
+                          borderRadius: '50%',
+                          border: visuallySelected ? '2px solid #c9a465' : '2px solid #aaa',
+                          backgroundColor: visuallySelected ? '#c9a465' : 'transparent',
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontFamily: 'inherit',
+                          fontSize: '14px',
+                          color: '#1a1612',
+                          fontWeight: 500,
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {item}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {masterScopeSelected && masterCopy ? (
+                <p className="mt-4 font-body text-[13px] text-brand-mist">{masterCopy.includedNote}</p>
+              ) : null}
             </div>
-            {masterScopeSelected && MASTER_SCOPE_NOTE_BY_PROPERTY[propertyType] ? (
-              <p className="mt-2 font-body text-xs italic text-brand-mist">
-                {MASTER_SCOPE_NOTE_BY_PROPERTY[propertyType]}
-              </p>
-            ) : null}
+
             <button
               type="button"
-              disabled={scope.length === 0}
+              disabled={scope.size === 0}
               onClick={() => setStep(4)}
               className={buttonClasses(
                 'primary',
@@ -577,7 +702,7 @@ export default function InstantQuote() {
               {Object.keys(QUALITY_TIERS).map((tier) => {
                 const { breakdown: bd, totalMin: tMin, totalMax: tMax } = computeEstimate(
                   propertyType,
-                  scope,
+                  Array.from(scope),
                   areaSqft,
                   tier,
                   bedroomCount,
