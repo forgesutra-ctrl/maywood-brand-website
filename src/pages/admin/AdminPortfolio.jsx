@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Loader2, Trash2, Upload, X } from 'lucide-react'
+import { Loader2, Trash2, Upload } from 'lucide-react'
 import { buttonClasses } from '../../lib/buttonStyles'
 import {
   PORTFOLIO_UPDATED_EVENT,
@@ -10,9 +10,8 @@ import {
 } from '../../utils/portfolioProjectsStore'
 import { supabase } from '../../utils/supabaseClient'
 
-const ACCEPT_MIME = /^image\/(jpeg|png|webp|jpg)$/i
-const ACCEPT_ATTR = 'image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp'
 const MAX_FILE_BYTES = 5 * 1024 * 1024
+const ACCEPT_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 const GENERAL_FILE_RULE_MSG = 'Only JPG, PNG and WebP images under 5MB are allowed'
 
 const UPLOAD_CATEGORY_OPTIONS = [
@@ -25,38 +24,6 @@ const UPLOAD_CATEGORY_OPTIONS = [
   'Offices',
   'Other',
 ]
-
-/** @typedef {{ id: string; file: File; previewDataUrl: string; validationError: string | null }} PreviewItem */
-
-function sanitizeOriginalFileName(fileName) {
-  const name = String(fileName || 'image.jpg').trim()
-  const lastDot = name.lastIndexOf('.')
-  const base = lastDot > 0 ? name.slice(0, lastDot) : name
-  let ext = lastDot > 0 ? name.slice(lastDot + 1).toLowerCase() : 'jpg'
-  if (ext === 'jpeg') ext = 'jpg'
-  const safeBase =
-    base
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9.-]/g, '')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-      .slice(0, 96) || 'image'
-  const safeExt = ['jpg', 'png', 'webp'].includes(ext) ? ext : 'jpg'
-  return `${safeBase}.${safeExt}`
-}
-
-function buildUniqueStorageFileName(file) {
-  const sanitized = sanitizeOriginalFileName(file.name)
-  const rand = Math.random().toString(36).substring(2, 10)
-  return `${Date.now()}-${rand}-${sanitized}`
-}
-
-function formatFileSize(bytes) {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
-}
 
 /** @param {unknown} error @param {string} fileName */
 function mapSupabaseUploadError(error, fileName = '') {
@@ -88,23 +55,6 @@ function mapSupabaseUploadError(error, fileName = '') {
   return msg || 'Upload failed. Please try again.'
 }
 
-/** @param {File} file */
-function validateImageFile(file) {
-  if (!file) return 'Invalid file.'
-  let ext = (file.name.split('.').pop() || '').toLowerCase()
-  if (ext === 'jpeg') ext = 'jpg'
-  const extOk = ['jpg', 'png', 'webp'].includes(ext)
-  const mime = (file.type || '').toLowerCase()
-  const mimeOk = ACCEPT_MIME.test(mime)
-  if (!mimeOk && !(mime === '' && extOk)) {
-    return 'Only JPG, PNG and WebP images are accepted.'
-  }
-  if (file.size > MAX_FILE_BYTES) {
-    return `File ${file.name} is too large. Max 5MB allowed.`
-  }
-  return null
-}
-
 export default function AdminPortfolio() {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
@@ -114,56 +64,16 @@ export default function AdminPortfolio() {
   const [projectName, setProjectName] = useState('')
   const [category, setCategory] = useState('Kitchens')
   const [description, setDescription] = useState('')
-  /** @type {[PreviewItem[], function]} */
+
+  const [selectedFiles, setSelectedFiles] = useState([])
+  /** @type {{ name: string; size: string; url: string; file: File }[]} */
   const [previews, setPreviews] = useState([])
-  const previewReadersRef = useRef(/** @type {Map<string, FileReader>} */ (new Map()))
 
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
-  const [uploadStatusText, setUploadStatusText] = useState('')
+  const [uploadError, setUploadError] = useState('')
+  const [uploadSuccess, setUploadSuccess] = useState('')
   const [errorBanner, setErrorBanner] = useState(null)
-  const [successBanner, setSuccessBanner] = useState(null)
-
-  /** Load FileReader previews for new items without validation errors */
-  useEffect(() => {
-    previews.forEach((p) => {
-      if (p.validationError || p.previewDataUrl) return
-      if (previewReadersRef.current.has(p.id)) return
-      const reader = new FileReader()
-      previewReadersRef.current.set(p.id, reader)
-      reader.onload = () => {
-        setPreviews((prev) =>
-          prev.map((item) =>
-            item.id === p.id ? { ...item, previewDataUrl: String(reader.result || '') } : item,
-          ),
-        )
-        previewReadersRef.current.delete(p.id)
-      }
-      reader.onerror = () => {
-        setPreviews((prev) =>
-          prev.map((item) =>
-            item.id === p.id
-              ? { ...item, validationError: 'Could not read this file for preview.' }
-              : item,
-          ),
-        )
-        previewReadersRef.current.delete(p.id)
-      }
-      reader.readAsDataURL(p.file)
-    })
-  }, [previews])
-
-  useEffect(() => {
-    return () => {
-      previewReadersRef.current.forEach((fr) => {
-        try {
-          fr.abort?.()
-        } catch {
-          /* noop */
-        }
-      })
-    }
-  }, [])
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -192,58 +102,123 @@ export default function AdminPortfolio() {
     }
   }, [refresh])
 
-  /** @param {File[]} fileArray */
-  const appendPreviewsFromFiles = (fileArray) => {
-    const newItems = fileArray.map((file, idx) => {
-      const id = `${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 9)}`
-      return {
-        id,
-        file,
-        previewDataUrl: '',
-        validationError: validateImageFile(file),
-      }
-    })
-    setPreviews((prev) => [...prev, ...newItems])
-  }
-
-  const handleInputChange = (e) => {
-    const list = e.target.files
-    e.target.value = ''
-    if (!list?.length) return
-    appendPreviewsFromFiles(Array.from(list))
-  }
-
-  const handleDrop = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const list = e.dataTransfer?.files
-    if (!list?.length) return
-    appendPreviewsFromFiles(Array.from(list))
-  }
-
   const handleDragOver = (e) => {
     e.preventDefault()
     e.stopPropagation()
   }
 
-  const removePreview = (id) => {
-    setPreviews((prev) => prev.filter((p) => p.id !== id))
+  const revokePreviewUrls = useCallback(() => {
+    setPreviews((prev) => {
+      prev.forEach((p) => {
+        try {
+          if (String(p.url).startsWith('blob:')) URL.revokeObjectURL(p.url)
+        } catch {
+          /* noop */
+        }
+      })
+      return []
+    })
+  }, [])
+
+  const ingestFilesWithValidation = async (rawFiles) => {
+    const files = Array.from(rawFiles || [])
+    if (files.length === 0) return
+
+    setUploadSuccess('')
+
+    const valid = []
+    const errors = []
+
+    files.forEach((file) => {
+      const type = String(file.type || '').toLowerCase()
+      let ext = (file.name.split('.').pop() || '').toLowerCase()
+      if (ext === 'jpeg') ext = 'jpg'
+      const mimeOk = ACCEPT_TYPES.includes(type)
+      const extOk = ['jpg', 'png', 'webp'].includes(ext)
+      const typeOk = mimeOk || (type === '' && extOk)
+
+      if (file.size > MAX_FILE_BYTES) {
+        errors.push(`${file.name} is too large (max 5MB)`)
+      } else if (!typeOk) {
+        errors.push(`${file.name} is not a valid image type`)
+      } else {
+        valid.push(file)
+      }
+    })
+
+    if (errors.length > 0) {
+      setUploadError(errors.join(', '))
+    } else {
+      setUploadError('')
+    }
+
+    if (valid.length > 0) {
+      try {
+        const entries = await Promise.all(
+          valid.map(
+            (file) =>
+              new Promise((resolve, reject) => {
+                const reader = new FileReader()
+                reader.onload = (event) =>
+                  resolve({
+                    name: file.name,
+                    size: `${(file.size / 1024).toFixed(0)} KB`,
+                    url: String(event.target?.result || ''),
+                    file,
+                  })
+                reader.onerror = () => reject(new Error(file.name))
+                reader.readAsDataURL(file)
+              }),
+          ),
+        )
+
+        setSelectedFiles((prev) => [...prev, ...valid])
+        setPreviews((prev) => [...prev, ...entries])
+      } catch {
+        setUploadError('Could not preview one or more images. Try again.')
+      }
+    }
   }
 
-  const clearFormAndPreviews = useCallback(() => {
-    previewReadersRef.current.forEach((fr) => {
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files || [])
+    void ingestFilesWithValidation(files).finally(() => {
+      // Reset input so same file can be selected again.
       try {
-        fr.abort()
+        e.target.value = ''
       } catch {
         /* noop */
       }
     })
-    previewReadersRef.current.clear()
-    setPreviews([])
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    void ingestFilesWithValidation(e.dataTransfer?.files)
+  }
+
+  const removePreviewAt = (i) => {
+    setPreviews((prev) => {
+      const row = prev[i]
+      try {
+        if (row?.url?.startsWith('blob:')) URL.revokeObjectURL(row.url)
+      } catch {
+        /* noop */
+      }
+      return prev.filter((_, idx) => idx !== i)
+    })
+    setSelectedFiles((prev) => prev.filter((_, idx) => idx !== i))
+  }
+
+  const clearFormAfterUpload = useCallback(() => {
+    revokePreviewUrls()
+    setSelectedFiles([])
     setProjectName('')
+    setUploadProgress(0)
     setDescription('')
     setCategory('Kitchens')
-  }, [])
+  }, [revokePreviewUrls])
 
   const groups = useMemo(() => {
     /** @type {Record<string, typeof rows>} */
@@ -266,105 +241,81 @@ export default function AdminPortfolio() {
     return out
   }, [rows])
 
-  const executeUpload = async () => {
-    setErrorBanner(null)
-    setSuccessBanner(null)
-
+  const handleUpload = async () => {
     const nameTrim = projectName.trim()
     if (!nameTrim) {
-      setErrorBanner('Please enter a project name.')
+      setUploadError('Please enter a project name')
       return
     }
     if (!category || !UPLOAD_CATEGORY_OPTIONS.includes(category)) {
-      setErrorBanner('Please select a category.')
+      setUploadError('Please select a category')
       return
     }
-    const eligible = previews.filter((p) => !p.validationError)
-    if (eligible.length === 0) {
-      if (previews.length === 0) {
-        setErrorBanner('Please add at least one image.')
-      } else {
-        setErrorBanner(GENERAL_FILE_RULE_MSG)
-      }
+    if (selectedFiles.length === 0) {
+      setUploadError('Please select at least one image')
       return
     }
 
     setUploading(true)
-    const total = eligible.length
-    let completed = 0
-    setUploadProgress(0)
-    setUploadStatusText('')
+    setUploadError('')
+    setUploadSuccess('')
+    setErrorBanner(null)
+    /** @type {{ success: number; failed: string[] }} */
+    const results = { success: 0, failed: [] }
 
-    /** @type {string[]} */
-    const failures = []
-    let successCount = 0
+    try {
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i]
+        setUploadProgress(Math.round((i / selectedFiles.length) * 100))
 
-    for (let i = 0; i < eligible.length; i++) {
-      const preview = eligible[i]
-      const fileIndex = i + 1
-      setUploadStatusText(`Uploading image ${fileIndex} of ${total}...`)
-      setUploadProgress(total > 0 ? Math.round((completed / total) * 100) : 0)
+        try {
+          const rawExt = (file.name.split('.').pop() || 'jpg').toLowerCase()
+          const ext = rawExt === 'jpeg' ? 'jpg' : rawExt
+          const baseName = String(file.name.replace(/\.[^.]+$/, '') || 'image').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() || 'image'
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}-${baseName}.${ext}`
 
-      try {
-        const fileName = buildUniqueStorageFileName(preview.file)
-        const { error: upErr } = await supabase.storage
-          .from('portfolio-images')
-          .upload(fileName, preview.file, { cacheControl: '3600', upsert: false })
-        if (upErr) {
-          failures.push(`${preview.file.name}: ${mapSupabaseUploadError(upErr, preview.file.name)}`)
-          completed++
-          setUploadProgress(Math.round((completed / total) * 100))
-          continue
+          const { error: storageError } = await supabase.storage
+            .from('portfolio-images')
+            .upload(fileName, file, { cacheControl: '3600', upsert: false })
+
+          if (storageError) throw storageError
+
+          const { data: urlData } = supabase.storage.from('portfolio-images').getPublicUrl(fileName)
+
+          await insertPortfolioProject(
+            {
+              name: nameTrim,
+              category,
+              description: description.trim() || null,
+              image_url: urlData.publicUrl,
+              file_name: fileName,
+              storage_path: fileName,
+            },
+            { skipNotify: true },
+          )
+          results.success++
+        } catch (err) {
+          results.failed.push(`${file.name}: ${mapSupabaseUploadError(err, file.name)}`)
         }
-
-        const { data: urlData } = supabase.storage.from('portfolio-images').getPublicUrl(fileName)
-        const publicUrl = urlData?.publicUrl
-        if (!publicUrl) {
-          failures.push(`${preview.file.name}: Could not get public URL`)
-          completed++
-          setUploadProgress(Math.round((completed / total) * 100))
-          continue
-        }
-
-        await insertPortfolioProject(
-          {
-            name: nameTrim,
-            category,
-            description: description.trim() || null,
-            image_url: publicUrl,
-            file_name: fileName,
-            storage_path: fileName,
-          },
-          { skipNotify: true },
-        )
-        successCount++
-      } catch (err) {
-        console.error(err)
-        failures.push(`${preview.file.name}: ${mapSupabaseUploadError(err, preview.file.name)}`)
       }
 
-      completed++
-      setUploadProgress(total > 0 ? Math.round((completed / total) * 100) : 100)
-    }
+      setUploadProgress(100)
 
-    setUploadProgress(100)
-    setUploadStatusText('')
-    setUploading(false)
+      if (results.failed.length > 0) {
+        setUploadError(`${results.failed.length} file(s) failed: ${results.failed.join(', ')}`)
+      }
 
-    notifyPortfolioChanged()
-    await refresh()
-
-    if (failures.length && successCount === 0) {
-      setErrorBanner(failures.join('\n'))
-    } else if (failures.length) {
-      setSuccessBanner(`✓ ${successCount} images uploaded successfully to ${category}`)
-      setErrorBanner(`Some uploads failed:\n${failures.join('\n')}`)
-      clearFormAndPreviews()
-    } else {
-      setSuccessBanner(`✓ ${successCount} images uploaded successfully to ${category}`)
-      clearFormAndPreviews()
-      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
-      toastTimerRef.current = window.setTimeout(() => setSuccessBanner(null), 6000)
+      if (results.success > 0) {
+        const plural = results.success > 1 ? 's' : ''
+        setUploadSuccess(`✓ ${results.success} image${plural} uploaded successfully to ${category}`)
+        clearFormAfterUpload()
+        notifyPortfolioChanged()
+        await refresh()
+        if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
+        toastTimerRef.current = window.setTimeout(() => setUploadSuccess(''), 6000)
+      }
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -426,9 +377,18 @@ export default function AdminPortfolio() {
         </div>
       ) : null}
 
-      {successBanner ? (
+      {uploadError ? (
+        <div
+          role="alert"
+          className="whitespace-pre-wrap rounded-xl bg-red-700 px-4 py-3 font-body text-[13px] text-white shadow-sm"
+        >
+          {uploadError}
+        </div>
+      ) : null}
+
+      {uploadSuccess ? (
         <div role="status" className="rounded-xl bg-emerald-600 px-4 py-3 font-body text-[13px] text-white shadow-sm">
-          {successBanner}
+          {uploadSuccess}
         </div>
       ) : null}
 
@@ -478,73 +438,66 @@ export default function AdminPortfolio() {
               </span>
             </label>
             <div
+              role="presentation"
+              onClick={() => {
+                if (!uploading) fileInputRef.current?.click()
+              }}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               className={[
-                'rounded-xl border-2 border-dashed border-brand-brass/45 bg-brand-ivory-deep/50 transition-colors',
-                uploading ? 'pointer-events-none opacity-60' : 'hover:border-brand-brass hover:bg-brand-brass-pale/25',
+                'cursor-pointer rounded-xl border-2 border-dashed border-brand-brass/45 bg-brand-ivory-deep/50 transition-colors',
+                uploading ? 'pointer-events-none cursor-default opacity-60' : 'hover:border-brand-brass hover:bg-brand-brass-pale/25',
               ].join(' ')}
             >
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="flex min-h-[140px] w-full flex-col items-center justify-center px-4 py-8 text-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-brass rounded-[10px]"
-              >
+              <div className="flex min-h-[140px] w-full flex-col items-center justify-center px-4 py-8 text-center rounded-[10px]">
                 <Upload className="mb-2 h-10 w-10 text-brand-brass/80" strokeWidth={1.25} aria-hidden />
                 <span className="font-body text-[14px] text-brand-charcoal">Drag images here or click to browse</span>
                 <span className="mt-2 font-body text-[12px] text-brand-mist">Multiple selection allowed</span>
-              </button>
+              </div>
             </div>
             <input
-              ref={fileInputRef}
               type="file"
-              accept={ACCEPT_ATTR}
+              accept="image/jpeg,image/jpg,image/png,image/webp"
               multiple
-              className="hidden"
+              onChange={handleFileSelect}
+              style={{ display: 'none' }}
+              ref={fileInputRef}
               disabled={uploading}
-              onChange={handleInputChange}
             />
           </div>
 
-          {previews.length > 0 ? (
-            <ul className="space-y-3">
-              {previews.map((p) => (
-                <li
-                  key={p.id}
-                  className={[
-                    'flex items-start gap-3 rounded-lg border p-3',
-                    p.validationError ? 'border-red-300 bg-red-50/50' : 'border-brand-brass-pale/45 bg-brand-ivory-deep/40',
-                  ].join(' ')}
-                >
-                  <div className="h-[80px] w-[80px] shrink-0 overflow-hidden rounded-lg bg-brand-ivory-deep">
-                    {p.previewDataUrl ? (
-                      <img src={p.previewDataUrl} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center font-body text-[10px] text-brand-mist">
-                        …
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-body text-[13px] font-medium text-brand-charcoal">{p.file.name}</p>
-                    <p className="font-body text-[12px] text-brand-mist">{formatFileSize(p.file.size)}</p>
-                    {p.validationError ? (
-                      <p className="mt-1 font-body text-[12px] text-red-600">{p.validationError}</p>
-                    ) : null}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removePreview(p.id)}
-                    disabled={uploading}
-                    className="shrink-0 rounded-full border border-transparent p-2 text-brand-charcoal transition-colors hover:bg-red-600 hover:text-white disabled:opacity-40"
-                    aria-label="Remove image from queue"
-                  >
-                    <X className="h-4 w-4" strokeWidth={2} aria-hidden />
-                  </button>
-                </li>
-              ))}
-            </ul>
+          {previews.map((preview, i) => (
+            <div
+              key={`${preview.name}-${i}`}
+              style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', border: '1px solid #e0dbd4', borderRadius: '6px', marginTop: '8px' }}
+            >
+              <img src={preview.url} alt={preview.name} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: '13px', color: '#1a1612' }}>{preview.name}</p>
+                <p style={{ margin: 0, fontSize: '11px', color: '#999' }}>{preview.size}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => removePreviewAt(i)}
+                disabled={uploading}
+                style={{ background: 'none', border: 'none', color: '#e53e3e', cursor: 'pointer', fontSize: '18px' }}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+
+          {selectedFiles.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => void handleUpload()}
+              disabled={uploading}
+              className={buttonClasses('primary', 'w-full px-6 py-3 text-[11px] disabled:opacity-60 sm:w-auto')}
+            >
+              {uploading
+                ? `Uploading... ${uploadProgress}%`
+                : `Upload ${selectedFiles.length} Image${selectedFiles.length > 1 ? 's' : ''}`}
+            </button>
           ) : null}
 
           <div>
@@ -561,21 +514,12 @@ export default function AdminPortfolio() {
               className="w-full resize-y rounded-lg border border-brand-brass-pale/60 bg-white px-4 py-2.5 font-body text-[14px] text-brand-charcoal placeholder:text-brand-mist/50 focus:border-brand-brass focus:outline-none focus:ring-1 focus:ring-brand-brass disabled:opacity-60"
             />
           </div>
-
-          <button
-            type="button"
-            disabled={uploading}
-            onClick={() => void executeUpload()}
-            className={buttonClasses('primary', 'w-full px-6 py-3 text-[11px] disabled:opacity-60 sm:w-auto')}
-          >
-            UPLOAD PORTFOLIO
-          </button>
         </div>
 
         {uploading ? (
           <div className="mt-6 space-y-2">
             <div className="flex items-center justify-between gap-4">
-              <p className="font-body text-[13px] font-medium text-brand-charcoal">{uploadStatusText}</p>
+              <p className="font-body text-[13px] font-medium text-brand-charcoal">Uploading portfolio images…</p>
               <p className="font-body text-[12px] text-brand-brass">{uploadProgress}%</p>
             </div>
             <div className="h-3 overflow-hidden rounded-full bg-brand-charcoal">
