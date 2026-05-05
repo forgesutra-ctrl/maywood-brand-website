@@ -574,13 +574,24 @@ export default function PartnerProgram() {
             <p className="mt-6 max-w-md font-body text-[14px] font-normal leading-relaxed text-brand-mist">
               Takes 5 minutes. Our team will reach out within 48 hours.
             </p>
+            <p className="mt-4 max-w-md font-body text-[14px] font-normal leading-relaxed text-brand-mist">
+              Questions? Email{' '}
+              <a href="mailto:info@maywood.in" className="text-brand-brass underline-offset-4 hover:underline">
+                info@maywood.in
+              </a>
+              .
+            </p>
           </div>
 
           <div className="lg:pt-2">
             {submitted ? (
               <div className="rounded-[2px] border-[0.5px] border-brand-brass bg-brand-ivory-deep px-8 py-10">
                 <p className="font-body text-[15px] font-normal leading-relaxed text-brand-charcoal">
-                  Application received. Our team will reach out within 48 hours.
+                  Application received. Our team will reach out within 48 hours. For inquiries, write to{' '}
+                  <a href="mailto:info@maywood.in" className="text-brand-brass underline-offset-4 hover:underline">
+                    info@maywood.in
+                  </a>
+                  .
                 </p>
                 <Link
                   to="/"
@@ -743,10 +754,10 @@ export default function PartnerProgram() {
       <section className="border-t border-white/10 bg-brand-charcoal px-6 py-10 lg:px-24" aria-label="Partners contact">
         <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-center gap-4 sm:flex-row sm:gap-12">
           <a
-            href="mailto:partners@maywood.in"
+            href="mailto:info@maywood.in"
             className="font-body text-[14px] font-normal text-brand-mist-light transition-colors hover:text-brand-brass"
           >
-            partners@maywood.in
+            info@maywood.in
           </a>
           <a
             href="tel:+919606546020"

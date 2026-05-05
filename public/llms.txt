@@ -10,16 +10,16 @@
 - Hotels, Cafes & Restaurants
 
 ## Key Pages
-- [Home](https://www.maywoodinteriors.com/)
-- [About Us](https://www.maywoodinteriors.com/about)
-- [Instant Quote](https://www.maywoodinteriors.com/instant-quote)
-- [Experience Centers](https://www.maywoodinteriors.com/experience-centers)
-- [Maywood Finance](https://www.maywoodinteriors.com/finance)
-- [Manufacturing](https://www.maywoodinteriors.com/manufacturing)
-- [Partner Program](https://www.maywoodinteriors.com/partners)
-- [Portfolio](https://www.maywoodinteriors.com/portfolio)
+- [Home](https://www.maywood.in/)
+- [About Us](https://www.maywood.in/about)
+- [Instant Quote](https://www.maywood.in/instant-quote)
+- [Experience Centers](https://www.maywood.in/experience-centers)
+- [Maywood Finance](https://www.maywood.in/finance)
+- [Manufacturing](https://www.maywood.in/manufacturing)
+- [Partner Program](https://www.maywood.in/partners)
+- [Portfolio](https://www.maywood.in/portfolio)
 
 ## Contact
 - Address: 34, 4th Cross Rd, RR Nagar via Uttarahalli Main Rd, Vaddara Palya, Kodipur, Bengaluru – 560061
 - Phone: +91 96069 77677
-- Email: hello@maywoodinteriors.com
+- Email: info@maywood.in

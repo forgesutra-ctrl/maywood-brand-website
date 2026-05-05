@@ -95,10 +95,10 @@ export default function Contact() {
               <li className="flex items-start gap-3">
                 <Mail className="mt-0.5 h-4 w-4 shrink-0 text-brand-brass" strokeWidth={1.5} aria-hidden />
                 <a
-                  href="mailto:hello@maywoodinteriors.com"
+                  href="mailto:info@maywood.in"
                   className="font-body text-[15px] font-normal text-brand-ivory hover:text-brand-brass-light"
                 >
-                  hello@maywoodinteriors.com
+                  info@maywood.in
                 </a>
               </li>
               <li className="flex items-start gap-3">

@@ -155,7 +155,7 @@ export function TermsAndConditionsContent() {
         leakage or flooding, damage caused by third-party modifications, pest infestation.
       </p>
       <p className={sClass}>
-        8.4 Warranty claims must be submitted in writing to hello@maywoodinteriors.com with photographic evidence within the
+        8.4 Warranty claims must be submitted in writing to info@maywood.in with photographic evidence within the
         Warranty Period.
       </p>
 
@@ -211,7 +211,7 @@ export function TermsAndConditionsContent() {
         Maywood Interiors Private Limited, #34, 4th Cross Road, RR Nagar via Uttarahalli Main Road, Vaddara Palya, Kodipur,
         Bengaluru – 560061
       </p>
-      <p className={pClass}>Email: hello@maywoodinteriors.com | Phone: +91 96069 77677</p>
+      <p className={pClass}>Email: info@maywood.in | Phone: +91 96069 77677</p>
     </div>
   )
 }
@@ -233,7 +233,7 @@ export function PrivacyPolicyContent() {
       <h3 className={hClass}>1. DATA CONTROLLER</h3>
       <p className={pClass}>
         Maywood Interiors Private Limited, #34, 4th Cross Road, RR Nagar via Uttarahalli Main Road, Vaddara Palya, Kodipur,
-        Bengaluru – 560061. Email: hello@maywoodinteriors.com
+        Bengaluru – 560061. Email: info@maywood.in
       </p>
 
       <h3 className={hClass}>2. INFORMATION WE COLLECT</h3>
@@ -337,7 +337,7 @@ export function PrivacyPolicyContent() {
         <li>Withdraw consent for marketing communications at any time</li>
       </ul>
       <p className={sClass}>
-        8.2 To exercise any of these rights, email: hello@maywoodinteriors.com
+        8.2 To exercise any of these rights, email: info@maywood.in
       </p>
 
       <h3 className={hClass}>9. CHILDREN&apos;S PRIVACY</h3>
@@ -403,7 +403,7 @@ export function RefundPolicyContent() {
 
       <h3 className={hClass}>4. CANCELLATION BY CLIENT</h3>
       <p className={sClass}>
-        4.1 Cancellation requests must be submitted in writing to hello@maywoodinteriors.com with the project reference
+        4.1 Cancellation requests must be submitted in writing to info@maywood.in with the project reference
         number.
       </p>
       <p className={sClass}>4.2 Refund entitlement based on cancellation stage:</p>
@@ -449,12 +449,12 @@ export function RefundPolicyContent() {
         7.1 Any payment dispute must be raised within thirty (30) days of the relevant invoice date.
       </p>
       <p className={sClass}>
-        7.2 Disputes should be submitted to hello@maywoodinteriors.com with supporting documentation.
+        7.2 Disputes should be submitted to info@maywood.in with supporting documentation.
       </p>
 
       <h3 className={hClass}>8. CONTACT FOR REFUND REQUESTS</h3>
       <p className={pClass}>Maywood Interiors Private Limited</p>
-      <p className={pClass}>Email: hello@maywoodinteriors.com</p>
+      <p className={pClass}>Email: info@maywood.in</p>
       <p className={pClass}>Phone: +91 96069 77677</p>
       <p className={pClass}>Response time: Within 5 Working Days</p>
     </div>
@@ -652,12 +652,12 @@ export function PaymentTermsContent() {
         6.2 GST invoices are issued within 48 hours of payment confirmation.
       </p>
       <p className={sClass}>
-        6.3 For invoice copies or queries, email: hello@maywoodinteriors.com
+        6.3 For invoice copies or queries, email: info@maywood.in
       </p>
 
       <h3 className={hClass}>7. CONTACT FOR PAYMENT QUERIES</h3>
       <p className={pClass}>Maywood Interiors Private Limited</p>
-      <p className={pClass}>Email: hello@maywoodinteriors.com</p>
+      <p className={pClass}>Email: info@maywood.in</p>
       <p className={pClass}>Phone: +91 96069 77677</p>
       <p className={pClass}>Working Hours: Monday – Saturday, 9:00 AM – 6:00 PM IST</p>
     </div>

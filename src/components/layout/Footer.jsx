@@ -160,8 +160,8 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="mailto:hello@maywoodinteriors.com" className={footerLinkClass}>
-                  hello@maywoodinteriors.com
+                <a href="mailto:info@maywood.in" className={footerLinkClass}>
+                  info@maywood.in
                 </a>
               </li>
               <li>
