@@ -10,4 +10,4 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: https://www.maywoodinteriors.com/sitemap.xml
+Sitemap: https://www.maywood.in/sitemap.xml
