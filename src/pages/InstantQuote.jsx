@@ -17,7 +17,7 @@ import { buttonClasses } from '../lib/buttonStyles'
 import { saveQuoteRequest } from '../utils/adminDataStore'
 import { track } from '../utils/tracking'
 
-const STEP_LABELS = ['Property Type', 'Scope', 'Area', 'Location', 'Estimate']
+const STEP_LABELS = ['Property Type', 'Scope', 'Area', 'Location', 'Estimate', 'Your Details']
 
 const PROPERTY_CARDS = [
   { type: 'Residential', emoji: '🏠', label: 'Residential' },
@@ -97,13 +97,13 @@ const labelClass =
   'mb-2 block font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-brass'
 
 export default function InstantQuote() {
-  const [showPreStep, setShowPreStep] = useState(true)
   const [step, setStep] = useState(1)
-  const [preStepErrors, setPreStepErrors] = useState({
+  const [contactFieldErrors, setContactFieldErrors] = useState({
     fullName: '',
     phone: '',
     email: '',
   })
+  const [quoteSubmitSuccess, setQuoteSubmitSuccess] = useState(false)
   const [fullName, setFullName] = useState('')
   const [phoneDigits, setPhoneDigits] = useState('')
   const [email, setEmail] = useState('')
@@ -126,7 +126,7 @@ export default function InstantQuote() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [step, showPreStep])
+  }, [step])
 
   const openConsultationModal = () => {
     setConsultationModalKey((k) => k + 1)
@@ -166,33 +166,46 @@ export default function InstantQuote() {
     }
   }
 
-  const validateAndLeavePreStep = () => {
-    const nextErrors = { fullName: '', phone: '', email: '' }
-    if (!fullName.trim()) nextErrors.fullName = 'Please enter your full name.'
-    if (!/^\d{10}$/.test(phoneDigits)) nextErrors.phone = 'Enter a valid 10-digit phone number.'
-    const em = email.trim()
-    if (!em.includes('@') || !em.includes('.')) nextErrors.email = 'Enter a valid email address.'
-    setPreStepErrors(nextErrors)
-    if (nextErrors.fullName || nextErrors.phone || nextErrors.email) return
-    setShowPreStep(false)
-    setStep(1)
-  }
-
   const selectProperty = (type) => {
     setPropertyType(type)
     setScope(new Set())
     setStep(2)
   }
 
-  const handleStep5Submit = async (e) => {
+  const handleLocationContinue = (e) => {
     e.preventDefault()
     if (!location.trim() || !propertyType || !areaSqft || scope.size === 0) return
+
+    const scopeList = Array.from(scope)
+    const { breakdown: bd, totalMin, totalMax } = computeEstimate(
+      propertyType,
+      scopeList,
+      areaSqft,
+      selectedTier,
+      bedroomCount,
+    )
+    setBreakdown(bd)
+    setEstimateLow(totalMin)
+    setEstimateHigh(totalMax)
+    setStep(5)
+  }
+
+  const handleQuoteSubmit = async () => {
+    const nextErrors = { fullName: '', phone: '', email: '' }
+    if (!fullName.trim()) nextErrors.fullName = 'Please enter your full name.'
+    if (!/^\d{10}$/.test(phoneDigits)) nextErrors.phone = 'Enter a valid 10-digit phone number.'
+    const em = email.trim()
+    if (!em.includes('@') || !em.includes('.')) nextErrors.email = 'Enter a valid email address.'
+    setContactFieldErrors(nextErrors)
+    if (nextErrors.fullName || nextErrors.phone || nextErrors.email) return
+
+    if (!propertyType || !areaSqft || scope.size === 0 || !location.trim()) return
 
     setQuoteSubmitError('')
 
     const scopeList = Array.from(scope)
 
-    const { breakdown: bd, totalMin, totalMax } = computeEstimate(
+    const { totalMin, totalMax } = computeEstimate(
       propertyType,
       scopeList,
       areaSqft,
@@ -216,32 +229,27 @@ export default function InstantQuote() {
         source: 'website',
       })
       track.formSubmit('instant_quote')
-      setBreakdown(bd)
-      setEstimateLow(totalMin)
-      setEstimateHigh(totalMax)
-      setStep(5)
+      setQuoteSubmitSuccess(true)
     } catch {
       setQuoteSubmitError('We could not save your request. Check your connection and try again.')
     }
   }
 
   const goBack = () => {
-    if (step === 1) {
-      setShowPreStep(true)
-      setStep(1)
-      return
-    }
+    if (step <= 1) return
     if (step === 2) {
       setStep(1)
       setScope(new Set())
       return
     }
-    if (step > 2) {
-      setStep((s) => s - 1)
+    if (step === 6) {
+      setQuoteSubmitError('')
+      if (quoteSubmitSuccess) setQuoteSubmitSuccess(false)
     }
+    setStep((s) => s - 1)
   }
 
-  const progressPct = Math.min(100, (step / 5) * 100)
+  const progressPct = Math.min(100, (step / 6) * 100)
 
   const stepContent = (() => {
     switch (step) {
@@ -577,7 +585,7 @@ export default function InstantQuote() {
             <h1 className="font-display text-[clamp(28px,4vw,40px)] font-light leading-[1.1] text-brand-charcoal">
               Which area in Bangalore?
             </h1>
-            <form onSubmit={handleStep5Submit} className="mt-10 space-y-10">
+            <form onSubmit={handleLocationContinue} className="mt-10 space-y-10">
               <div>
                 <label className={labelClass}>Location</label>
                 <input
@@ -585,7 +593,6 @@ export default function InstantQuote() {
                   value={location}
                   onChange={(e) => {
                     setLocation(e.target.value)
-                    setQuoteSubmitError('')
                   }}
                   className={inputClass}
                   placeholder="e.g. Whitefield, Koramangala, HSR Layout"
@@ -601,12 +608,9 @@ export default function InstantQuote() {
                   'flex w-full items-center justify-center gap-2 py-4 disabled:pointer-events-none disabled:opacity-40',
                 )}
               >
-                SHOW MY ESTIMATE
+                Next
                 <ChevronRight className="h-4 w-4" strokeWidth={2} aria-hidden />
               </button>
-              {quoteSubmitError ? (
-                <p className="font-body text-[13px] font-normal text-red-600">{quoteSubmitError}</p>
-              ) : null}
             </form>
           </motion.div>
         )
@@ -771,6 +775,17 @@ export default function InstantQuote() {
               detailed scope discussion.
             </p>
 
+            <button
+              type="button"
+              onClick={() => setStep(6)}
+              className={buttonClasses(
+                'primary',
+                'mb-8 flex w-full items-center justify-center py-4 disabled:pointer-events-none disabled:opacity-40',
+              )}
+            >
+              Continue →
+            </button>
+
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
@@ -846,6 +861,113 @@ export default function InstantQuote() {
             </div>
           </motion.div>
         )
+      case 6:
+        return (
+          <motion.div
+            key="s6"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3 }}
+            className="mx-auto max-w-[480px]"
+          >
+            {quoteSubmitSuccess ? (
+              <div>
+                <h1 className="font-display text-[clamp(32px,5vw,44px)] font-light leading-[1.08] text-brand-charcoal">
+                  Thank you.
+                </h1>
+                <p className="mt-4 font-body text-[15px] font-normal leading-relaxed text-brand-mist">
+                  We&apos;ve received your request and will reach out shortly with next steps for your personalised
+                  estimate.
+                </p>
+              </div>
+            ) : (
+              <>
+                <h1 className="font-display text-[clamp(32px,5vw,44px)] font-light leading-[1.08] text-brand-charcoal">
+                  Almost done.
+                </h1>
+                <p className="mt-4 font-body text-[15px] font-normal leading-relaxed text-brand-mist">
+                  Enter your details and we&apos;ll send your personalised estimate within 24 hours.
+                </p>
+                <div className="mt-10 space-y-8">
+                  <div>
+                    <label className={labelClass}>Full Name</label>
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => {
+                        setFullName(e.target.value)
+                        setContactFieldErrors((p) => ({ ...p, fullName: '' }))
+                      }}
+                      className={inputClass}
+                      autoComplete="name"
+                    />
+                    {contactFieldErrors.fullName ? (
+                      <p className="mt-1 font-['DM Sans',sans-serif] text-[12px] text-red-500">
+                        {contactFieldErrors.fullName}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div>
+                    <label className={labelClass}>Phone Number</label>
+                    <div className="flex border-b border-brand-charcoal-soft/30 focus-within:border-brand-brass">
+                      <span className="shrink-0 py-3 pr-3 font-body text-[16px] text-brand-mist">+91</span>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        autoComplete="tel-national"
+                        maxLength={10}
+                        value={phoneDigits}
+                        onChange={(e) => {
+                          setPhoneDigits(e.target.value.replace(/\D/g, '').slice(0, 10))
+                          setContactFieldErrors((p) => ({ ...p, phone: '' }))
+                        }}
+                        className="min-w-0 flex-1 border-0 bg-transparent py-3 font-body text-[16px] text-brand-charcoal outline-none placeholder:text-brand-mist/55"
+                        placeholder="98765 43210"
+                      />
+                    </div>
+                    {contactFieldErrors.phone ? (
+                      <p className="mt-1 font-['DM Sans',sans-serif] text-[12px] text-red-500">{contactFieldErrors.phone}</p>
+                    ) : null}
+                  </div>
+                  <div>
+                    <label className={labelClass}>Email Address</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value)
+                        setContactFieldErrors((p) => ({ ...p, email: '' }))
+                      }}
+                      className={inputClass}
+                      autoComplete="email"
+                    />
+                    {contactFieldErrors.email ? (
+                      <p className="mt-1 font-['DM Sans',sans-serif] text-[12px] text-red-500">{contactFieldErrors.email}</p>
+                    ) : null}
+                  </div>
+                  <p className="font-body text-[12px] font-normal leading-relaxed text-brand-mist">
+                    Your details are safe with us. No spam, ever.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => handleQuoteSubmit()}
+                    className={buttonClasses(
+                      'primary',
+                      'flex w-full items-center justify-center gap-2 py-4 text-[13px] tracking-[0.1em]',
+                    )}
+                  >
+                    GET MY ESTIMATE
+                    <ChevronRight className="h-4 w-4" strokeWidth={2} aria-hidden />
+                  </button>
+                  {quoteSubmitError ? (
+                    <p className="font-body text-[13px] font-normal text-red-600">{quoteSubmitError}</p>
+                  ) : null}
+                </div>
+              </>
+            )}
+          </motion.div>
+        )
       default:
         return null
     }
@@ -854,125 +976,33 @@ export default function InstantQuote() {
   return (
     <main className="flex-1 bg-brand-ivory px-5 py-10 sm:px-8 lg:px-12 lg:py-16">
       <div className="mx-auto max-w-[900px]">
-        {showPreStep ? (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key="pre"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.3 }}
-              className="mx-auto max-w-[480px]"
-            >
-              <h1 className="font-display text-[clamp(32px,5vw,44px)] font-light leading-[1.08] text-brand-charcoal">
-                Let&apos;s get started.
-              </h1>
-              <p className="mt-4 font-body text-[15px] font-normal leading-relaxed text-brand-mist">
-                Share your details and we&apos;ll prepare a personalised estimate for you.
-              </p>
-              <div className="mt-10 space-y-8">
-                <div>
-                  <label className={labelClass}>Full Name</label>
-                  <input
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => {
-                      setFullName(e.target.value)
-                      setPreStepErrors((p) => ({ ...p, fullName: '' }))
-                    }}
-                    className={inputClass}
-                    autoComplete="name"
-                  />
-                  {preStepErrors.fullName ? (
-                    <p className="mt-1 font-['DM Sans',sans-serif] text-[12px] text-red-500">{preStepErrors.fullName}</p>
-                  ) : null}
-                </div>
-                <div>
-                  <label className={labelClass}>Phone Number</label>
-                  <div className="flex border-b border-brand-charcoal-soft/30 focus-within:border-brand-brass">
-                    <span className="shrink-0 py-3 pr-3 font-body text-[16px] text-brand-mist">+91</span>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      autoComplete="tel-national"
-                      maxLength={10}
-                      value={phoneDigits}
-                      onChange={(e) => {
-                        setPhoneDigits(e.target.value.replace(/\D/g, '').slice(0, 10))
-                        setPreStepErrors((p) => ({ ...p, phone: '' }))
-                      }}
-                      className="min-w-0 flex-1 border-0 bg-transparent py-3 font-body text-[16px] text-brand-charcoal outline-none placeholder:text-brand-mist/55"
-                      placeholder="98765 43210"
-                    />
-                  </div>
-                  {preStepErrors.phone ? (
-                    <p className="mt-1 font-['DM Sans',sans-serif] text-[12px] text-red-500">{preStepErrors.phone}</p>
-                  ) : null}
-                </div>
-                <div>
-                  <label className={labelClass}>Email Address</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value)
-                      setPreStepErrors((p) => ({ ...p, email: '' }))
-                    }}
-                    className={inputClass}
-                    autoComplete="email"
-                  />
-                  {preStepErrors.email ? (
-                    <p className="mt-1 font-['DM Sans',sans-serif] text-[12px] text-red-500">{preStepErrors.email}</p>
-                  ) : null}
-                </div>
-                <p className="font-body text-[12px] font-normal leading-relaxed text-brand-mist">
-                  Your details are safe with us. No spam, ever.
-                </p>
-                <button
-                  type="button"
-                  onClick={validateAndLeavePreStep}
-                  className={buttonClasses(
-                    'primary',
-                    'flex w-full items-center justify-center gap-2 py-4 text-[13px] tracking-[0.1em]',
-                  )}
-                >
-                  GET MY ESTIMATE
-                  <ChevronRight className="h-4 w-4" strokeWidth={2} aria-hidden />
-                </button>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        ) : (
-          <>
-            <div className="mb-10">
-              <div className="h-[2px] w-full rounded-full bg-[rgba(184,150,90,0.2)]">
-                <div
-                  className="h-full rounded-full bg-brand-brass transition-[width] duration-500 ease-out"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
-              <p className="mt-3 font-body text-[11px] font-medium uppercase tracking-[0.16em] text-brand-mist">
-                Step {step} of 5
-                <span className="mx-2 text-brand-brass/40" aria-hidden>
-                  ·
-                </span>
-                <span className="text-brand-brass">{STEP_LABELS[step - 1]}</span>
-              </p>
-            </div>
+        <div className="mb-10">
+          <div className="h-[2px] w-full rounded-full bg-[rgba(184,150,90,0.2)]">
+            <div
+              className="h-full rounded-full bg-brand-brass transition-[width] duration-500 ease-out"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+          <p className="mt-3 font-body text-[11px] font-medium uppercase tracking-[0.16em] text-brand-mist">
+            Step {step} of 6
+            <span className="mx-2 text-brand-brass/40" aria-hidden>
+              ·
+            </span>
+            <span className="text-brand-brass">{STEP_LABELS[step - 1]}</span>
+          </p>
+        </div>
 
-            {step >= 1 && step < 5 ? (
-              <button
-                type="button"
-                onClick={goBack}
-                className="mb-8 font-body text-[12px] font-medium uppercase tracking-[0.12em] text-brand-brass transition-colors hover:text-brand-charcoal"
-              >
-                ← Back
-              </button>
-            ) : null}
+        {step > 1 && !(step === 6 && quoteSubmitSuccess) ? (
+          <button
+            type="button"
+            onClick={goBack}
+            className="mb-8 font-body text-[12px] font-medium uppercase tracking-[0.12em] text-brand-brass transition-colors hover:text-brand-charcoal"
+          >
+            ← Back
+          </button>
+        ) : null}
 
-            <AnimatePresence mode="wait">{stepContent}</AnimatePresence>
-          </>
-        )}
+        <AnimatePresence mode="wait">{stepContent}</AnimatePresence>
       </div>
 
       <ConsultationBookingModal
